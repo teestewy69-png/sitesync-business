@@ -1,0 +1,216 @@
+{
+  "site": {
+    "name": "Sitesync",
+    "tagline": "Small business approved",
+    "description": "Custom Next.js + Tailwind websites with dark, glossy, animated designs. Built in 5-7 business days. You own the code. Hosting included.",
+    "domain": "sitesinc.co"
+  },
+  "seo": {
+    "title": "Sitesync Business \u2013 Ultra-Modern Small Business Websites (Built Once, Owned Forever)",
+    "description": "Sitesync Business builds dark, glossy, ultra-modern websites for small businesses who never got their site quite right. One-time $1,499 build, SEO-optimized, funnels & Stripe-ready, Netlify hosting included, and you own the full code.",
+    "url": "https://sitesinc.co",
+    "siteName": "Sitesync Business",
+    "locale": "en_US",
+    "image": "https://sitesinc.co/logo.png",
+    "og": {
+      "title": "Sitesync Business \u2013 Ultra-Modern Small Business Websites",
+      "description": "Done-for-you, money-ready websites for small businesses. Dark, glossy designs, SEO, funnels, Stripe, and free Netlify hosting. One-time build, no subscription, and you own the code."
+    },
+    "twitter": {
+      "card": "summary_large_image",
+      "title": "Sitesync Business \u2013 Ultra-Modern Small Business Websites",
+      "description": "Done-for-you, money-ready websites for small businesses. Dark, glossy designs, SEO, funnels, Stripe, and free Netlify hosting."
+    }
+  },
+  "hero": {
+    "overline": "Done-for-you small business websites",
+    "headline": "Ultra-modern websites that finally make your small business look big.",
+    "subheadline": "Sitesync builds dark, glossy, high-converting sites for the \u201clittle guy\u201d who never got their website quite right. One-time build, SEO-optimized, monetization-ready, and fully yours.",
+    "offer": {
+      "title": "Launch Offer: First 10 businesses get 50% off their build.",
+      "subtitle": "Lock in your spot before we go back to the full $1,499 price.",
+      "totalSpots": 10
+    },
+    "primaryCta": { "label": "Reserve My Build & Pay Securely", "target": "pricing" },
+    "secondaryCta": { "label": "See Designs & Try My Business Name", "target": "designs" },
+    "pricingLine": "Regular price: $1,499 • No subscription • Optional maintenance: $125/month",
+    "stackLine": "5-7 business day turnaround • Next.js + Tailwind • Netlify hosting included • You own the full code.",
+    "trustLine": "Perfect for barbers, cleaners, food trucks, contractors, coaches, solo pros, and side hustles."
+  },
+  "techStack": {
+    "title": "Built with modern tech that big brands use",
+    "intro": "Your website isn't built on an old template system or a bloated page builder. We use:",
+    "items": [
+      {
+        "name": "Next.js + React",
+        "description": "The same modern framework used for many of the fastest sites on the web."
+      },
+      {
+        "name": "Tailwind CSS",
+        "description": "For ultra-modern, glossy, dark-mode designs and smooth animations."
+      },
+      {
+        "name": "Netlify Hosting",
+        "description": "Fast, secure, and reliable hosting included at no extra cost."
+      },
+      {
+        "name": "content.json config",
+        "description": "A simple structure behind the scenes that makes your business info and text clean and organized in the code."
+      }
+    ],
+    "outro": "You get a high-performance, future-proof site with clean code that any developer can work with later."
+  },
+  "included": {
+    "title": "What's included in the $1,499 build",
+    "items": [
+      "A complete, custom website built with Next.js + Tailwind",
+      "Choice of 8 ultra-modern designs (you pick your favorite look)",
+      "Dark, glossy, animated interface with professional UX",
+      "On-page SEO setup (titles, meta descriptions, basic keyword structure)",
+      "Basic funnel setup (lead capture form + email signup flow)",
+      "Monetization placeholders (digital products and affiliate links)",
+      "Stripe integration for one-time payments or product sales",
+      "Full code handoff + Netlify hosting setup",
+      "1 round of revisions after the first draft",
+      "5-7 business day turnaround once content is received"
+    ]
+  },
+  "pricing": {
+    "title": "Simple, one-time pricing",
+    "subtitle": "Pay once for the build. No required subscriptions. You own the code.",
+    "build": {
+      "name": "Complete website build",
+      "regularPrice": "$1,499",
+      "launchPrice": "$749.50",
+      "launchNote": "First 10 businesses only - 50% off",
+      "detail": "One-time payment. After the first 10 projects are booked, the price returns to $1,499.",
+      "cta": {
+        "label": "Secure your spot",
+        "href": "https://buy.stripe.com/3cI28raLjetH7KReMqa3u03"
+      },
+      "fullPriceCta": {
+        "label": "Pay full price ($1,499)",
+        "href": "https://buy.stripe.com/4gMcN506FgBPc176fUa3u01"
+      }
+    },
+    "maintenance": {
+      "name": "Optional maintenance plan",
+      "price": "$125/month",
+      "detail": "Completely optional - your site works without it.",
+      "features": [
+        "Technical updates and security",
+        "Monitoring and basic fixes",
+        "2-3 small text/image updates per month"
+      ],
+      "cta": {
+        "label": "Add maintenance",
+        "href": "https://buy.stripe.com/14A4gzf1z4T73uB9s6a3u02"
+      }
+    }
+  },
+  "onboarding": {
+    "title": "What we need from you to start",
+    "items": [
+      "Business name and taglines",
+      "Services/products you offer",
+      "Your logo and brand colors (if you have them)",
+      "Any photos you want used",
+      "Your main offer or goal (calls, bookings, sales, leads)"
+    ],
+    "note": "Once you submit the onboarding form and complete payment, we start your build."
+  },
+  "about": {
+    "title": "Built for the \u201clittle guy\u201d who's tired of feeling left behind online.",
+    "paragraphs": [
+      "Sitesync Business exists for small and local businesses who know they need a real website\u2014but never had the time, budget, or tech help to get it done right. We don't sell drag-and-drop templates or half-finished sites. We build dark, glossy, ultra-modern websites that look like they belong to a big brand, but are tailored to the shop around the corner.",
+      "Whether you're a barber, cleaner, contractor, food truck, lash tech, coach, or solo pro, we handle the hard stuff: design, development, SEO, funnels, Stripe, and hosting. You pay once, we build it, connect your domain, and hand you the full code so you truly own your online home."
+    ]
+  },
+  "cta": {
+    "title": "Lock in 50% off - only 10 spots",
+    "subtitle": "Regular price $1,499. First 10 businesses pay $749.50, one-time. Reserve and pay your spot to lock in the price.",
+    "primaryCta": { "label": "Reserve my spot for $749.50", "href": "https://buy.stripe.com/3cI28raLjetH7KReMqa3u03" },
+    "secondaryCta": { "label": "Questions? Read the FAQ", "href": "#faq" }
+  },
+  "proof": {
+    "overline": "Proof",
+    "title": "Real businesses. Real results.",
+    "subtitle": "Don\u2019t take our word for it\u2014watch a sample client site get built the same way yours will: content in, money-ready site out.",
+    "outcomes": [
+      {
+        "stat": "5\u20137 days",
+        "label": "Typical turnaround",
+        "detail": "From content received to a live, hosted site\u2014not months in a page builder."
+      },
+      {
+        "stat": "100%",
+        "label": "Code you own",
+        "detail": "Full Next.js handoff. No platform lock-in. Any developer can pick it up later."
+      },
+      {
+        "stat": "Money-ready",
+        "label": "Built to convert",
+        "detail": "Clear CTA, lead capture, Stripe when you need it, and SEO basics from day one."
+      }
+    ],
+    "sample": {
+      "badge": "Sample build",
+      "business": "Smith Plumbing & Heating",
+      "niche": "Emergency plumber",
+      "result": "Call-first homepage, 24/7 service focus, reviews block, and tap-to-call CTA\u2014the kind of site that answers the phone instead of looking pretty and silent.",
+      "note": "Demo of our per-client workflow using the same stack and content.json system we ship to paying customers."
+    },
+    "cta": { "label": "See pricing & lock a spot", "target": "pricing" }
+  },
+  "productTeaser": {
+    "overline": "Beyond the build",
+    "title": "Tools that keep your site earning after launch.",
+    "subtitle": "A website isn\u2019t a one-and-done poster. We\u2019re packaging the same checklists and money pieces we use on client builds so you can keep improving without hiring a full team.",
+    "items": [
+      {
+        "status": "Available now",
+        "name": "Website checklist",
+        "detail": "Design, copy, SEO basics, and the money-making pieces most small sites forget. Free\u2014enter your email below.",
+        "cta": { "label": "Get the free checklist", "target": "checklist" }
+      },
+      {
+        "status": "Available now",
+        "name": "Keep-it-earning kit",
+        "detail": "Offer-page templates, update cadence, and simple SEO refresh prompts so your site stays sharp after launch. Instant Stripe checkout.",
+        "cta": {
+          "label": "Get the kit",
+          "href": "https://buy.stripe.com/00w28r2eN5Xb3uBcEia3u04"
+        }
+      },
+      {
+        "status": "On the roadmap",
+        "name": "Niche playbooks",
+        "detail": "Barber, contractor, coach, and food-truck packs\u2014headlines, service blocks, and CTAs tuned to how those businesses actually get booked.",
+        "cta": null
+      }
+    ]
+  },
+  "emailCapture": {
+    "overline": "Free download",
+    "title": "Not ready yet? Grab the free website checklist.",
+    "subtitle": "The exact checklist we use to make small business websites look big: design, copy, SEO basics, and the money-making pieces most sites forget.",
+    "placeholder": "you@email.com",
+    "buttonLabel": "Send me the checklist",
+    "finePrint": "No spam. Just the checklist and occasional tips for getting more from your website. You can contact us anytime at"
+  },
+  "footer": {
+    "legalName": "Sitesync Business",
+    "email": "save@sitesinc.co",
+    "trustTitle": "Secure payments & transparent pricing.",
+    "trustLine": "Powered by Stripe • No hidden fees • No forced subscriptions • You own your site code.",
+    "scrollLinks": [
+      { "label": "Pricing", "target": "pricing" },
+      { "label": "Designs", "target": "designs" },
+      { "label": "FAQ", "target": "faq" }
+    ],
+    "legalLinks": [
+      { "label": "Privacy", "href": "/privacy" },
+      { "label": "Terms", "href": "/terms" }
+    ]
+  }
+}
