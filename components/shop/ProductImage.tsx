@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Product } from "@/data/products";
-import { getProductImageSrc } from "@/data/products";
+import {
+  getProductImageFallbackSrc,
+  getProductImageSrc,
+} from "@/data/products";
 
 type Props = {
   product: Product;
@@ -12,8 +15,7 @@ type Props = {
 };
 
 /**
- * Shows `/products/{slug}.*` (or product.image) when available.
- * Falls back to the gold/dark gradient panel if the asset fails to load.
+ * Tries product.image (JPG), then `/products/{slug}.svg`, then a gradient panel.
  */
 export default function ProductImage({
   product,
@@ -21,8 +23,15 @@ export default function ProductImage({
   imgClassName = "absolute inset-0 h-full w-full object-cover",
   alt,
 }: Props) {
-  const src = getProductImageSrc(product);
+  const primary = getProductImageSrc(product);
+  const fallback = getProductImageFallbackSrc(product);
+  const [src, setSrc] = useState(primary);
   const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setSrc(primary);
+    setFailed(false);
+  }, [primary, product.slug]);
 
   return (
     <div
@@ -32,10 +41,17 @@ export default function ProductImage({
         // Public SVG/WebP assets under /products — plain img keeps SVG crisp.
         // eslint-disable-next-line @next/next/no-img-element
         <img
+          key={src}
           src={src}
           alt={alt ?? product.name}
           className={imgClassName}
-          onError={() => setFailed(true)}
+          onError={() => {
+            if (src !== fallback) {
+              setSrc(fallback);
+              return;
+            }
+            setFailed(true);
+          }}
         />
       ) : null}
     </div>

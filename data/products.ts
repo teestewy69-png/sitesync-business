@@ -88,9 +88,14 @@ export const products: Product[] = [
   },
 ];
 
-/** Prefer explicit `image` as the source of truth. */
+/** Prefer explicit `image` as the source of truth (JPG when present). */
 export function getProductImageSrc(product: Product): string {
   return product.image;
+}
+
+/** SVG placeholder under public/products/{slug}.svg when the JPG is missing. */
+export function getProductImageFallbackSrc(product: Product): string {
+  return `/products/${product.slug}.svg`;
 }
 
 export function getProduct(slug: string): Product | undefined {
