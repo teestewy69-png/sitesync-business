@@ -42,7 +42,6 @@ export default function DesignChooser() {
                 type="text"
                 value={businessName}
                 onChange={(e) => setBusinessName(e.target.value)}
-                
                 placeholder="e.g. Smith Plumbing & Heating"
                 className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white outline-none transition focus:border-brand-400/70 focus:ring-2 focus:ring-brand-400/30"
               />
@@ -55,7 +54,6 @@ export default function DesignChooser() {
                 type="text"
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
-            
                 placeholder="e.g. Emergency Plumber, Lash Tech, Mobile Detailer"
                 className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white outline-none transition focus:border-brand-400/70 focus:ring-2 focus:ring-brand-400/30"
               />
