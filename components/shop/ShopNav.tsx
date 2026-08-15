@@ -26,7 +26,7 @@ export default function ShopNav() {
   const onCheckout = pathname === "/checkout";
 
   return (
-    <header className="sticky top-0 z-50 border-b border-brand-500/15 bg-black/85 backdrop-blur-md">
+    <header className="sticky top-10 z-50 border-b border-brand-500/15 bg-black/85 backdrop-blur-md sm:top-11">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-brand-400/40 to-transparent"
@@ -41,7 +41,7 @@ export default function ShopNav() {
           <img
             src="/logo.png"
             alt=""
-            className="h-9 w-auto shrink-0 rounded-lg ring-1 ring-white/10 transition group-hover:ring-brand-400/40 sm:h-10"
+            className="h-12 w-auto shrink-0 rounded-lg ring-1 ring-white/10 transition group-hover:ring-brand-400/40 sm:h-14"
           />
           <span className="min-w-0 leading-tight">
             <span className="block truncate text-sm font-semibold tracking-tight text-white sm:text-[15px]">

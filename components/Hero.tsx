@@ -20,7 +20,7 @@ export default function Hero() {
           <img
             src="/logo.png"
             alt={`${site.name} logo`}
-            className="h-12 w-auto rounded-lg ring-1 ring-white/10"
+            className="h-16 w-auto rounded-lg ring-1 ring-white/10 sm:h-[4.5rem]"
           />
         </a>
         <a

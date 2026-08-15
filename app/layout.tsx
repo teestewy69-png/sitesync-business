@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import content from "@/content.json";
 import Analytics from "@/components/Analytics";
+import AnnouncementTicker from "@/components/AnnouncementTicker";
 import { CartProvider } from "@/components/shop/CartProvider";
 import "./globals.css";
 
@@ -57,6 +58,7 @@ export default function RootLayout({
     >
       <body className="flex min-h-full flex-col bg-canvas text-slate-200">
         <CartProvider>
+          <AnnouncementTicker />
           {children}
           <Analytics measurementId={GA_MEASUREMENT_ID} />
         </CartProvider>
