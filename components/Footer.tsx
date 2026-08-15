@@ -53,6 +53,9 @@ export default function Footer() {
               {link.label}
             </button>
           ))}
+          <a href="/shop" className="transition hover:text-brand-300">
+            Shop
+          </a>
           <a href="/blog" className="transition hover:text-brand-300">
             Blog
           </a>

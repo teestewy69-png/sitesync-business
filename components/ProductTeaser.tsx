@@ -33,7 +33,7 @@ export default function ProductTeaser() {
           {productTeaser.items.map((item) => {
             const cta = item.cta as ItemCta | null;
             const href = cta?.href ?? (cta?.target ? `#${cta.target}` : null);
-            const external = Boolean(cta?.href);
+            const external = Boolean(cta?.href?.startsWith("http"));
 
             return (
               <div

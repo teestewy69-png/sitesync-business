@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import content from "@/content.json";
 import Analytics from "@/components/Analytics";
+import { CartProvider } from "@/components/shop/CartProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -55,8 +56,10 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-canvas text-slate-200">
-        {children}
-        <Analytics measurementId={GA_MEASUREMENT_ID} />
+        <CartProvider>
+          {children}
+          <Analytics measurementId={GA_MEASUREMENT_ID} />
+        </CartProvider>
       </body>
     </html>
   );
