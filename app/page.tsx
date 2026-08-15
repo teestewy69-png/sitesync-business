@@ -1,5 +1,5 @@
 import Hero from "@/components/Hero";
-import DesignChooser from "@/components/DesignChooser";
+import DesignShowcase from "@/components/DesignShowcase";
 import Pricing from "@/components/Pricing";
 import Process from "@/components/Process";
 import About from "@/components/About";
@@ -14,7 +14,7 @@ export default function Home() {
   return (
     <>
       <Hero />
-      <DesignChooser />
+      <DesignShowcase />
       <Pricing />
       <Process />
       <About />
