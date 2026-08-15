@@ -120,11 +120,9 @@ export default function Hero() {
               </div>
               <div className="mt-5 flex items-center justify-between gap-3">
                 <div className="space-y-1 text-[11px] text-slate-300">
-                  <p className="font-medium text-slate-100">
-                    Try your business name
-                  </p>
+                  <p className="font-medium text-slate-100">8 design styles</p>
                   <p className="text-slate-400">
-                    See how your brand looks across 8 ultra-modern layouts.
+                    Distinct layouts with their own structure and personality.
                   </p>
                 </div>
                 <button
@@ -132,7 +130,7 @@ export default function Hero() {
                   className="shrink-0 rounded-full bg-white/10 px-4 py-2 text-[11px] font-medium text-slate-50 transition hover:bg-brand-500 hover:text-zinc-950"
                   onClick={() => scrollToId("designs")}
                 >
-                  Preview Designs
+                  See 8 designs
                 </button>
               </div>
             </div>

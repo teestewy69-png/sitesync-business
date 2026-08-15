@@ -32,7 +32,7 @@
       "totalSpots": 10
     },
     "primaryCta": { "label": "Reserve My Build & Pay Securely", "target": "pricing" },
-    "secondaryCta": { "label": "See Designs & Try My Business Name", "target": "designs" },
+    "secondaryCta": { "label": "See 8 Designs", "target": "designs" },
     "pricingLine": "Regular price: $1,499 • No subscription • Optional maintenance: $125/month",
     "stackLine": "5-7 business day turnaround • Next.js + Tailwind • Netlify hosting included • You own the full code.",
     "trustLine": "Perfect for barbers, cleaners, food trucks, contractors, coaches, solo pros, and side hustles."
