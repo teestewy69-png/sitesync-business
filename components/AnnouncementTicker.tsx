@@ -3,10 +3,10 @@ const TICKER_COPY =
 
 export default function AnnouncementTicker() {
   // Duplicate segments for a seamless CSS loop (translate -50%).
-  const segments = Array.from({ length: 4 }, (_, i) => (
-    <span key={i} className="inline-flex shrink-0 items-center gap-8 px-4">
+  const segments = Array.from({ length: 6 }, (_, i) => (
+    <span key={i} className="inline-flex shrink-0 items-center gap-10 px-5">
       <span>{TICKER_COPY}</span>
-      <span aria-hidden className="text-red-500/50">
+      <span aria-hidden className="text-white/70">
         •
       </span>
     </span>
@@ -14,11 +14,11 @@ export default function AnnouncementTicker() {
 
   return (
     <div
-      className="sticky top-0 z-[60] flex h-10 items-center overflow-hidden border-b border-red-500/20 bg-black/95 backdrop-blur-md sm:h-11"
+      className="announcement-ticker sticky top-0 z-[100] flex h-11 items-center overflow-hidden border-b border-red-700 bg-red-600 sm:h-12"
       role="region"
       aria-label="Launch offer"
     >
-      <div className="flex w-max animate-ticker whitespace-nowrap text-xs font-semibold tracking-wide text-red-500 sm:text-sm">
+      <div className="announcement-ticker__track flex w-max whitespace-nowrap text-sm font-bold uppercase tracking-wide text-white sm:text-base">
         <div className="flex shrink-0 items-center">{segments}</div>
         <div className="flex shrink-0 items-center" aria-hidden>
           {segments}

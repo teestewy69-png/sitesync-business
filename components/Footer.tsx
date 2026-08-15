@@ -18,7 +18,7 @@ export default function Footer() {
           <img
             src="/logo.png"
             alt={site.name}
-            className="h-10 w-auto rounded-lg ring-1 ring-white/10"
+            className="h-14 w-auto rounded-lg ring-1 ring-white/10 sm:h-16"
           />
           <p className="text-[11px] text-slate-500 sm:text-xs">
             © {new Date().getFullYear()} {footer.legalName}. All rights
