@@ -101,7 +101,7 @@ export default function Hero() {
             <div className="mb-4 flex items-center justify-between text-xs text-slate-300">
               <span className="inline-flex items-center gap-1">
                 <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                Live preview
+                Sample layout
               </span>
               <span className="rounded-full bg-white/5 px-3 py-1 text-[10px] uppercase tracking-wider">
                 Ultra Modern Dark

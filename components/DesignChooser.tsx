@@ -18,6 +18,7 @@ export default function DesignChooser() {
       <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-brand-500/10 via-transparent to-transparent" />
 
       <div className="relative mx-auto flex max-w-6xl flex-col gap-10 px-6 md:flex-row md:gap-12">
+        {/* LEFT: inputs + design tabs */}
         <div className="space-y-6 md:w-[42%]">
           <div className="space-y-3">
             <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
@@ -104,13 +105,14 @@ export default function DesignChooser() {
           </div>
         </div>
 
+        {/* RIGHT: live preview */}
         <div className="md:w-[58%]">
           <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-surface-elevated/90 via-black/95 to-surface/80 p-5 shadow-elevated backdrop-blur">
             <div className="mb-4 flex items-center justify-between text-[11px] text-slate-300">
               <div className="flex items-center gap-2">
                 <span className="flex h-1.5 w-10 rounded-full bg-white/10" />
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                <span className="text-slate-400">Preview</span>
+                <span className="text-slate-400">Live preview</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="hidden text-slate-500 sm:inline">Design:</span>
@@ -178,7 +180,7 @@ export default function DesignChooser() {
                   real content.
                 </p>
                 <span className="hidden rounded-full bg-white/5 px-2 py-1 text-[10px] uppercase tracking-wider text-slate-300 sm:inline">
-                  Demo Preview
+                  Updates as you type
                 </span>
               </div>
             </div>
