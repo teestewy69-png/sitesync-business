@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import type { Product } from "@/data/products";
 import { useCart } from "@/components/shop/CartProvider";
+import ProductImage from "@/components/shop/ProductImage";
 
 export default function ProductDetail({ product }: { product: Product }) {
   const { addItem } = useCart();
@@ -18,9 +19,13 @@ export default function ProductDetail({ product }: { product: Product }) {
 
   return (
     <div className="grid gap-10 lg:grid-cols-2">
-      <div className="relative min-h-[280px] overflow-hidden rounded-[28px] border border-white/10 bg-gradient-to-br from-brand-500/25 via-surface to-black">
+      <div className="relative min-h-[280px] overflow-hidden rounded-[28px] border border-white/10">
+        <ProductImage
+          product={product}
+          className="absolute inset-0 h-full w-full min-h-[280px]"
+        />
         {product.badge ? (
-          <span className="absolute top-5 left-5 rounded-full bg-brand-500/25 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-brand-200 ring-1 ring-brand-400/40">
+          <span className="absolute top-5 left-5 rounded-full bg-brand-500/25 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-brand-200 ring-1 ring-brand-400/40 backdrop-blur">
             {product.badge}
           </span>
         ) : null}

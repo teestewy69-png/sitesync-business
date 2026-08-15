@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Gold Jewelry">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="800" y2="600" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1a1510"/>
+      <stop offset="0.45" stop-color="#0a0806"/>
+      <stop offset="1" stop-color="#000000"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="40%" r="50%">
+      <stop offset="0" stop-color="#d4a44a" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#d4a44a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <rect width="800" height="600" fill="url(#glow)"/>
+  <circle cx="120" cy="100" r="80" fill="#d4a44a" opacity="0.06"/>
+  <circle cx="700" cy="520" r="100" fill="#b8863b" opacity="0.08"/>
+  <circle cx="400" cy="280" r="70" fill="none" stroke="#e0b954" stroke-width="3"/>
+<circle cx="400" cy="280" r="52" fill="#1a1510" stroke="#d4a44a" stroke-width="2"/>
+<path d="M400 240 L420 280 L400 320 L380 280 Z" fill="#ecd06a" opacity="0.85"/>
+<path d="M400 250 L412 280 L400 310 L388 280 Z" fill="#b8863b" opacity="0.9"/>
+<circle cx="400" cy="280" r="10" fill="#faf0c8"/>
+<path d="M330 340 Q400 400 470 340" fill="none" stroke="#d4a44a" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="330" cy="340" r="6" fill="#ecd06a"/>
+<circle cx="470" cy="340" r="6" fill="#ecd06a"/>
+  <text x="400" y="520" text-anchor="middle" fill="#ecd06a" font-family="Georgia, serif" font-size="22" letter-spacing="2">Gold Jewelry</text>
+  <text x="400" y="548" text-anchor="middle" fill="#96682f" font-family="sans-serif" font-size="12" letter-spacing="3">SITESYNC</text>
+</svg>

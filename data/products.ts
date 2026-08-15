@@ -8,6 +8,8 @@ export type Product = {
   description: string;
   badge?: string;
   stripeUrl?: string;
+  /** Optional override; defaults to `/products/{slug}.svg`. */
+  image?: string;
 };
 
 export const products: Product[] = [
@@ -21,6 +23,7 @@ export const products: Product[] = [
       "Digital products relating to website design, performance, SEO, and online business foundations.",
     badge: "50% Off",
     stripeUrl: "https://buy.stripe.com/00w28r2eN5Xb3uBcEia3u04",
+    image: "/products/website-design-digital-bundle.svg",
   },
   {
     slug: "mack-makeup-bundle",
@@ -31,6 +34,7 @@ export const products: Product[] = [
     description:
       "Bundle includes eyeliner, concealer, and lipstick from our affiliate beauty sources.",
     badge: "Bundle Deal",
+    image: "/products/mack-makeup-bundle.svg",
   },
   {
     slug: "home-gym-bundle",
@@ -41,6 +45,7 @@ export const products: Product[] = [
     description:
       "A home gym setup offer from affiliate partners for customers building their health at home.",
     badge: "Best Value",
+    image: "/products/home-gym-bundle.svg",
   },
   {
     slug: "home-pet-grooming-kit",
@@ -51,6 +56,7 @@ export const products: Product[] = [
     description:
       "A home pet grooming solution including tools and essentials from affiliate product sources.",
     badge: "Hot Offer",
+    image: "/products/home-pet-grooming-kit.svg",
   },
   {
     slug: "longevity-life-bundle",
@@ -61,6 +67,7 @@ export const products: Product[] = [
     description:
       "Turmeric, oil of oregano, and cayenne pepper bundle designed around longevity and daily wellness.",
     badge: "Limited Offer",
+    image: "/products/longevity-life-bundle.svg",
   },
   {
     slug: "financial-consulting",
@@ -69,6 +76,7 @@ export const products: Product[] = [
     contactOnly: true,
     description:
       "Professional financial consultation services. Contact us directly for pricing and service details.",
+    image: "/products/financial-consulting.svg",
   },
   {
     slug: "gold-filled-jewelry",
@@ -77,8 +85,15 @@ export const products: Product[] = [
     contactOnly: true,
     description:
       "Gold-filled jewelry from our affiliate sources. Contact us for pricing, availability, and inventory.",
+    image: "/products/gold-filled-jewelry.svg",
   },
 ];
+
+/** Prefer explicit `image`, else `/products/{slug}.svg` (swap to .webp when real photos land). */
+export function getProductImageSrc(product: Product): string {
+  if (product.image) return product.image;
+  return `/products/${product.slug}.svg`;
+}
 
 export function getProduct(slug: string): Product | undefined {
   return products.find((p) => p.slug === slug);
