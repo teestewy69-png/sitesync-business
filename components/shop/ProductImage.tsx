@@ -15,7 +15,7 @@ type Props = {
 };
 
 /**
- * Tries product.image (JPG), then `/products/{slug}.svg`, then a gradient panel.
+ * Tries the bundled product photo, then `/products/{slug}.svg`, then a gradient.
  */
 export default function ProductImage({
   product,
