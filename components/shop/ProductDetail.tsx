@@ -18,11 +18,11 @@ export default function ProductDetail({ product }: { product: Product }) {
   }
 
   return (
-    <div className="grid gap-10 lg:grid-cols-2">
-      <div className="relative min-h-[280px] overflow-hidden rounded-[28px] border border-white/10">
+    <div className="grid gap-10 lg:grid-cols-[1fr_0.9fr] lg:items-start">
+      <div className="relative aspect-[4/3] min-h-[280px] overflow-hidden rounded-[28px] border border-white/10 bg-surface">
         <ProductImage
           product={product}
-          className="absolute inset-0 h-full w-full min-h-[280px]"
+          className="absolute inset-0 h-full w-full"
         />
         {product.badge ? (
           <span className="absolute top-5 left-5 rounded-full bg-brand-500/25 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-brand-200 ring-1 ring-brand-400/40 backdrop-blur">
