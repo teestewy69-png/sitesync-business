@@ -22,7 +22,7 @@ export const products: Product[] = [
       "Digital products relating to website design, performance, SEO, and online business foundations.",
     badge: "50% Off",
     stripeUrl: "https://buy.stripe.com/00w28r2eN5Xb3uBcEia3u04",
-    image: "/products/website-design-bundle.jpg",
+    image: "/products/website-design-digital-bundle.jpg",
   },
   {
     slug: "mack-makeup-bundle",
@@ -90,7 +90,7 @@ export const products: Product[] = [
 
 /** Prefer explicit `image` as the source of truth (JPG when present). */
 export function getProductImageSrc(product: Product): string {
-  return product.image;
+  return product.image || `/products/${product.slug}.jpg`;
 }
 
 /** SVG placeholder under public/products/{slug}.svg when the JPG is missing. */
