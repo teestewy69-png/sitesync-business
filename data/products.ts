@@ -1,3 +1,12 @@
+import type { StaticImageData } from "next/image";
+import financialConsulting from "@/public/products/financial-consulting.jpg";
+import goldFilledJewelry from "@/public/products/gold-filled-jewelry.jpg";
+import homeGymBundle from "@/public/products/home-gym-bundle.jpg";
+import homePetGroomingKit from "@/public/products/home-pet-grooming-kit.jpg";
+import longevityLifeBundle from "@/public/products/longevity-life-bundle.jpg";
+import mackMakeupBundle from "@/public/products/mack-makeup-bundle.jpg";
+import websiteDesignBundle from "@/public/products/website-design-digital-bundle.jpg";
+
 export type Product = {
   slug: string;
   name: string;
@@ -8,7 +17,10 @@ export type Product = {
   description: string;
   badge?: string;
   stripeUrl?: string;
-  image: string;
+  /** Optimized static import so the photo ships in the Next.js build. */
+  image: StaticImageData;
+  /** Public JPG filename used for offline / ZIP exports. */
+  imageFile: string;
 };
 
 export const products: Product[] = [
@@ -22,7 +34,8 @@ export const products: Product[] = [
       "Digital products relating to website design, performance, SEO, and online business foundations.",
     badge: "50% Off",
     stripeUrl: "https://buy.stripe.com/00w28r2eN5Xb3uBcEia3u04",
-    image: "/products/website-design-bundle.jpg",
+    image: websiteDesignBundle,
+    imageFile: "website-design-digital-bundle.jpg",
   },
   {
     slug: "mack-makeup-bundle",
@@ -33,7 +46,8 @@ export const products: Product[] = [
     description:
       "Bundle includes eyeliner, concealer, and lipstick from our affiliate beauty sources.",
     badge: "Bundle Deal",
-    image: "/products/mack-makeup-bundle.jpg",
+    image: mackMakeupBundle,
+    imageFile: "mack-makeup-bundle.jpg",
   },
   {
     slug: "home-gym-bundle",
@@ -44,7 +58,8 @@ export const products: Product[] = [
     description:
       "A home gym setup offer from affiliate partners for customers building their health at home.",
     badge: "Best Value",
-    image: "/products/home-gym-bundle.jpg",
+    image: homeGymBundle,
+    imageFile: "home-gym-bundle.jpg",
   },
   {
     slug: "home-pet-grooming-kit",
@@ -55,7 +70,8 @@ export const products: Product[] = [
     description:
       "A home pet grooming solution including tools and essentials from affiliate product sources.",
     badge: "Hot Offer",
-    image: "/products/home-pet-grooming-kit.jpg",
+    image: homePetGroomingKit,
+    imageFile: "home-pet-grooming-kit.jpg",
   },
   {
     slug: "longevity-life-bundle",
@@ -66,7 +82,8 @@ export const products: Product[] = [
     description:
       "Turmeric, oil of oregano, and cayenne pepper bundle designed around longevity and daily wellness.",
     badge: "Limited Offer",
-    image: "/products/longevity-life-bundle.jpg",
+    image: longevityLifeBundle,
+    imageFile: "longevity-life-bundle.jpg",
   },
   {
     slug: "financial-consulting",
@@ -75,7 +92,8 @@ export const products: Product[] = [
     contactOnly: true,
     description:
       "Professional financial consultation services. Contact us directly for pricing and service details.",
-    image: "/products/financial-consulting.jpg",
+    image: financialConsulting,
+    imageFile: "financial-consulting.jpg",
   },
   {
     slug: "gold-filled-jewelry",
@@ -84,16 +102,17 @@ export const products: Product[] = [
     contactOnly: true,
     description:
       "Gold-filled jewelry from our affiliate sources. Contact us for pricing, availability, and inventory.",
-    image: "/products/gold-filled-jewelry.jpg",
+    image: goldFilledJewelry,
+    imageFile: "gold-filled-jewelry.jpg",
   },
 ];
 
-/** Prefer explicit `image` as the source of truth (JPG when present). */
+/** Prefer the bundled static photo; falls back to the public JPG path. */
 export function getProductImageSrc(product: Product): string {
-  return product.image;
+  return product.image.src;
 }
 
-/** SVG placeholder under public/products/{slug}.svg when the JPG is missing. */
+/** SVG placeholder under public/products/{slug}.svg when the photo is missing. */
 export function getProductImageFallbackSrc(product: Product): string {
   return `/products/${product.slug}.svg`;
 }
