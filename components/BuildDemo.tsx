@@ -121,13 +121,13 @@ export default function BuildDemo() {
       <div className="flex flex-col gap-6 p-5 sm:p-6 lg:flex-row lg:gap-8 lg:p-8">
         <div className="flex shrink-0 flex-col justify-between gap-6 lg:w-[38%]">
           <div className="space-y-3">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-brand-300">
+            <p className="text-xs font-semibold uppercase tracking-wider text-brand-300">
               Live build demo
             </p>
             <h3 className="text-xl font-semibold tracking-tight text-white sm:text-2xl">
               Watch a real client site assemble.
             </h3>
-            <p className="text-sm text-slate-400">
+            <p className="text-base text-slate-400">
               Click a step to jump the preview, or hit replay to watch it build
               automatically.
             </p>
@@ -145,7 +145,7 @@ export default function BuildDemo() {
                 role="tab"
                 aria-selected={step === s.id}
                 onClick={() => jumpTo(s.id)}
-                className={`rounded-full px-3 py-1.5 text-[11px] font-semibold transition ${
+                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
                   step === s.id
                     ? "bg-brand-400 text-zinc-950"
                     : "bg-white/5 text-slate-300 ring-1 ring-white/10 hover:bg-white/10"
@@ -174,7 +174,7 @@ export default function BuildDemo() {
                     }`}
                   >
                     <span
-                      className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${
+                      className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
                         done || active
                           ? "bg-brand-400 text-zinc-950"
                           : "bg-white/10 text-slate-400"
@@ -183,10 +183,10 @@ export default function BuildDemo() {
                       {done ? "✓" : s.id + 1}
                     </span>
                     <span>
-                      <span className="block text-sm font-medium text-slate-100">
+                      <span className="block text-base font-medium text-slate-100">
                         {s.label}
                       </span>
-                      <span className="block text-xs text-slate-500">
+                      <span className="block text-sm text-slate-500">
                         {s.detail}
                       </span>
                     </span>
@@ -212,7 +212,7 @@ export default function BuildDemo() {
               <span className="h-2.5 w-2.5 rounded-full bg-red-400/80" />
               <span className="h-2.5 w-2.5 rounded-full bg-amber-400/80" />
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/80" />
-              <div className="ml-2 flex min-w-0 flex-1 items-center gap-2 rounded-md bg-white/5 px-2.5 py-1 font-mono text-[10px] text-slate-400 sm:text-xs">
+              <div className="ml-2 flex min-w-0 flex-1 items-center gap-2 rounded-md bg-white/5 px-2.5 py-1 font-mono text-xs text-slate-400 sm:text-xs">
                 <span
                   className={`h-1.5 w-1.5 shrink-0 rounded-full ${
                     showLive ? "bg-emerald-400" : "animate-pulse bg-brand-400"
@@ -247,7 +247,7 @@ export default function BuildDemo() {
                       }}
                     />
                   ))}
-                  <p className="mt-4 font-mono text-[11px] text-sky-300/80">
+                  <p className="mt-4 font-mono text-xs text-sky-300/80">
                     npx create-next-app → theme arctic → content.json
                   </p>
                 </div>
@@ -264,13 +264,13 @@ export default function BuildDemo() {
                         ) : null}
                       </p>
                       {showHero ? (
-                        <p className="text-[11px] text-sky-300/90">
+                        <p className="text-xs text-sky-300/90">
                           {DEMO.keyword}
                         </p>
                       ) : null}
                     </div>
                     {showMoney ? (
-                      <span className="shrink-0 rounded-lg bg-sky-400 px-2.5 py-1.5 text-[10px] font-semibold text-slate-950 sm:text-xs">
+                      <span className="shrink-0 rounded-lg bg-sky-400 px-2.5 py-1.5 text-xs font-semibold text-slate-950 sm:text-xs">
                         {DEMO.phone}
                       </span>
                     ) : null}
@@ -282,7 +282,7 @@ export default function BuildDemo() {
                         The {DEMO.keyword.toLowerCase()} who shows up when it
                         matters.
                       </p>
-                      <p className="max-w-md text-xs text-slate-400 sm:text-sm">
+                      <p className="max-w-md text-base text-slate-400">
                         {DEMO.tagline}
                       </p>
                       <button
@@ -293,7 +293,7 @@ export default function BuildDemo() {
                       </button>
                     </div>
                   ) : (
-                    <p className="text-xs text-slate-500">
+                    <p className="text-sm text-slate-500">
                       Loading hero, services, and CTAs…
                     </p>
                   )}
@@ -303,7 +303,7 @@ export default function BuildDemo() {
                       {DEMO.services.map((service) => (
                         <div
                           key={service}
-                          className="rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-[11px] text-slate-200 sm:text-xs"
+                      className="rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-slate-200"
                         >
                           {service}
                         </div>
@@ -313,13 +313,13 @@ export default function BuildDemo() {
 
                   {showMoney ? (
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
-                      <blockquote className="flex-1 rounded-lg border border-white/10 bg-black/30 p-3 text-[11px] text-slate-300 sm:text-xs">
+                      <blockquote className="flex-1 rounded-lg border border-white/10 bg-black/30 p-3 text-sm text-slate-300">
                         “{DEMO.quote}”
                         <footer className="mt-1.5 text-sky-300/90">
                           — {DEMO.quoteName}
                         </footer>
                       </blockquote>
-                      <div className="flex flex-col justify-center gap-1.5 rounded-lg border border-sky-400/30 bg-sky-400/10 px-3 py-2.5 text-[10px] text-sky-100 sm:w-40 sm:text-[11px]">
+                      <div className="flex flex-col justify-center gap-1.5 rounded-lg border border-sky-400/30 bg-sky-400/10 px-3 py-2.5 text-sm text-sky-100 sm:w-40">
                         <span className="font-semibold text-sky-200">
                           Money-ready
                         </span>
@@ -331,13 +331,13 @@ export default function BuildDemo() {
 
                   {showLive ? (
                     <div className="flex flex-wrap items-center gap-2 pt-1">
-                      <span className="rounded-full bg-emerald-400/15 px-2.5 py-1 text-[10px] font-semibold text-emerald-300 ring-1 ring-emerald-400/30">
+                      <span className="rounded-full bg-emerald-400/15 px-2.5 py-1 text-xs font-semibold text-emerald-300 ring-1 ring-emerald-400/30">
                         Live on Netlify
                       </span>
-                      <span className="rounded-full bg-white/5 px-2.5 py-1 text-[10px] text-slate-300 ring-1 ring-white/10">
+                      <span className="rounded-full bg-white/5 px-2.5 py-1 text-xs text-slate-300 ring-1 ring-white/10">
                         On-page SEO set
                       </span>
-                      <span className="rounded-full bg-white/5 px-2.5 py-1 text-[10px] text-slate-300 ring-1 ring-white/10">
+                      <span className="rounded-full bg-white/5 px-2.5 py-1 text-xs text-slate-300 ring-1 ring-white/10">
                         Full code owned
                       </span>
                     </div>
@@ -346,7 +346,7 @@ export default function BuildDemo() {
               )}
             </div>
           </div>
-          <p className="mt-3 text-[11px] text-slate-500">
+          <p className="mt-3 text-sm text-slate-500">
             Sample client build (demo data). Paying customers get their own niche,
             copy, and design theme — same pipeline.
           </p>

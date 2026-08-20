@@ -26,14 +26,14 @@ export default function PickYourDesign() {
 
       <div className="relative mx-auto max-w-7xl px-6">
         <div className="max-w-2xl space-y-3">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-wider text-slate-200">
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-wider text-slate-200">
             <span className="h-1.5 w-1.5 rounded-full bg-brand-400" />
             Pick your design
           </div>
           <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl lg:text-4xl">
             Bring your business name to life
           </h2>
-          <p className="text-sm text-slate-300 sm:text-base">
+          <p className="text-base text-slate-300">
             Type your name and service — the live preview fills in headlines,
             priced services, testimonials, and CTAs across all 8 layouts.
           </p>
@@ -49,7 +49,7 @@ export default function PickYourDesign() {
               value={businessName}
               onChange={(event) => setBusinessName(event.target.value)}
               placeholder="e.g. Harbor Barbers"
-              className="w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-brand-400/60"
+              className="w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-base text-white outline-none transition placeholder:text-slate-500 focus:border-brand-400/60"
             />
           </label>
           <label className="block">
@@ -61,7 +61,7 @@ export default function PickYourDesign() {
               value={keyword}
               onChange={(event) => setKeyword(event.target.value)}
               placeholder="e.g. fades & beard trims"
-              className="w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-brand-400/60"
+              className="w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-base text-white outline-none transition placeholder:text-slate-500 focus:border-brand-400/60"
             />
           </label>
         </div>
@@ -93,7 +93,7 @@ export default function PickYourDesign() {
               <span className="h-2.5 w-2.5 rounded-full bg-amber-400/80" />
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/80" />
             </div>
-            <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-wider text-slate-300">
+            <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-wider text-slate-300">
               Live preview · {active.name}
             </div>
           </div>

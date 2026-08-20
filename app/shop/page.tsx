@@ -18,7 +18,7 @@ export default function ShopPage() {
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
           Featured Products
         </h1>
-        <p className="text-sm text-slate-400 sm:text-base">
+        <p className="text-base text-slate-400">
           Digital kits, affiliate bundles, and contact-only services. Browse
           the catalog, open a product, or add purchasable items to your cart.
         </p>
@@ -42,14 +42,14 @@ export default function ShopPage() {
                 className="object-cover transition duration-300 group-hover:scale-[1.03]"
               />
               {product.badge ? (
-                <span className="absolute top-3 right-3 rounded-full bg-brand-500/25 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-brand-200 ring-1 ring-brand-400/40 backdrop-blur">
+                <span className="absolute top-3 right-3 rounded-full bg-brand-500/25 px-2.5 py-1 text-xs font-semibold uppercase tracking-wider text-brand-200 ring-1 ring-brand-400/40 backdrop-blur">
                   {product.badge}
                 </span>
               ) : null}
             </Link>
 
             <div className="flex flex-1 flex-col p-5">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-brand-300">
+              <p className="text-xs font-semibold uppercase tracking-wider text-brand-300">
                 {product.category}
               </p>
               <h2 className="mt-1 text-lg font-semibold text-white">
@@ -60,7 +60,7 @@ export default function ShopPage() {
                   {product.name}
                 </Link>
               </h2>
-              <p className="mt-2 flex-1 text-sm text-slate-400">
+              <p className="mt-2 flex-1 text-base text-slate-400">
                 {product.description}
               </p>
 

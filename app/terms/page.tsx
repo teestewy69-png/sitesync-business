@@ -14,11 +14,11 @@ export default function TermsPage() {
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
           Terms of Service
         </h1>
-        <p className="mt-3 text-sm text-slate-400">
+        <p className="mt-3 text-base text-slate-400">
           Effective date: August 13, 2026
         </p>
 
-        <div className="mt-8 space-y-8 text-sm leading-7 text-slate-300">
+        <div className="mt-8 space-y-8 text-base leading-7 text-slate-300">
           <section>
             <p>
               These Terms of Service (“Terms”) govern your use of the website at{" "}

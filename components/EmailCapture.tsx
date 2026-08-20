@@ -55,7 +55,7 @@ export default function EmailCapture() {
         <h2 className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl">
           {emailCapture.title}
         </h2>
-        <p className="mx-auto mt-3 max-w-xl text-sm text-slate-400 sm:text-base">
+        <p className="mx-auto mt-3 max-w-xl text-base text-slate-400">
           {emailCapture.subtitle}
         </p>
 
@@ -90,12 +90,12 @@ export default function EmailCapture() {
         )}
 
         {status === "error" && (
-          <p className="mx-auto mt-3 max-w-md text-xs text-red-400">
+          <p className="mx-auto mt-3 max-w-md text-sm text-red-400">
             {errorMessage}
           </p>
         )}
 
-        <p className="mx-auto mt-5 max-w-md text-[11px] text-slate-400">
+        <p className="mx-auto mt-5 max-w-md text-sm text-slate-400">
           {emailCapture.finePrint}{" "}
           <a
             href={`mailto:${footer.email}`}

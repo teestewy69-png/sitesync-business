@@ -3,7 +3,7 @@ export default function WebsiteFactoryHeader() {
     <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-4">
       <div>
         <h1 className="text-lg font-semibold text-white">Website Factory</h1>
-        <p className="text-xs text-slate-400">
+        <p className="text-base text-slate-400">
           Create projects, generate sites, then audit and optimize them with the
           SEO Intelligence engine.
         </p>

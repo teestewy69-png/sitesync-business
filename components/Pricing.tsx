@@ -14,7 +14,7 @@ export default function Pricing() {
           <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
             {pricing.title}
           </h2>
-          <p className="mt-4 text-slate-400">{pricing.subtitle}</p>
+          <p className="mt-4 text-base leading-relaxed text-slate-400">{pricing.subtitle}</p>
         </div>
 
         <div className="mx-auto mt-14 grid max-w-4xl gap-8 lg:grid-cols-5">
@@ -35,7 +35,7 @@ export default function Pricing() {
               </span>
               <span className="text-slate-400">one-time</span>
             </p>
-            <p className="mt-4 text-sm leading-relaxed text-slate-400">
+            <p className="mt-4 text-base leading-relaxed text-slate-400">
               {pricing.build.detail}
             </p>
             <a
@@ -68,14 +68,14 @@ export default function Pricing() {
                 {pricing.maintenance.price}
               </span>
             </p>
-            <p className="mt-4 text-sm text-slate-400">
+            <p className="mt-4 text-base text-slate-400">
               {pricing.maintenance.detail}
             </p>
             <ul className="mt-6 space-y-3">
               {pricing.maintenance.features.map((feature) => (
                 <li key={feature} className="flex items-start gap-3">
                   <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand-400" />
-                  <span className="text-sm text-slate-300">{feature}</span>
+                  <span className="text-base text-slate-300">{feature}</span>
                 </li>
               ))}
             </ul>
@@ -106,11 +106,11 @@ export default function Pricing() {
             {onboarding.items.map((item) => (
               <li key={item} className="flex items-start gap-3">
                 <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand-400" />
-                <span className="text-sm text-slate-300">{item}</span>
+                <span className="text-base text-slate-300">{item}</span>
               </li>
             ))}
           </ul>
-          <p className="mt-6 text-sm text-slate-500">{onboarding.note}</p>
+          <p className="mt-6 text-base text-slate-500">{onboarding.note}</p>
         </div>
       </div>
     </section>

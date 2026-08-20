@@ -4,7 +4,7 @@ export default function CheckoutPage() {
       <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
         Checkout
       </h1>
-      <p className="mt-3 text-sm text-slate-300">
+      <p className="mt-3 text-base text-slate-300">
         Sample checkout page for product sales, affiliate-ready offers, and
         digital product transactions.
       </p>
@@ -75,7 +75,7 @@ export default function CheckoutPage() {
           <h2 className="text-lg font-semibold text-slate-50">
             Order Summary
           </h2>
-          <div className="mt-4 space-y-3 text-sm text-slate-300">
+          <div className="mt-4 space-y-3 text-base text-slate-300">
             <div className="flex justify-between">
               <span>Website Design Digital Product Bundle</span>
               <span>$24.99</span>
@@ -95,7 +95,7 @@ export default function CheckoutPage() {
           >
             Complete Secure Checkout
           </button>
-          <p className="mt-3 text-[11px] text-slate-400">
+          <p className="mt-3 text-sm text-slate-400">
             Powered by Stripe • Secure checkout demo for submission and
             storefront preview
           </p>

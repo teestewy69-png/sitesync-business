@@ -12,14 +12,14 @@ export default function RealSmallBusinessWebsiteNeeds() {
         </Link>
 
         <header className="space-y-2">
-          <p className="text-[11px] text-slate-400">
+          <p className="text-xs text-slate-400">
             Published on {new Date("2024-08-01").toLocaleDateString()}
           </p>
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
             What a Real Small Business Website Actually Needs to Have (And Most
             Don’t)
           </h1>
-          <p className="text-sm text-slate-300 sm:text-base">
+          <p className="text-base text-slate-300">
             Most small business websites look “fine” at a glance—but
             they&apos;re missing 3–5 critical elements that cost you leads every
             single week. Use this guide to see if your site is really doing its
@@ -27,7 +27,7 @@ export default function RealSmallBusinessWebsiteNeeds() {
           </p>
         </header>
 
-        <div className="mt-8 space-y-6 text-sm text-slate-200 sm:text-base">
+        <div className="mt-8 space-y-6 text-base text-slate-200">
           <section>
             <h2 className="text-lg font-semibold text-slate-50 sm:text-xl">
               1. A clear hero section that says who you are and what you do

@@ -32,7 +32,7 @@ export default function DesignShowcase() {
           <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
             8 designs
           </h2>
-          <p className="text-sm text-slate-300 sm:text-base">
+          <p className="text-base text-slate-300">
             Ultra-modern layouts with different structure and personality —
             watching Sitesync Business rotate through each one. This is the live
             sitesinc.co offer, not a fake demo client.
@@ -66,7 +66,7 @@ export default function DesignShowcase() {
               <span className="h-2.5 w-2.5 rounded-full bg-amber-400/80" />
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/80" />
             </div>
-            <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-wider text-slate-300">
+            <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-wider text-slate-300">
               Sitesync · {active.name}
             </div>
           </div>

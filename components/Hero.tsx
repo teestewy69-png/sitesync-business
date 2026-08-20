@@ -45,17 +45,17 @@ export default function Hero() {
             {hero.headline}
           </h1>
 
-          <p className="text-balance text-sm text-slate-300 sm:text-base">
+          <p className="text-balance text-base text-slate-300">
             {hero.subheadline}
           </p>
 
-          <div className="inline-flex items-center gap-3 rounded-xl border border-brand-400/30 bg-brand-500/10 px-4 py-2 text-xs sm:text-sm">
+          <div className="inline-flex items-center gap-3 rounded-xl border border-brand-400/30 bg-brand-500/10 px-4 py-2 text-sm">
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-400/20 text-brand-300">
               50%
             </div>
             <div>
               <p className="font-medium text-brand-200">{hero.offer.title}</p>
-              <p className="text-[11px] text-brand-100/80 sm:text-xs">
+              <p className="text-base text-brand-100/80">
                 {hero.offer.subtitle}
               </p>
             </div>
@@ -82,17 +82,17 @@ export default function Hero() {
             </button>
           </div>
 
-          <div className="space-y-1 text-xs text-slate-300 sm:text-sm">
+          <div className="space-y-1 text-base text-slate-300">
             <p>{hero.pricingLine}</p>
             <p className="text-slate-400">{hero.stackLine}</p>
-            <p className="text-[11px] text-emerald-300/90 sm:text-xs">
+            <p className="text-base text-emerald-300/90">
               Spots left at 50% off:{" "}
               <span className="font-semibold">{spotsLeft}</span> /{" "}
               {hero.offer.totalSpots}
             </p>
           </div>
 
-          <p className="pt-1 text-[11px] text-slate-400 sm:text-xs">
+          <p className="pt-1 text-base text-slate-400">
             {hero.trustLine}
           </p>
         </div>
@@ -104,7 +104,7 @@ export default function Hero() {
                 <span className="h-2 w-2 rounded-full bg-emerald-400" />
                 Live · sitesinc.co
               </span>
-              <span className="rounded-full bg-white/5 px-3 py-1 text-[10px] uppercase tracking-wider">
+              <span className="rounded-full bg-white/5 px-3 py-1 text-xs uppercase tracking-wider">
                 Sitesync Business
               </span>
             </div>
@@ -113,7 +113,7 @@ export default function Hero() {
                 <p className="text-lg font-semibold tracking-tight text-white">
                   {SITESYNC_SITE.business}
                 </p>
-                <p className="mt-2 text-xs leading-relaxed text-slate-300">
+                <p className="mt-2 text-base leading-relaxed text-slate-300">
                   {SITESYNC_SITE.tagline}
                 </p>
               </div>
@@ -123,17 +123,17 @@ export default function Hero() {
                     key={service.name}
                     className="rounded-2xl border border-white/5 bg-surface/80 p-3"
                   >
-                    <p className="text-[10px] font-medium leading-tight text-slate-100">
+                    <p className="text-sm font-medium leading-tight text-slate-100">
                       {service.name}
                     </p>
-                    <p className="mt-1 text-[10px] font-semibold text-brand-300">
+                    <p className="mt-1 text-sm font-semibold text-brand-300">
                       {service.price}
                     </p>
                   </div>
                 ))}
               </div>
               <div className="mt-5 flex items-center justify-between gap-3">
-                <div className="space-y-1 text-[11px] text-slate-300">
+                <div className="space-y-1 text-base text-slate-300">
                   <p className="font-medium text-slate-100">8 design styles</p>
                   <p className="text-slate-400">
                     Same live offer, eight different layouts.
@@ -141,7 +141,7 @@ export default function Hero() {
                 </div>
                 <button
                   type="button"
-                  className="shrink-0 rounded-full bg-white/10 px-4 py-2 text-[11px] font-medium text-slate-50 transition hover:bg-brand-500 hover:text-zinc-950"
+                  className="shrink-0 rounded-full bg-white/10 px-4 py-2 text-xs font-medium text-slate-50 transition hover:bg-brand-500 hover:text-zinc-950"
                   onClick={() => scrollToId("designs")}
                 >
                   See 8 designs

@@ -30,7 +30,7 @@ function SiteChrome({
     <div className="flex items-center justify-between rounded-2xl border border-white/5 bg-white/[0.03] px-4 py-3">
       <div className="flex items-center gap-3">
         <div
-          className="flex h-8 w-8 items-center justify-center rounded-full text-[10px] font-bold text-black"
+          className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-black"
           style={{
             background: `linear-gradient(135deg, ${accent}, rgba(255,255,255,0.85))`,
           }}
@@ -39,7 +39,7 @@ function SiteChrome({
         </div>
         <span className="text-sm font-semibold text-slate-100">{business}</span>
       </div>
-      <div className="hidden items-center gap-4 text-[11px] text-slate-400 sm:flex">
+      <div className="hidden items-center gap-4 text-xs text-slate-400 sm:flex">
         <span>Services</span>
         <span>Reviews</span>
         <span>Contact</span>
@@ -87,7 +87,7 @@ function NeonGlass({
   return (
     <>
       <div className="rounded-[26px] border border-white/10 bg-white/[0.05] p-6 backdrop-blur">
-        <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">
+        <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
           Local experts
         </p>
         <h3
@@ -99,7 +99,7 @@ function NeonGlass({
         >
           {content.business}
         </h3>
-        <p className="mt-3 max-w-2xl text-sm text-slate-300">{content.tagline}</p>
+        <p className="mt-3 max-w-2xl text-base text-slate-300">{content.tagline}</p>
         <div className="mt-5 flex flex-wrap gap-3">
           <CtaButton label={content.cta} accent={accent} darkText />
           <GhostButton label={content.phone} />
@@ -126,7 +126,7 @@ function PurpleGradient({
           <h3 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             {content.business}
           </h3>
-          <p className="mt-3 text-sm text-slate-300">{content.tagline}</p>
+          <p className="mt-3 text-base text-slate-300">{content.tagline}</p>
           <div className="mt-5 flex flex-wrap gap-3">
             <div
               className="inline-flex rounded-full px-5 py-3 text-sm font-semibold text-white"
@@ -167,7 +167,7 @@ function MinimalDark({
           <h3 className="text-3xl font-semibold tracking-tight text-slate-50 sm:text-4xl">
             {content.business}
           </h3>
-          <p className="mt-3 text-sm text-slate-300">{content.tagline}</p>
+          <p className="mt-3 text-base text-slate-300">{content.tagline}</p>
         </div>
         <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {content.services.map((service) => (
@@ -185,7 +185,7 @@ function MinimalDark({
               <p className="mt-1 text-xs font-semibold" style={{ color: accent }}>
                 {service.price}
               </p>
-              <p className="mt-2 text-[11px] leading-relaxed text-slate-400">
+              <p className="mt-2 text-base leading-relaxed text-slate-400">
                 {service.blurb}
               </p>
             </div>
@@ -222,7 +222,7 @@ function SplitHero({
           <h3 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             {content.business}
           </h3>
-          <p className="mt-3 text-sm text-slate-300">{content.tagline}</p>
+          <p className="mt-3 text-base text-slate-300">{content.tagline}</p>
           <div className="mt-5 space-y-3">
             {content.services.slice(0, 2).map((service) => (
               <div
@@ -233,7 +233,7 @@ function SplitHero({
                   <p className="text-sm font-medium text-slate-100">
                     {service.name}
                   </p>
-                  <p className="text-[11px] text-slate-400">{service.blurb}</p>
+                  <p className="text-base text-slate-400">{service.blurb}</p>
                 </div>
                 <span
                   className="shrink-0 text-sm font-semibold"
@@ -270,7 +270,7 @@ function CardGrid({
             <h3 className="text-3xl font-semibold tracking-tight sm:text-4xl">
               {content.business}
             </h3>
-            <p className="mt-3 max-w-xl text-sm text-slate-300">
+            <p className="mt-3 max-w-xl text-base text-slate-300">
               {content.tagline}
             </p>
           </div>
@@ -315,7 +315,7 @@ function BoldType({
         <h3 className="text-4xl font-semibold tracking-tight sm:text-5xl">
           {content.business}
         </h3>
-        <p className="mt-4 max-w-2xl text-sm text-slate-300">{content.tagline}</p>
+        <p className="mt-4 max-w-2xl text-base text-slate-300">{content.tagline}</p>
         <div className="mt-5 flex flex-wrap gap-3">
           <CtaButton label={content.cta} accent={accent} />
           <GhostButton label={content.phone} />
@@ -330,7 +330,9 @@ function BoldType({
               <p className="mt-1 text-sm font-semibold" style={{ color: accent }}>
                 {service.price}
               </p>
-              <p className="mt-2 text-xs text-slate-400">{service.blurb}</p>
+              <p className="mt-2 text-base leading-relaxed text-slate-400">
+                {service.blurb}
+              </p>
             </div>
           ))}
         </div>
@@ -362,7 +364,7 @@ function PhotoFocus({
           <h3 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             {content.business}
           </h3>
-          <p className="mt-3 text-sm text-slate-300">{content.tagline}</p>
+          <p className="mt-3 text-base text-slate-300">{content.tagline}</p>
           <div className="mt-5 space-y-2">
             {content.services.slice(0, 3).map((service) => (
               <div
@@ -378,13 +380,13 @@ function PhotoFocus({
           </div>
         </div>
         <div className="rounded-[26px] border border-white/5 bg-white/[0.03] p-6">
-          <p className="text-[11px] uppercase tracking-wider text-slate-400">
+          <p className="text-xs uppercase tracking-wider text-slate-400">
             Customer feedback
           </p>
-          <p className="mt-3 text-sm leading-relaxed text-slate-200">
+          <p className="mt-3 text-base leading-relaxed text-slate-200">
             “{content.testimonials[0]?.quote}”
           </p>
-          <p className="mt-3 text-xs font-medium text-slate-400">
+          <p className="mt-3 text-sm font-medium text-slate-400">
             — {content.testimonials[0]?.name}
           </p>
           <div className="mt-5">
@@ -410,7 +412,7 @@ function FunnelReady({
         <h3 className="text-3xl font-semibold tracking-tight sm:text-4xl">
           {content.business}
         </h3>
-        <p className="mt-3 text-sm text-slate-300">{content.tagline}</p>
+        <p className="mt-3 text-base text-slate-300">{content.tagline}</p>
         <div className="mt-5 flex flex-wrap gap-3">
           <CtaButton label={content.cta} accent={accent} />
           <GhostButton label={`Call ${content.phone}`} />
@@ -430,7 +432,7 @@ function FunnelReady({
                 {index + 1}
               </div>
               <p className="mt-3 text-sm font-medium text-slate-100">{step}</p>
-              <p className="mt-1 text-[11px] text-slate-400">
+              <p className="mt-1 text-sm text-slate-400">
                 {content.services[index]?.name ?? "Next step"} ·{" "}
                 {content.services[index]?.price ?? ""}
               </p>
@@ -439,16 +441,16 @@ function FunnelReady({
         )}
       </div>
       <div className="rounded-[26px] border border-white/5 bg-white/[0.03] p-5">
-        <p className="text-[11px] uppercase tracking-wider text-slate-400">
+        <p className="text-xs uppercase tracking-wider text-slate-400">
           What neighbors say
         </p>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           {content.testimonials.slice(0, 2).map((item) => (
             <div key={item.name} className="rounded-xl bg-black/25 p-4">
-              <p className="text-xs leading-relaxed text-slate-300">
+              <p className="text-base leading-relaxed text-slate-300">
                 “{item.quote}”
               </p>
-              <p className="mt-2 text-[11px] font-medium text-slate-400">
+              <p className="mt-2 text-sm font-medium text-slate-400">
                 — {item.name}
               </p>
             </div>
@@ -485,10 +487,10 @@ function RoofPanel({
         }}
       />
       <div className="relative flex h-full min-h-[150px] flex-col justify-end rounded-[18px] border border-white/10 bg-black/25 p-4 backdrop-blur-sm">
-        <p className="text-[11px] uppercase tracking-wider text-slate-300">
+        <p className="text-xs uppercase tracking-wider text-slate-300">
           {label}
         </p>
-        <p className="mt-1 text-sm font-medium text-slate-100">{caption}</p>
+        <p className="mt-1 text-base font-medium text-slate-100">{caption}</p>
       </div>
     </div>
   );
@@ -516,7 +518,7 @@ function ServicesRow({
           <p className="mt-1 text-xs font-semibold" style={{ color: accent }}>
             {service.price}
           </p>
-          <p className="mt-2 text-[11px] leading-relaxed text-slate-400">
+          <p className="mt-2 text-base leading-relaxed text-slate-400">
             {service.blurb}
           </p>
         </div>
@@ -537,10 +539,10 @@ function TestimonialsRow({
           key={item.name}
           className="rounded-[22px] border border-white/5 bg-white/[0.03] p-4"
         >
-          <p className="text-xs leading-relaxed text-slate-300">
+          <p className="text-base leading-relaxed text-slate-300">
             “{item.quote}”
           </p>
-          <p className="mt-3 text-[11px] font-medium text-slate-400">
+          <p className="mt-3 text-sm font-medium text-slate-400">
             — {item.name}
           </p>
         </div>
@@ -561,7 +563,7 @@ function TrustStrip({
       {signals.map((signal) => (
         <span
           key={signal}
-          className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[11px] text-slate-300"
+          className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-sm text-slate-300"
         >
           <span
             className="h-1.5 w-1.5 rounded-full"
@@ -586,7 +588,7 @@ function FooterBand({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-medium text-slate-100">{content.business}</p>
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-sm text-slate-400">
             {content.footerNote ??
               `Call ${content.phone} · Licensed · Local · Ready this week`}
           </p>
