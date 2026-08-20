@@ -180,7 +180,7 @@ export default function RealSmallBusinessWebsiteNeeds() {
             </p>
             <p className="mt-2">
               <Link
-                href="/"
+                href="/app"
                 className="font-semibold text-brand-300 hover:underline"
               >
                 Click here to see how Sitesync Business can build it for you.

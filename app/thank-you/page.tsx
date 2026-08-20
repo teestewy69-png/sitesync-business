@@ -63,7 +63,7 @@ export default async function ThankYouPage({
           .
         </p>
         <Link
-          href="/"
+          href="/app"
           className="inline-flex items-center justify-center rounded-full bg-gradient-to-b from-brand-300 to-brand-600 px-6 py-2.5 text-sm font-semibold text-zinc-950 shadow-glow transition hover:from-brand-200 hover:to-brand-500"
         >
           Back to Sitesync Business

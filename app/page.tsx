@@ -1,35 +1,12 @@
-import WebsiteFactoryHeader from "@/components/WebsiteFactoryHeader";
-import Hero from "@/components/Hero";
-import DesignShowcase from "@/components/DesignShowcase";
-import PickYourDesign from "@/components/PickYourDesign";
-import Pricing from "@/components/Pricing";
-import Process from "@/components/Process";
-import About from "@/components/About";
-import ContentEngine from "@/components/ContentEngine";
-import Proof from "@/components/Proof";
-import FAQ from "@/components/FAQ";
-import ProductTeaser from "@/components/ProductTeaser";
-import EmailCapture from "@/components/EmailCapture";
-import Footer from "@/components/Footer";
+import type { Metadata } from "next";
+import ComingSoon from "@/components/ComingSoon";
 
-export default function Home() {
-  return (
-    <>
-      <div className="mx-auto w-full max-w-6xl px-6 pt-6">
-        <WebsiteFactoryHeader />
-      </div>
-      <Hero />
-      <DesignShowcase />
-      <PickYourDesign />
-      <Pricing />
-      <Process />
-      <About />
-      <ContentEngine />
-      <Proof />
-      <FAQ />
-      <ProductTeaser />
-      <EmailCapture />
-      <Footer />
-    </>
-  );
+export const metadata: Metadata = {
+  title: "Sitesinc — Coming Soon",
+  description:
+    "Sitesinc is a website factory. Done-for-you site generation, SEO, monetization, and SEO Intelligence. Join the waitlist.",
+};
+
+export default function LandingPage() {
+  return <ComingSoon />;
 }

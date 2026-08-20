@@ -1,7 +1,14 @@
+"use client";
+
+import { usePathname } from "next/navigation";
+
 const TICKER_COPY =
   "Be one of the 1st 10 customers and receive 1/2 off on your website build";
 
 export default function AnnouncementTicker() {
+  const pathname = usePathname();
+  if (pathname === "/") return null;
+
   // Duplicate segments for a seamless CSS loop (translate -50%).
   const segments = Array.from({ length: 6 }, (_, i) => (
     <span key={i} className="inline-flex shrink-0 items-center gap-10 px-5">
