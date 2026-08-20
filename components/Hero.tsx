@@ -49,7 +49,7 @@ export default function Hero() {
             {hero.subheadline}
           </p>
 
-          <div className="inline-flex items-center gap-3 rounded-xl border border-brand-400/30 bg-brand-500/10 px-4 py-2 text-sm">
+          <div className="inline-flex items-center gap-3 rounded-xl border border-brand-400/30 bg-brand-500/10 px-4 py-2 text-base">
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-400/20 text-brand-300">
               50%
             </div>
