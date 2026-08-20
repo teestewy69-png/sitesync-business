@@ -41,61 +41,63 @@ export type MiniSiteContent = {
   tagline: string;
   cta: string;
   phone: string;
+  footerNote?: string;
   services: MiniSiteService[];
   testimonials: MiniSiteTestimonial[];
   trustSignals: string[];
 };
 
-export const TOMS_ROOFS: MiniSiteContent = {
-  business: "Tom's Roofs",
+export const SITESYNC_SITE: MiniSiteContent = {
+  business: "Sitesync Business",
   tagline:
-    "Storm-ready roofing for homes that need repair, replacement, and peace of mind.",
-  cta: "Get a Free Quote",
-  phone: "(555) 014-7782",
+    "Ultra-modern websites that finally make your small business look big. Live now at sitesinc.co.",
+  cta: "Reserve My Build",
+  phone: "save@sitesinc.co",
+  footerNote: "save@sitesinc.co · Live at sitesinc.co · You own the code",
   services: [
     {
-      name: "Roof Repair",
-      price: "From $349",
-      blurb: "Leak fixes, shingle replacement, and storm damage patchwork.",
+      name: "Complete website build",
+      price: "$749.50",
+      blurb: "Launch price for the first 10 businesses. Regular $1,499, one-time.",
     },
     {
-      name: "New Roof",
-      price: "From $8,500",
-      blurb: "Full tear-off and install with premium materials.",
+      name: "Netlify hosting",
+      price: "Included",
+      blurb: "SSL, global CDN, and your domain connected — this site is the proof.",
     },
     {
-      name: "Gutter Service",
-      price: "From $149",
-      blurb: "Cleaning, realignment, and downspout upgrades.",
+      name: "SEO, funnels & Stripe",
+      price: "Included",
+      blurb: "On-page SEO, lead capture, and checkout ready from day one.",
     },
     {
-      name: "Inspection",
-      price: "Free",
-      blurb: "On-site assessment with a clear written estimate.",
+      name: "Optional maintenance",
+      price: "$125/mo",
+      blurb: "Updates, monitoring, and small text/image changes if you want them.",
     },
   ],
   testimonials: [
     {
-      name: "Maria K.",
+      name: "sitesinc.co",
       quote:
-        "Tom's Roofs fixed our leak the same week and left the yard spotless.",
+        "This live site is the product — Next.js, Tailwind, Stripe, and Netlify hosting included.",
     },
     {
-      name: "James R.",
+      name: "Launch offer",
       quote:
-        "New roof looks incredible. Fair price, clear timeline, zero surprises.",
+        "First 10 businesses lock in 50% off. One-time build, no subscription, you own the code.",
     },
     {
-      name: "Diane P.",
+      name: "Turnaround",
       quote:
-        "The free inspection sold us — honest advice and a crew we trust.",
+        "5–7 business days from content received to a hosted, money-ready site.",
     },
   ],
   trustSignals: [
-    "Licensed & insured",
-    "5-star local reviews",
-    "Same-week scheduling",
-    "Written estimates",
+    "You own the code",
+    "5–7 day turnaround",
+    "Stripe-ready",
+    "Hosting included",
   ],
 };
 

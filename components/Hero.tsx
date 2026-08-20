@@ -3,6 +3,7 @@
 import { useState } from "react";
 import content from "@/content.json";
 import { scrollToId } from "@/lib/scroll";
+import { SITESYNC_SITE } from "@/lib/design-styles";
 
 export default function Hero() {
   const { hero, site, pricing } = content;
@@ -101,28 +102,41 @@ export default function Hero() {
             <div className="mb-4 flex items-center justify-between text-xs text-slate-300">
               <span className="inline-flex items-center gap-1">
                 <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                Sample layout
+                Live · sitesinc.co
               </span>
               <span className="rounded-full bg-white/5 px-3 py-1 text-[10px] uppercase tracking-wider">
-                Ultra Modern Dark
+                Sitesync Business
               </span>
             </div>
             <div className="space-y-4">
-              <div className="h-8 w-2/3 rounded-lg bg-gradient-to-r from-brand-300 to-brand-600" />
-              <div className="space-y-2">
-                <div className="h-2.5 w-5/6 rounded-full bg-white/10" />
-                <div className="h-2.5 w-3/4 rounded-full bg-white/5" />
+              <div>
+                <p className="text-lg font-semibold tracking-tight text-white">
+                  {SITESYNC_SITE.business}
+                </p>
+                <p className="mt-2 text-xs leading-relaxed text-slate-300">
+                  {SITESYNC_SITE.tagline}
+                </p>
               </div>
-              <div className="mt-4 grid grid-cols-3 gap-3">
-                <div className="h-20 rounded-2xl bg-surface/80" />
-                <div className="h-20 rounded-2xl bg-surface/60" />
-                <div className="h-20 rounded-2xl bg-surface/40" />
+              <div className="grid grid-cols-3 gap-3">
+                {SITESYNC_SITE.services.slice(0, 3).map((service) => (
+                  <div
+                    key={service.name}
+                    className="rounded-2xl border border-white/5 bg-surface/80 p-3"
+                  >
+                    <p className="text-[10px] font-medium leading-tight text-slate-100">
+                      {service.name}
+                    </p>
+                    <p className="mt-1 text-[10px] font-semibold text-brand-300">
+                      {service.price}
+                    </p>
+                  </div>
+                ))}
               </div>
               <div className="mt-5 flex items-center justify-between gap-3">
                 <div className="space-y-1 text-[11px] text-slate-300">
                   <p className="font-medium text-slate-100">8 design styles</p>
                   <p className="text-slate-400">
-                    Distinct layouts with their own structure and personality.
+                    Same live offer, eight different layouts.
                   </p>
                 </div>
                 <button

@@ -141,7 +141,8 @@ function PurpleGradient({
         </div>
         <RoofPanel
           accent={accent}
-          label="Before / after gallery"
+          label="Live pages"
+          caption="Dark, glossy layouts built to convert."
           gradient={`linear-gradient(135deg, ${accent}99, rgba(255,255,255,0.04), rgba(0,0,0,0.35))`}
         />
       </div>
@@ -213,7 +214,8 @@ function SplitHero({
       <div className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
         <RoofPanel
           accent={accent}
-          label="Roof line at dusk"
+          label="Hero visual"
+          caption="Clean lines. Fast pages. Built to convert."
           gradient="linear-gradient(160deg, #2a2318 0%, #5c4a2e 40%, #1a1612 100%)"
         />
         <div className="rounded-[26px] border border-white/5 bg-white/[0.03] p-6">
@@ -350,7 +352,8 @@ function PhotoFocus({
     <>
       <RoofPanel
         accent={accent}
-        label="Featured project"
+        label="Live at sitesinc.co"
+        caption="Dark, glossy, money-ready pages — this is the real site."
         tall
         gradient="linear-gradient(180deg, #3d3428 0%, #1a1612 55%, #0c0b09 100%)"
       />
@@ -460,11 +463,13 @@ function FunnelReady({
 function RoofPanel({
   accent,
   label,
+  caption = "Clean lines. Fast pages. Built to convert.",
   gradient,
   tall,
 }: {
   accent: string;
   label: string;
+  caption?: string;
   gradient: string;
   tall?: boolean;
 }) {
@@ -483,9 +488,7 @@ function RoofPanel({
         <p className="text-[11px] uppercase tracking-wider text-slate-300">
           {label}
         </p>
-        <p className="mt-1 text-sm font-medium text-slate-100">
-          Clean lines. Strong finish. Built to last.
-        </p>
+        <p className="mt-1 text-sm font-medium text-slate-100">{caption}</p>
       </div>
     </div>
   );
@@ -584,7 +587,8 @@ function FooterBand({
         <div>
           <p className="text-sm font-medium text-slate-100">{content.business}</p>
           <p className="mt-1 text-xs text-slate-400">
-            Call {content.phone} · Licensed · Local · Ready this week
+            {content.footerNote ??
+              `Call ${content.phone} · Licensed · Local · Ready this week`}
           </p>
         </div>
         <div
