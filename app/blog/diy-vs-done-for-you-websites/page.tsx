@@ -12,13 +12,13 @@ export default function DiyVsDoneForYouWebsites() {
         </Link>
 
         <header className="space-y-2">
-          <p className="text-[11px] text-slate-400">
+          <p className="text-xs text-slate-400">
             Published on {new Date("2024-08-05").toLocaleDateString()}
           </p>
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
             DIY Website Builders vs. Done-For-You: What Actually Costs You More
           </h1>
-          <p className="text-sm text-slate-300 sm:text-base">
+          <p className="text-base text-slate-300">
             DIY website builders promise a “free” or cheap site in a weekend. A
             done-for-you build looks more expensive upfront. But when
             you&apos;re running a real business, the cheapest option on day one
@@ -27,7 +27,7 @@ export default function DiyVsDoneForYouWebsites() {
           </p>
         </header>
 
-        <div className="mt-8 space-y-6 text-sm text-slate-200 sm:text-base">
+        <div className="mt-8 space-y-6 text-base text-slate-200">
           <section>
             <h2 className="text-lg font-semibold text-slate-50 sm:text-xl">
               The promise of DIY builders (and what they don&apos;t say)
@@ -168,7 +168,7 @@ export default function DiyVsDoneForYouWebsites() {
             <p className="mt-2">
               Here&apos;s a simple comparison to make the trade-offs clearer:
             </p>
-            <div className="mt-3 grid gap-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-xs text-slate-200 sm:grid-cols-2 sm:text-sm">
+            <div className="mt-3 grid gap-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-base text-slate-200 sm:grid-cols-2">
               <div>
                 <p className="font-semibold text-slate-50">DIY builder</p>
                 <ul className="mt-2 list-disc pl-5">
@@ -270,7 +270,7 @@ export default function DiyVsDoneForYouWebsites() {
             </p>
             <p className="mt-2">
               <Link
-                href="/"
+                href="/app"
                 className="font-semibold text-brand-300 hover:underline"
               >
                 Click here to see how Sitesync Business can build it for you.

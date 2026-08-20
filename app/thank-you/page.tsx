@@ -47,11 +47,11 @@ export default async function ThankYouPage({
     <main className="flex min-h-screen items-center justify-center bg-black px-6 text-white">
       <div className="max-w-md space-y-4 text-center">
         <h1 className="text-2xl font-semibold tracking-tight">{copy.title}</h1>
-        <p className="text-sm text-slate-300">
+        <p className="text-base text-slate-300">
           {copy.body} We&apos;ll reach you from{" "}
           <span className="font-semibold text-brand-300">{email}</span>.
         </p>
-        <p className="text-xs text-slate-400">
+        <p className="text-sm text-slate-400">
           If you don&apos;t see our email, check your spam folder or contact us
           directly at{" "}
           <a
@@ -63,7 +63,7 @@ export default async function ThankYouPage({
           .
         </p>
         <Link
-          href="/"
+          href="/app"
           className="inline-flex items-center justify-center rounded-full bg-gradient-to-b from-brand-300 to-brand-600 px-6 py-2.5 text-sm font-semibold text-zinc-950 shadow-glow transition hover:from-brand-200 hover:to-brand-500"
         >
           Back to Sitesync Business

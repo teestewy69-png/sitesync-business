@@ -6,7 +6,7 @@ export default function CartPage() {
       <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
         Cart
       </h1>
-      <p className="mt-3 text-sm text-slate-300">
+      <p className="mt-3 text-base text-slate-300">
         Sample cart view for ecommerce and affiliate-ready storefront layouts.
       </p>
       <div className="mt-10 grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
@@ -38,7 +38,7 @@ export default function CartPage() {
           <h2 className="text-lg font-semibold text-slate-50">
             Order Summary
           </h2>
-          <div className="mt-4 space-y-2 text-sm text-slate-300">
+          <div className="mt-4 space-y-2 text-base text-slate-300">
             <div className="flex justify-between">
               <span>Subtotal</span>
               <span>$99.99</span>

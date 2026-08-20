@@ -19,7 +19,7 @@ export default function Proof() {
           <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
             {proof.title}
           </h2>
-          <p className="text-sm text-slate-300 sm:text-base">{proof.subtitle}</p>
+          <p className="text-base text-slate-300">{proof.subtitle}</p>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">
@@ -31,10 +31,10 @@ export default function Proof() {
               <p className="text-2xl font-semibold tracking-tight text-brand-300 sm:text-3xl">
                 {outcome.stat}
               </p>
-              <p className="mt-1 text-sm font-semibold text-slate-50">
+              <p className="mt-1 text-base font-semibold text-slate-50">
                 {outcome.label}
               </p>
-              <p className="mt-2 text-xs text-slate-400 sm:text-sm">
+              <p className="mt-2 text-base text-slate-400">
                 {outcome.detail}
               </p>
             </div>

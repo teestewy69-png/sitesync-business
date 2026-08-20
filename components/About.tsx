@@ -15,7 +15,7 @@ export default function About() {
           {about.title}
         </h2>
         {about.paragraphs.map((paragraph) => (
-          <p key={paragraph} className="text-sm text-slate-300 sm:text-base">
+          <p key={paragraph} className="text-base text-slate-300">
             {paragraph}
           </p>
         ))}

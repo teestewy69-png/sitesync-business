@@ -17,7 +17,7 @@ export default function Process() {
               site&rdquo; in under a week.
             </span>
           </h2>
-          <p className="text-sm text-slate-300">
+          <p className="text-base text-slate-300">
             The whole process is built for busy small business owners. You
             don&apos;t need to know anything about code, hosting, or SEO&mdash;we
             handle it for you.
@@ -32,7 +32,7 @@ export default function Process() {
             >
               <div className="pointer-events-none absolute -top-16 -right-16 h-32 w-32 rounded-full bg-brand-500/10 opacity-0 blur-3xl transition group-hover:opacity-100" />
               <div className="relative space-y-2">
-                <div className="inline-flex items-center gap-2 rounded-full bg-black/40 px-3 py-1 text-[11px] uppercase tracking-wider text-slate-300">
+                <div className="inline-flex items-center gap-2 rounded-full bg-black/40 px-3 py-1 text-xs uppercase tracking-wider text-slate-300">
                   <span className="font-mono text-brand-300">{s.step}</span>
                   <span className="h-1 w-1 rounded-full bg-brand-400" />
                   <span>Step</span>
@@ -40,7 +40,7 @@ export default function Process() {
                 <h3 className="text-sm font-semibold text-slate-50 sm:text-base">
                   {s.title}
                 </h3>
-                <p className="text-xs text-slate-300 sm:text-sm">{s.text}</p>
+                <p className="text-base text-slate-300">{s.text}</p>
               </div>
             </div>
           ))}

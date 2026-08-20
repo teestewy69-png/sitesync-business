@@ -25,7 +25,7 @@ export default function ProductDetail({ product }: { product: Product }) {
           className="absolute inset-0 h-full w-full min-h-[280px]"
         />
         {product.badge ? (
-          <span className="absolute top-5 left-5 rounded-full bg-brand-500/25 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-brand-200 ring-1 ring-brand-400/40 backdrop-blur">
+          <span className="absolute top-5 left-5 rounded-full bg-brand-500/25 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-brand-200 ring-1 ring-brand-400/40 backdrop-blur">
             {product.badge}
           </span>
         ) : null}
@@ -33,7 +33,7 @@ export default function ProductDetail({ product }: { product: Product }) {
 
       <div className="space-y-5">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-brand-300">
+          <p className="text-xs font-semibold uppercase tracking-wider text-brand-300">
             {product.category}
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
@@ -60,7 +60,7 @@ export default function ProductDetail({ product }: { product: Product }) {
           )}
         </div>
 
-        <p className="text-sm leading-relaxed text-slate-400">
+        <p className="text-base leading-relaxed text-slate-400">
           {product.description}
         </p>
 

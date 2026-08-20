@@ -47,7 +47,7 @@ export default function ShopNav() {
             <span className="block truncate text-sm font-semibold tracking-tight text-white sm:text-[15px]">
               {site.name}
             </span>
-            <span className="hidden text-[10px] font-medium uppercase tracking-[0.16em] text-brand-400/90 sm:block">
+            <span className="hidden text-xs font-medium uppercase tracking-[0.16em] text-brand-400/90 sm:block">
               Business
             </span>
           </span>
@@ -83,7 +83,7 @@ export default function ShopNav() {
             />
             <span className="hidden sm:inline">Cart</span>
             {itemCount > 0 ? (
-              <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-gradient-to-b from-brand-300 to-brand-600 px-1.5 text-[11px] font-semibold text-zinc-950 shadow-glow">
+              <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-gradient-to-b from-brand-300 to-brand-600 px-1.5 text-xs font-semibold text-zinc-950 shadow-glow">
                 {itemCount > 99 ? "99+" : itemCount}
               </span>
             ) : null}
