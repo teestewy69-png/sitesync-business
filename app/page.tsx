@@ -1,3 +1,4 @@
+import WebsiteFactoryHeader from "@/components/WebsiteFactoryHeader";
 import Hero from "@/components/Hero";
 import DesignShowcase from "@/components/DesignShowcase";
 import PickYourDesign from "@/components/PickYourDesign";
@@ -14,6 +15,9 @@ import Footer from "@/components/Footer";
 export default function Home() {
   return (
     <>
+      <div className="mx-auto w-full max-w-6xl px-6 pt-6">
+        <WebsiteFactoryHeader />
+      </div>
       <Hero />
       <DesignShowcase />
       <PickYourDesign />
