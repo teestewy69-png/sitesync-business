@@ -1,9 +1,19 @@
 [build]
   command = "npm run build"
-  publish = ".next"
 
 [build.environment]
   NODE_VERSION = "22"
+  NEXT_PUBLIC_FACTORY_PREVIEW = "1"
+
+# Draft / alias / branch deploys stay noindex. Production publish is a separate --prod step.
+[context.production.environment]
+  NEXT_PUBLIC_FACTORY_PREVIEW = "0"
+
+[context.deploy-preview.environment]
+  NEXT_PUBLIC_FACTORY_PREVIEW = "1"
+
+[context.branch-deploy.environment]
+  NEXT_PUBLIC_FACTORY_PREVIEW = "1"
 
 [[headers]]
   for = "/*"
