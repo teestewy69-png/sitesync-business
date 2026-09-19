@@ -43,6 +43,7 @@ export default async function InboxPage() {
               <span className="block text-slate-400">
                 {lead.id} · project {lead.projectId || "unlinked"} · {lead.linkageState || "unknown"} ·
                 monitoring {lead.monitoringInterest ? "yes" : "no"}
+                {lead.notificationState ? ` · notify ${lead.notificationState}` : ""}
                 {lead.goals ? ` · goals saved` : ""}
                 {lead.details ? ` · details saved` : ""} · {lead.createdAt}
               </span>

@@ -24,6 +24,7 @@ export type Lead = {
   details?: string;
   linkageState?: "linked" | "project_pending";
   idempotencyKey?: string;
+  notificationState?: "sent" | "failed" | "not_configured";
 };
 
 export type Inquiry = {

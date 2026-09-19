@@ -183,6 +183,9 @@ export async function POST(req: NextRequest) {
     }
 
     if (!mailed.sent) {
+      await updateLead(lead.id, {
+        notificationState: isMailConfigured() ? "failed" : "not_configured",
+      });
       return NextResponse.json({
         ok: true,
         id: lead.id,
@@ -193,6 +196,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    await updateLead(lead.id, { notificationState: "sent" });
     return NextResponse.json({ ok: true, id: lead.id, projectId, reused: Boolean(existing) });
   } catch (err) {
     console.error(
