@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireProduct } from "@/lib/catalog";
 import { getNotifyEmail, sendMail } from "@/lib/mail";
-import { appendInquiry, newId } from "@/lib/store";
+import { appendInquiry, ensureBlobsFromRequest, newId } from "@/lib/store";
 import {
   asNonEmptyString,
   isValidEmail,
@@ -14,6 +14,7 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   try {
+    ensureBlobsFromRequest(req);
     const limited = rateLimit(`inquiry:${clientKey(req)}`, 5, 10 * 60 * 1000);
     if (!limited.ok) {
       return NextResponse.json(
@@ -111,7 +112,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ ok: true, id: inquiry.id });
   } catch (err) {
-    console.error("Inquiry error:", err);
+    console.error(
+      "Inquiry error:",
+      err instanceof Error ? `${err.name}: ${err.message}` : "unknown"
+    );
     return NextResponse.json(
       {
         ok: false,

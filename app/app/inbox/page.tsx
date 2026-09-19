@@ -1,16 +1,28 @@
 import FactoryShell from "@/components/factory/Shell";
-import { listInquiries, listLeads, listProjects, storeInfo } from "@/lib/store";
+import { ensureBlobsFromRequest, listInquiries, listLeads, listProjects, storeInfo } from "@/lib/store";
 import { readWorkspace } from "@/lib/factory/workspace";
+import { headers } from "next/headers";
+
+export const dynamic = "force-dynamic";
 
 export default async function InboxPage() {
-  const [leads, inquiries, projects, workspace] = await Promise.all([
+  ensureBlobsFromRequest({ headers: await headers() });
+  const [leads, inquiries, projects] = await Promise.all([
     listLeads(),
     listInquiries(),
     listProjects(),
-    readWorkspace(),
   ]);
+  let linkedProjects = projects;
+  try {
+    const workspace = await readWorkspace();
+    if (linkedProjects.length === 0) linkedProjects = workspace.intakeProjects;
+  } catch (err) {
+    console.warn(
+      "Inbox workspace unavailable; showing CRM records only.",
+      err instanceof Error ? err.name : "unknown"
+    );
+  }
   const store = storeInfo();
-  const linkedProjects = projects.length > 0 ? projects : workspace.intakeProjects;
 
   return (
     <FactoryShell title="Private intake inbox">
@@ -29,8 +41,10 @@ export default async function InboxPage() {
             <li key={lead.id} className="rounded-xl border border-white/10 px-4 py-3">
               <strong>{lead.name}</strong> · {lead.email}
               <span className="block text-slate-400">
-                {lead.id} · project {lead.projectId || "unlinked"} · monitoring{" "}
-                {lead.monitoringInterest ? "yes" : "no"} · {lead.createdAt}
+                {lead.id} · project {lead.projectId || "unlinked"} · {lead.linkageState || "unknown"} ·
+                monitoring {lead.monitoringInterest ? "yes" : "no"}
+                {lead.goals ? ` · goals saved` : ""}
+                {lead.details ? ` · details saved` : ""} · {lead.createdAt}
               </span>
             </li>
           ))

@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getNotifyEmail, isMailConfigured, sendMail } from "@/lib/mail";
 import {
   appendLead,
+  ensureBlobsFromRequest,
   findLeadByEmail,
+  findLeadByIdempotency,
   findProjectByLeadId,
   newId,
   storeInfo,
@@ -65,6 +67,7 @@ function asFlag(value: unknown): boolean {
 
 export async function POST(req: NextRequest) {
   try {
+    ensureBlobsFromRequest(req);
     const limited = rateLimit(`subscribe:${clientKey(req)}`, 5, 10 * 60 * 1000);
     if (!limited.ok) {
       return NextResponse.json(
@@ -82,6 +85,11 @@ export async function POST(req: NextRequest) {
     const email = normalizeEmail(body?.email);
     const privacy = asFlag(body?.privacy);
     const monitoringInterest = asFlag(body?.monitoring);
+    const goals = asNonEmptyString(body?.goals, 2000);
+    const details = asNonEmptyString(body?.details, 4000);
+    const idempotencyKey =
+      asNonEmptyString(req.headers.get("idempotency-key"), 120) ||
+      asNonEmptyString(body?.idempotencyKey, 120);
 
     if (!name) {
       return NextResponse.json({ ok: false, error: "Please enter your name." }, { status: 400 });
@@ -99,7 +107,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const existing = await findLeadByEmail(email, "checklist");
+    const existing =
+      (idempotencyKey ? await findLeadByIdempotency("checklist", idempotencyKey) : null) ||
+      (await findLeadByEmail(email, "checklist"));
     const lead =
       existing ||
       (await appendLead({
@@ -109,10 +119,19 @@ export async function POST(req: NextRequest) {
         source: "checklist",
         createdAt: new Date().toISOString(),
         monitoringInterest,
+        goals: goals || undefined,
+        details: details || undefined,
+        linkageState: "project_pending",
+        idempotencyKey: idempotencyKey || undefined,
       }));
 
     if (existing) {
-      await updateLead(existing.id, { name, monitoringInterest });
+      await updateLead(existing.id, {
+        name,
+        monitoringInterest,
+        goals: goals || existing.goals,
+        details: details || existing.details,
+      });
     }
 
     let projectId = lead.projectId || "";
@@ -130,9 +149,17 @@ export async function POST(req: NextRequest) {
         );
         projectId = project?.id || "";
       }
-      if (projectId) await updateLead(lead.id, { projectId, monitoringInterest });
-    } catch {
-      /* factory project mapping must not break signup */
+      if (projectId) {
+        await updateLead(lead.id, { projectId, monitoringInterest, linkageState: "linked" });
+      } else {
+        await updateLead(lead.id, { monitoringInterest, linkageState: "project_pending" });
+      }
+    } catch (err) {
+      console.error(
+        "Subscribe project link failed:",
+        err instanceof Error ? `${err.name}: ${err.message}` : "unknown"
+      );
+      await updateLead(lead.id, { monitoringInterest, linkageState: "project_pending" });
     }
 
     let mailed = { sent: false };
@@ -164,7 +191,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ ok: true, id: lead.id, projectId, reused: Boolean(existing) });
   } catch (err) {
-    console.error("Subscribe error:", err);
+    console.error(
+      "Subscribe error:",
+      err instanceof Error ? `${err.name}: ${err.message}` : "unknown"
+    );
     return NextResponse.json(
       {
         ok: false,

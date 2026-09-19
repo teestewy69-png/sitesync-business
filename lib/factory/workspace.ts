@@ -191,7 +191,14 @@ export async function readWorkspace(): Promise<FactoryWorkspace> {
     }
   }
   const seeded = seedWorkspace();
-  await writeWorkspace(seeded);
+  try {
+    await writeWorkspace(seeded);
+  } catch (err) {
+    console.warn(
+      "Factory workspace file is not writable on this host; CRM records remain the source of truth.",
+      err instanceof Error ? err.name : "unknown"
+    );
+  }
   return seeded;
 }
 
@@ -203,7 +210,14 @@ export async function writeWorkspace(workspace: FactoryWorkspace): Promise<void>
     await writeFile(WORKSPACE_FILE, `${JSON.stringify(workspace, null, 2)}\n`, "utf8");
   });
   writeChain = run.catch(() => undefined);
-  await run;
+  try {
+    await run;
+  } catch (err) {
+    console.warn(
+      "Factory workspace write skipped; CRM store is source of truth.",
+      err instanceof Error ? err.name : "unknown"
+    );
+  }
 }
 
 export async function updateWorkspace(

@@ -5,16 +5,21 @@
 [build.environment]
   NODE_VERSION = "22"
   NEXT_PUBLIC_FACTORY_PREVIEW = "1"
+  SITESINC_STORE = "blobs"
+  SITE_NOTIFY_EMAIL = "save@sitesinc.co"
 
 # Draft / alias / branch deploys stay noindex. Production publish is a separate --prod step.
 [context.production.environment]
   NEXT_PUBLIC_FACTORY_PREVIEW = "0"
+  SITESINC_STORE = "blobs"
 
 [context.deploy-preview.environment]
   NEXT_PUBLIC_FACTORY_PREVIEW = "1"
+  SITESINC_STORE = "blobs"
 
 [context.branch-deploy.environment]
   NEXT_PUBLIC_FACTORY_PREVIEW = "1"
+  SITESINC_STORE = "blobs"
 
 [[headers]]
   for = "/*"

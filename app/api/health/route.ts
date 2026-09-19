@@ -1,12 +1,13 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { isMailConfigured } from "@/lib/mail";
 import { isStripeConfigured } from "@/lib/stripe-checkout";
-import { storeInfo, storeWritable } from "@/lib/store";
+import { ensureBlobsFromRequest, storeInfo, storeWritable } from "@/lib/store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  ensureBlobsFromRequest(req);
   const writable = await storeWritable();
   return NextResponse.json({
     ok: true,
