@@ -4,9 +4,10 @@ import {
   appendLead,
   ensureBlobsFromRequest,
   findLeadByEmail,
+  findLeadById,
   findLeadByIdempotency,
   findProjectByLeadId,
-  newId,
+  stableId,
   storeInfo,
   updateLead,
 } from "@/lib/store";
@@ -107,13 +108,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const fingerprint = idempotencyKey || `email:${email}`;
+    const leadId = await stableId("lead", `checklist:${fingerprint}`);
     const existing =
+      (await findLeadById(leadId)) ||
       (idempotencyKey ? await findLeadByIdempotency("checklist", idempotencyKey) : null) ||
       (await findLeadByEmail(email, "checklist"));
     const lead =
       existing ||
       (await appendLead({
-        id: newId("lead"),
+        id: leadId,
         name,
         email,
         source: "checklist",

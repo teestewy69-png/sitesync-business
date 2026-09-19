@@ -1,4 +1,4 @@
-import { appendProject, findProjectByLeadId, newId } from "@/lib/store";
+import { appendProject, findProjectByLeadId, newId, stableId } from "@/lib/store";
 import { runConversionChecks, conversionEvent } from "./conversions";
 import { draftFromBrief, wordCount } from "./drafts";
 import { DISCLAIMERS, SEED_BRIEFS, STAGE_DEFS } from "./pipeline";
@@ -63,7 +63,7 @@ export async function recordIntakeProject(input: {
   }
 
   const stored = await appendProject({
-    id: newId("proj"),
+    id: input.leadId ? await stableId("proj", `lead:${input.leadId}`) : newId("proj"),
     source: input.source,
     createdAt: nowIso(),
     label: input.label.slice(0, 160),

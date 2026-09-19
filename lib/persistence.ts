@@ -71,7 +71,10 @@ export function ensureBlobsFromRequest(req: { headers: Headers }): void {
 
 export function getCrmStore(): Store {
   try {
-    return getStore(BLOB_STORE_NAME);
+    return getStore({
+      name: BLOB_STORE_NAME,
+      consistency: "strong",
+    });
   } catch (err) {
     const detail = err instanceof Error ? `${err.name}: ${err.message}` : "unknown";
     console.error(`Netlify Blobs getStore failed (${BLOB_STORE_NAME}): ${detail}`);

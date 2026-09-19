@@ -108,6 +108,18 @@ export function newId(prefix: string): string {
   return `${prefix}_${Date.now().toString(36)}${rand}`;
 }
 
+export async function stableId(prefix: string, seed: string): Promise<string> {
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(`sitesinc:${prefix}:${seed}`)
+  );
+  const hex = Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("")
+    .slice(0, 18);
+  return `${prefix}_${hex}`;
+}
+
 export function storeInfo() {
   return {
     backend: storeBackend(),
@@ -147,6 +159,10 @@ export async function listLeads(): Promise<Lead[]> {
   return [...(await readRecords<Lead>("leads"))].sort((a, b) =>
     b.createdAt.localeCompare(a.createdAt)
   );
+}
+
+export async function findLeadById(id: string): Promise<Lead | null> {
+  return readRecord<Lead>("leads", id);
 }
 
 export async function findLeadByEmail(email: string, source: string): Promise<Lead | null> {
