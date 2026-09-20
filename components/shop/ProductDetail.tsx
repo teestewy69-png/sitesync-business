@@ -1,10 +1,22 @@
 "use client";
 
+import Link from "next/link";
+import { useState } from "react";
 import type { Product } from "@/data/products";
-import ProductActions from "@/components/shop/ProductActions";
+import { useCart } from "@/components/shop/CartProvider";
 import ProductImage from "@/components/shop/ProductImage";
 
 export default function ProductDetail({ product }: { product: Product }) {
+  const { addItem } = useCart();
+  const [added, setAdded] = useState(false);
+
+  function handleAdd() {
+    if (product.contactOnly) return;
+    addItem(product.slug);
+    setAdded(true);
+    window.setTimeout(() => setAdded(false), 1800);
+  }
+
   return (
     <div className="grid gap-10 lg:grid-cols-2">
       <div className="relative min-h-[280px] overflow-hidden rounded-[28px] border border-white/10">
@@ -52,7 +64,43 @@ export default function ProductDetail({ product }: { product: Product }) {
           {product.description}
         </p>
 
-        <ProductActions product={product} />
+        <div className="flex flex-col gap-3 pt-2 sm:flex-row">
+          {product.contactOnly ? (
+            <a
+              href="mailto:save@sitesinc.co"
+              className="inline-flex items-center justify-center rounded-full bg-gradient-to-b from-brand-300 to-brand-600 px-6 py-3 text-sm font-semibold text-zinc-950 shadow-glow transition hover:from-brand-200 hover:to-brand-500"
+            >
+              Email save@sitesinc.co
+            </a>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={handleAdd}
+                className="inline-flex items-center justify-center rounded-full bg-gradient-to-b from-brand-300 to-brand-600 px-6 py-3 text-sm font-semibold text-zinc-950 shadow-glow transition hover:from-brand-200 hover:to-brand-500"
+              >
+                {added ? "Added ✓" : "Add to cart"}
+              </button>
+              {product.stripeUrl ? (
+                <a
+                  href={product.stripeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/5 px-6 py-3 text-sm font-medium text-slate-100 transition hover:border-brand-400/50"
+                >
+                  Buy now with Stripe
+                </a>
+              ) : (
+                <Link
+                  href="/cart"
+                  className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/5 px-6 py-3 text-sm font-medium text-slate-100 transition hover:border-brand-400/50"
+                >
+                  View cart
+                </Link>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

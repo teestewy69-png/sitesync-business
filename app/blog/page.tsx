@@ -8,7 +8,7 @@ export default function BlogIndex() {
     <main className="min-h-screen bg-black text-white">
       <section className="mx-auto max-w-4xl px-6 py-16">
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-          Sitesinc Blog
+          Sitesync Business Blog
         </h1>
         <p className="mt-3 text-base text-slate-300">
           Straightforward guides on websites, SEO, and making your small

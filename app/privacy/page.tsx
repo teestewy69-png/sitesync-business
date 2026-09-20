@@ -21,7 +21,7 @@ export default function PrivacyPage() {
         <div className="mt-8 space-y-8 text-base leading-7 text-slate-300">
           <section>
             <p>
-              Sitesinc (“we,” “us,” or “our”) operates the website at{" "}
+              Sitesync Business (“we,” “us,” or “our”) operates the website at{" "}
               <span className="text-slate-100">sitesinc.co</span>. This Privacy
               Policy explains how we collect, use, and protect your information
               when you visit our website, contact us, purchase services, or sign
@@ -231,7 +231,7 @@ export default function PrivacyPage() {
             </p>
             <p className="mt-3">
               <span className="font-medium text-slate-100">
-                Sitesinc
+                Sitesync Business
               </span>
               <br />
               Website:{" "}

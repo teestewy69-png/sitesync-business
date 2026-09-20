@@ -47,8 +47,8 @@ export type MiniSiteContent = {
   trustSignals: string[];
 };
 
-export const SITESINC_SITE: MiniSiteContent = {
-  business: "Sitesinc",
+export const SITESYNC_SITE: MiniSiteContent = {
+  business: "Sitesync Business",
   tagline:
     "Ultra-modern websites that finally make your small business look big. Live now at sitesinc.co.",
   cta: "Reserve My Build",
@@ -57,8 +57,8 @@ export const SITESINC_SITE: MiniSiteContent = {
   services: [
     {
       name: "Complete website build",
-      price: "$1,995",
-      blurb: "Website builds starting at $1,995. Pay 50% to start, 50% at launch.",
+      price: "$749.50",
+      blurb: "Launch price for the first 10 businesses. Regular $1,499, one-time.",
     },
     {
       name: "Netlify hosting",
@@ -72,8 +72,8 @@ export const SITESINC_SITE: MiniSiteContent = {
     },
     {
       name: "Optional maintenance",
-      price: "$129/mo",
-      blurb: "Optional monitoring. Cancel anytime. The site works without it.",
+      price: "$125/mo",
+      blurb: "Updates, monitoring, and small text/image changes if you want them.",
     },
   ],
   testimonials: [
@@ -83,9 +83,9 @@ export const SITESINC_SITE: MiniSiteContent = {
         "This live site is the product — Next.js, Tailwind, Stripe, and Netlify hosting included.",
     },
     {
-      name: "Payment",
+      name: "Launch offer",
       quote:
-        "Starting at $1,995. Pay 50% to start, 50% at launch. Optional $129/mo monitoring. You own the code.",
+        "First 10 businesses lock in 50% off. One-time build, no subscription, you own the code.",
     },
     {
       name: "Turnaround",
