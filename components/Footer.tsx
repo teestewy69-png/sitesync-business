@@ -13,7 +13,7 @@ export default function Footer() {
       <div className="relative mx-auto flex max-w-6xl flex-col gap-6 px-6 text-sm text-slate-400 sm:flex-row sm:items-center sm:justify-between sm:text-base">
         {/* Left: brand & rights */}
         <div className="space-y-2">
-          {/* The logo lockup already contains the Sitesync wordmark */}
+          {/* The logo lockup already contains the Sitesinc wordmark */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/logo.png"

@@ -1,39 +1,39 @@
 {
   "site": {
-    "name": "Sitesync",
+    "name": "Sitesinc",
     "tagline": "Small business approved",
     "description": "Custom Next.js + Tailwind websites with dark, glossy, animated designs. Built in 5-7 business days. You own the code. Hosting included.",
     "domain": "sitesinc.co"
   },
   "seo": {
-    "title": "Sitesync Business \u2013 Ultra-Modern Small Business Websites (Built Once, Owned Forever)",
-    "description": "Sitesync Business builds dark, glossy, ultra-modern websites for small businesses who never got their site quite right. One-time $1,499 build, SEO-optimized, funnels & Stripe-ready, Netlify hosting included, and you own the full code.",
+    "title": "Sitesinc Website Factory – Ultra-Modern Small Business Websites (Built Once, Owned Forever)",
+    "description": "Sitesinc Website Factory builds dark, glossy, ultra-modern websites for small businesses who never got their site quite right. Website builds starting at $1,995. Pay $997.50 to start, $997.50 at launch. Optional monitoring $129/month. Cancel anytime. No long-term contract.",
     "url": "https://sitesinc.co",
-    "siteName": "Sitesync Business",
+    "siteName": "Sitesinc",
     "locale": "en_US",
     "image": "https://sitesinc.co/logo.png",
     "og": {
-      "title": "Sitesync Business \u2013 Ultra-Modern Small Business Websites",
-      "description": "Done-for-you, money-ready websites for small businesses. Dark, glossy designs, SEO, funnels, Stripe, and free Netlify hosting. One-time build, no subscription, and you own the code."
+      "title": "Sitesinc Website Factory – Ultra-Modern Small Business Websites",
+      "description": "Done-for-you, money-ready websites from Sitesinc. Builds starting at $1,995. $997.50 to start, $997.50 at launch. Optional monitoring $129/month. Cancel anytime. No long-term contract."
     },
     "twitter": {
       "card": "summary_large_image",
-      "title": "Sitesync Business \u2013 Ultra-Modern Small Business Websites",
-      "description": "Done-for-you, money-ready websites for small businesses. Dark, glossy designs, SEO, funnels, Stripe, and free Netlify hosting."
+      "title": "Sitesinc Website Factory – Ultra-Modern Small Business Websites",
+      "description": "Done-for-you websites from Sitesinc. Starting at $1,995. $997.50 to start, $997.50 at launch. Optional $129/month monitoring."
     }
   },
   "hero": {
     "overline": "Done-for-you small business websites",
     "headline": "Ultra-modern websites that finally make your small business look big.",
-    "subheadline": "Sitesync builds dark, glossy, high-converting sites for the \u201clittle guy\u201d who never got their website quite right. One-time build, SEO-optimized, monetization-ready, and fully yours.",
+    "subheadline": "Sitesinc Website Factory builds dark, glossy, high-converting sites for the “little guy” who never got their website quite right. One-time build, SEO-optimized, monetization-ready, and fully yours.",
     "offer": {
-      "title": "Launch Offer: First 10 businesses get 50% off their build.",
-      "subtitle": "Lock in your spot before we go back to the full $1,499 price.",
-      "totalSpots": 10
+      "title": "Website builds starting at $1,995.",
+      "subtitle": "Pay 50% to start, 50% at launch. Optional monitoring $129/month. No long-term contract.",
+      "totalSpots": 0
     },
-    "primaryCta": { "label": "Reserve My Build & Pay Securely", "target": "pricing" },
+    "primaryCta": { "label": "Start a website build", "target": "checklist" },
     "secondaryCta": { "label": "See 8 Designs", "target": "designs" },
-    "pricingLine": "Regular price: $1,499 • No subscription • Optional maintenance: $125/month",
+    "pricingLine": "Starting at $1,995 · 50% to start, 50% at launch · Optional monitoring $129/mo",
     "stackLine": "5-7 business day turnaround • Next.js + Tailwind • Netlify hosting included • You own the full code.",
     "trustLine": "Perfect for barbers, cleaners, food trucks, contractors, coaches, solo pros, and side hustles."
   },
@@ -61,7 +61,7 @@
     "outro": "You get a high-performance, future-proof site with clean code that any developer can work with later."
   },
   "included": {
-    "title": "What's included in the $1,499 build",
+    "title": "What's included in a website build starting at $1,995",
     "items": [
       "A complete, custom website built with Next.js + Tailwind",
       "Choice of 8 ultra-modern designs (you pick your favorite look)",
@@ -76,35 +76,32 @@
     ]
   },
   "pricing": {
-    "title": "Simple, one-time pricing",
-    "subtitle": "Pay once for the build. No required subscriptions. You own the code.",
+    "title": "Simple, transparent pricing",
+    "subtitle": "Website builds starting at $1,995. Pay 50% to start, 50% at launch. Monitoring is optional. You own the code.",
     "build": {
-      "name": "Complete website build",
-      "regularPrice": "$1,499",
-      "launchPrice": "$749.50",
-      "launchNote": "First 10 businesses only - 50% off",
-      "detail": "One-time payment. After the first 10 projects are booked, the price returns to $1,499.",
+      "name": "Website build",
+      "startingPrice": "$1,995",
+      "startDue": "$997.50",
+      "launchDue": "$997.50",
+      "launchNote": "50% to start · 50% at launch",
+      "detail": "Starting at $1,995. $997.50 to start, $997.50 at launch. Submitting this form is a request, not a purchase. If we accept the project, you receive a $997.50 start invoice manually. The remaining $997.50 is due at launch. No long-term contract.",
       "cta": {
-        "label": "Secure your spot",
-        "href": "https://buy.stripe.com/3cI28raLjetH7KReMqa3u03"
-      },
-      "fullPriceCta": {
-        "label": "Pay full price ($1,499)",
-        "href": "https://buy.stripe.com/4gMcN506FgBPc176fUa3u01"
+        "label": "Request a website build",
+        "href": "#checklist"
       }
     },
     "maintenance": {
-      "name": "Optional maintenance plan",
-      "price": "$125/month",
-      "detail": "Completely optional - your site works without it.",
+      "name": "Optional monitoring",
+      "price": "$129/month",
+      "detail": "Completely optional — your site works without it. Cancel anytime. No long-term contract.",
       "features": [
         "Technical updates and security",
-        "Monitoring and basic fixes",
+        "Uptime/monitoring and basic fixes",
         "2-3 small text/image updates per month"
       ],
       "cta": {
-        "label": "Add maintenance",
-        "href": "https://buy.stripe.com/14A4gzf1z4T73uB9s6a3u02"
+        "label": "Ask about $129/mo monitoring",
+        "href": "#checklist"
       }
     }
   },
@@ -117,30 +114,30 @@
       "Any photos you want used",
       "Your main offer or goal (calls, bookings, sales, leads)"
     ],
-    "note": "Once you submit the onboarding form and complete payment, we start your build."
+    "note": "Submitting the form is a request, not a purchase. If we accept the project, Sitesinc emails a $997.50 start invoice. The remaining $997.50 is due at launch. Optional monitoring is $129/month and can be enrolled manually."
   },
   "about": {
-    "title": "Built for the \u201clittle guy\u201d who's tired of feeling left behind online.",
+    "title": "Built for the “little guy” who's tired of feeling left behind online.",
     "paragraphs": [
-      "Sitesync Business exists for small and local businesses who know they need a real website\u2014but never had the time, budget, or tech help to get it done right. We don't sell drag-and-drop templates or half-finished sites. We build dark, glossy, ultra-modern websites that look like they belong to a big brand, but are tailored to the shop around the corner.",
-      "Whether you're a barber, cleaner, contractor, food truck, lash tech, coach, or solo pro, we handle the hard stuff: design, development, SEO, funnels, Stripe, and hosting. You pay once, we build it, connect your domain, and hand you the full code so you truly own your online home."
+      "Sitesinc exists for small and local businesses who know they need a real website—but never had the time, budget, or tech help to get it done right. We don't sell drag-and-drop templates or half-finished sites. We build dark, glossy, ultra-modern websites that look like they belong to a big brand, but are tailored to the shop around the corner.",
+      "Whether you're a barber, cleaner, contractor, food truck, lash tech, coach, or solo pro, we handle the hard stuff: design, development, SEO, funnels, Stripe, and hosting. You pay 50% to start and 50% at launch, we build it, connect your domain, and hand you the full code so you truly own your online home."
     ]
   },
   "cta": {
-    "title": "Lock in 50% off - only 10 spots",
-    "subtitle": "Regular price $1,499. First 10 businesses pay $749.50, one-time. Reserve and pay your spot to lock in the price.",
-    "primaryCta": { "label": "Reserve my spot for $749.50", "href": "https://buy.stripe.com/3cI28raLjetH7KReMqa3u03" },
+    "title": "Start a website build at $1,995",
+    "subtitle": "Pay 50% to start, 50% at launch. Optional monitoring is $129/month. Domain: sitesinc.co.",
+    "primaryCta": { "label": "Request a build", "href": "#checklist" },
     "secondaryCta": { "label": "Questions? Read the FAQ", "href": "#faq" }
   },
   "proof": {
     "overline": "Proof",
     "title": "Real businesses. Real results.",
-    "subtitle": "Don\u2019t take our word for it\u2014watch a sample client site get built the same way yours will: content in, money-ready site out.",
+    "subtitle": "Don’t take our word for it—watch a sample client site get built the same way yours will: content in, money-ready site out.",
     "outcomes": [
       {
-        "stat": "5\u20137 days",
+        "stat": "5–7 days",
         "label": "Typical turnaround",
-        "detail": "From content received to a live, hosted site\u2014not months in a page builder."
+        "detail": "From content received to a live, hosted site—not months in a page builder."
       },
       {
         "stat": "100%",
@@ -157,35 +154,35 @@
       "badge": "Sample build",
       "business": "Smith Plumbing & Heating",
       "niche": "Emergency plumber",
-      "result": "Call-first homepage, 24/7 service focus, reviews block, and tap-to-call CTA\u2014the kind of site that answers the phone instead of looking pretty and silent.",
+      "result": "Call-first homepage, 24/7 service focus, reviews block, and tap-to-call CTA—the kind of site that answers the phone instead of looking pretty and silent.",
       "note": "Demo of our per-client workflow using the same stack and content.json system we ship to paying customers."
     },
-    "cta": { "label": "See pricing & lock a spot", "target": "pricing" }
+    "cta": { "label": "See pricing & start a build", "target": "pricing" }
   },
   "productTeaser": {
     "overline": "Beyond the build",
     "title": "Tools that keep your site earning after launch.",
-    "subtitle": "A website isn\u2019t a one-and-done poster. We\u2019re packaging the same checklists and money pieces we use on client builds so you can keep improving without hiring a full team.",
+    "subtitle": "A website isn’t a one-and-done poster. We’re packaging the same checklists and money pieces we use on client builds so you can keep improving without hiring a full team.",
     "items": [
       {
         "status": "Available now",
         "name": "Website checklist",
-        "detail": "Design, copy, SEO basics, and the money-making pieces most small sites forget. Free\u2014enter your email below.",
+        "detail": "Design, copy, SEO basics, and the money-making pieces most small sites forget. Free—enter your email below.",
         "cta": { "label": "Get the free checklist", "target": "checklist" }
       },
       {
         "status": "Available now",
         "name": "Keep-it-earning kit",
-        "detail": "Offer-page templates, update cadence, and simple SEO refresh prompts so your site stays sharp after launch. Instant Stripe checkout.",
+        "detail": "Offer-page templates, update cadence, and simple SEO refresh prompts so your site stays sharp after launch. Ask about this kit when you request a build.",
         "cta": {
-          "label": "Browse the shop",
-          "href": "/shop"
+          "label": "Request a build",
+          "href": "#checklist"
         }
       },
       {
         "status": "On the roadmap",
         "name": "Niche playbooks",
-        "detail": "Barber, contractor, coach, and food-truck packs\u2014headlines, service blocks, and CTAs tuned to how those businesses actually get booked.",
+        "detail": "Barber, contractor, coach, and food-truck packs—headlines, service blocks, and CTAs tuned to how those businesses actually get booked.",
         "cta": null
       }
     ]
@@ -193,16 +190,19 @@
   "emailCapture": {
     "overline": "Free download",
     "title": "Not ready yet? Grab the free website checklist.",
-    "subtitle": "The exact checklist we use to make small business websites look big: design, copy, SEO basics, and the money-making pieces most sites forget.",
+    "subtitle": "This form is a request, not a purchase. No payment is collected here. If we accept your project, you receive a $997.50 start invoice by email. The remaining $997.50 is due at launch.",
+    "namePlaceholder": "Your name",
     "placeholder": "you@email.com",
-    "buttonLabel": "Send me the checklist",
-    "finePrint": "No spam. Just the checklist and occasional tips for getting more from your website. You can contact us anytime at"
+    "buttonLabel": "Submit a request",
+    "privacyLabel": "I agree to the privacy policy so you can contact me about this request.",
+    "monitoringLabel": "I’m interested in optional $129/month monitoring (cancel anytime).",
+    "finePrint": "No charge on submit. We store your name and email privately so we can follow up. Contact us anytime at"
   },
   "footer": {
-    "legalName": "Sitesync Business",
+    "legalName": "Sitesinc",
     "email": "save@sitesinc.co",
     "trustTitle": "Secure payments & transparent pricing.",
-    "trustLine": "Powered by Stripe • No hidden fees • No forced subscriptions • You own your site code.",
+    "trustLine": "Starting at $1,995 • 50% to start, 50% at launch • No long-term contract • Optional $129/mo monitoring • You own your site code.",
     "scrollLinks": [
       { "label": "Pricing", "target": "pricing" },
       { "label": "Designs", "target": "designs" },

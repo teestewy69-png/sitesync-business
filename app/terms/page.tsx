@@ -35,7 +35,7 @@ export default function TermsPage() {
               1. Who We Are
             </h2>
             <p className="mt-2">
-              Sitesync Business builds custom websites for small businesses
+              Sitesinc builds custom websites for small businesses
               using modern tools such as Next.js, Tailwind CSS, and Netlify
               hosting. Our public site and contact email are:
             </p>
@@ -240,7 +240,7 @@ export default function TermsPage() {
               13. Limitation of Liability
             </h2>
             <p className="mt-2">
-              To the fullest extent permitted by law, Sitesync Business is not
+              To the fullest extent permitted by law, Sitesinc is not
               liable for indirect, incidental, special, consequential, or lost
               profit damages arising from your use of the site or our services.
               Our total liability for any claim related to a paid project is
@@ -288,7 +288,7 @@ export default function TermsPage() {
             </p>
             <p className="mt-3">
               <span className="font-medium text-slate-100">
-                Sitesync Business
+                Sitesinc
               </span>
               <br />
               <a

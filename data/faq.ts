@@ -37,21 +37,21 @@ export const faqItems: FaqItem[] = [
   {
     question: "How much does it cost? Are there any subscriptions?",
     answer:
-      "The complete website build is a one-time fee of $1,499. There is no required subscription or builder lock-in. We also offer an optional maintenance plan for $125/month if you want us to handle ongoing tech updates and small content changes.",
+      "Website builds start at $1,995. You pay 50% ($997.50) to start and 50% at launch. There is no required subscription or builder lock-in. Optional monitoring is $129/month if you want us to handle ongoing tech updates and small content changes. You can skip it. There is no long-term contract.",
   },
   {
-    question: "What\u2019s the 50% off deal for the first 10 businesses?",
+    question: "How does the 50% to start / 50% at launch payment work?",
     answer:
-      "To launch this service, we\u2019re giving the first 10 businesses a 50% discount on the full website build. Regular price is $1,499, but the first 10 who reserve and pay lock in a total of $749.50. After those 10 spots are taken, the price returns to $1,499.",
+      "The starting price is $1,995. Submitting the website form is a request, not a purchase. If we accept the project, you receive a $997.50 start invoice by email. The remaining $997.50 is due at launch. Monitoring is a separate optional $129/month, cancel anytime, and is never required to keep the site.",
   },
   {
-    question: "What\u2019s included in the $1,499 build?",
+    question: "What\u2019s included in a website build starting at $1,995?",
     answer:
       "Your one-time fee includes: a custom site built on one of 8 ultra-modern dark designs, full Next.js + Tailwind development, on-page SEO basics, funnel setup (lead capture and email signup), Stripe integration, monetization placeholders (digital products and affiliate areas), Netlify hosting setup, domain connection, a 5\u20137 business day turnaround after receiving your content, and one round of revisions.",
   },
   {
     question: "What do you need from me to start?",
     answer:
-      "After you reserve your spot and pay, we send you a short onboarding form where you provide your business name, services, main offers, logo, brand colors (if you have them), photos, and domain info. Once that\u2019s submitted, we start building and your 5\u20137 business day timeline begins.",
+      "Submit a request on this site. If we accept the project, we send a $997.50 start invoice and a short onboarding form for your business name, services, main offers, logo, brand colors, photos, and domain info. The remaining $997.50 is due at launch. The 5\u20137 business day timeline starts after we have your content and the start payment.",
   },
 ];
