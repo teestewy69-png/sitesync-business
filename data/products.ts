@@ -5,7 +5,6 @@ export type Product = {
   price?: string;
   regularPrice?: string;
   contactOnly?: boolean;
-  listed?: boolean;
   description: string;
   badge?: string;
   stripeUrl?: string;
@@ -17,11 +16,10 @@ export const products: Product[] = [
     slug: "website-design-digital-bundle",
     name: "Website Design Digital Product Bundle",
     category: "Digital Products",
-    listed: false,
     price: "$24.99",
     regularPrice: "$49.99",
     description:
-      "Retired. This old website-design bundle is not a public Sitesinc offer.",
+      "Digital products relating to website design, performance, SEO, and online business foundations.",
     badge: "50% Off",
     stripeUrl: "https://buy.stripe.com/00w28r2eN5Xb3uBcEia3u04",
     image: "/products/website-design-bundle.jpg",
@@ -100,18 +98,8 @@ export function getProductImageFallbackSrc(product: Product): string {
   return `/products/${product.slug}.svg`;
 }
 
-export function isListedProduct(product: Product): boolean {
-  return product.listed !== false;
-}
-
-export function getPublicProducts(): Product[] {
-  return products.filter(isListedProduct);
-}
-
 export function getProduct(slug: string): Product | undefined {
-  const product = products.find((p) => p.slug === slug);
-  if (!product || !isListedProduct(product)) return undefined;
-  return product;
+  return products.find((p) => p.slug === slug);
 }
 
 /** Parse "$24.99" → 24.99. Returns 0 for contact-only / missing prices. */

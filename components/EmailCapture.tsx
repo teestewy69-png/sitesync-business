@@ -6,16 +6,15 @@ import content from "@/content.json";
 
 type Status = "idle" | "loading" | "success" | "error";
 
+/**
+ * Newsletter / lead-magnet signup. Posts to /api/subscribe, which emails the
+ * checklist to the subscriber and a notification to us via Titan SMTP.
+ */
 export default function EmailCapture() {
   const { emailCapture, footer } = content;
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [privacy, setPrivacy] = useState(false);
-  const [monitoring, setMonitoring] = useState(false);
-  const [honeypot, setHoneypot] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -26,23 +25,12 @@ export default function EmailCapture() {
       const res = await fetch("/api/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name,
-          email,
-          privacy,
-          monitoring,
-          company_website: honeypot,
-        }),
+        body: JSON.stringify({ email }),
       });
-      const data = await res.json().catch(() => null);
       if (!res.ok) {
+        const data = await res.json().catch(() => null);
         throw new Error(data?.error ?? "Something went wrong. Please try again.");
       }
-      setSuccessMessage(
-        data?.warning
-          ? "Request saved — this is not a purchase. We have your name and email internally. The confirmation email could not send yet."
-          : "Request received. This is not a purchase. If we accept the project, you will get a $997.50 start invoice by email."
-      );
       setStatus("success");
     } catch (err) {
       setStatus("error");
@@ -74,88 +62,29 @@ export default function EmailCapture() {
         {status === "success" ? (
           <div className="mx-auto mt-8 flex max-w-md items-center justify-center gap-2 rounded-xl bg-brand-500/10 px-5 py-4 text-sm font-medium text-brand-200 ring-1 ring-brand-500/25">
             <CheckCircle2 className="h-5 w-5 shrink-0" />
-            {successMessage}
+            Checklist sent! Check your inbox (and spam folder, just in case).
           </div>
         ) : (
           <form
-            method="post"
-            action="/api/subscribe"
             onSubmit={handleSubmit}
-            className="mx-auto mt-8 flex max-w-md flex-col gap-3"
+            className="mx-auto mt-8 flex max-w-md flex-col gap-3 sm:flex-row"
           >
-            <label className="sr-only" htmlFor="intake-name">
-              Your name
-            </label>
             <input
-              id="intake-name"
-              type="text"
-              name="name"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={emailCapture.namePlaceholder}
-              autoComplete="name"
-              className="w-full rounded-xl bg-surface-elevated px-4 py-3 text-white ring-1 ring-white/10 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-brand-400"
-            />
-            <label className="sr-only" htmlFor="intake-email">
-              Email address
-            </label>
-            <input
-              id="intake-email"
               type="email"
               name="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder={emailCapture.placeholder}
-              autoComplete="email"
+              aria-label="Email address"
               className="w-full rounded-xl bg-surface-elevated px-4 py-3 text-white ring-1 ring-white/10 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-brand-400"
             />
-            <div className="absolute -left-[9999px] h-0 w-0 overflow-hidden" aria-hidden="true">
-              <label htmlFor="company_website">Company website</label>
-              <input
-                id="company_website"
-                type="text"
-                name="company_website"
-                tabIndex={-1}
-                autoComplete="off"
-                value={honeypot}
-                onChange={(e) => setHoneypot(e.target.value)}
-              />
-            </div>
-            <label className="flex items-start gap-2 text-left text-sm text-slate-400">
-              <input
-                type="checkbox"
-                name="monitoring"
-                checked={monitoring}
-                onChange={(e) => setMonitoring(e.target.checked)}
-                className="mt-1"
-              />
-              <span>{emailCapture.monitoringLabel}</span>
-            </label>
-            <label className="flex items-start gap-2 text-left text-sm text-slate-400">
-              <input
-                type="checkbox"
-                name="privacy"
-                required
-                checked={privacy}
-                onChange={(e) => setPrivacy(e.target.checked)}
-                className="mt-1"
-              />
-              <span>
-                {emailCapture.privacyLabel}{" "}
-                <a href="/privacy" className="font-medium text-brand-300 hover:underline">
-                  Privacy policy
-                </a>
-                .
-              </span>
-            </label>
             <button
               type="submit"
               disabled={status === "loading"}
-              className="rounded-xl bg-gradient-to-b from-brand-300 to-brand-600 px-6 py-3 text-sm font-semibold text-zinc-950 shadow-glow transition hover:from-brand-200 hover:to-brand-500 disabled:cursor-not-allowed disabled:opacity-60"
+              className="shrink-0 rounded-xl bg-gradient-to-b from-brand-300 to-brand-600 px-6 py-3 text-sm font-semibold text-zinc-950 shadow-glow transition hover:from-brand-200 hover:to-brand-500 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {status === "loading" ? "Saving..." : emailCapture.buttonLabel}
+              {status === "loading" ? "Sending..." : emailCapture.buttonLabel}
             </button>
           </form>
         )}

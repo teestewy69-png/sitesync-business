@@ -7,8 +7,8 @@ export type ProcessStep = {
 export const processSteps: ProcessStep[] = [
   {
     step: "01",
-    title: "Pick your design & request a build",
-    text: "Browse our 8 ultra-modern layouts and choose the one that feels right for your business. Submit a request — that is not a purchase. If we accept the project, you pay $997.50 to start and $997.50 at launch.",
+    title: "Pick your design & lock in your spot",
+    text: "Browse our 8 ultra-modern layouts and choose the one that feels right for your business. Reserve your build and pay securely via Stripe (first 10 get 50% off).",
   },
   {
     step: "02",

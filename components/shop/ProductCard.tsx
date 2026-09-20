@@ -63,12 +63,12 @@ export default function ProductCard({ product }: { product: Product }) {
             View
           </Link>
           {product.contactOnly ? (
-            <Link
-              href={`/shop/product/${product.slug}`}
+            <a
+              href="mailto:save@sitesinc.co"
               className="inline-flex flex-1 items-center justify-center rounded-xl bg-gradient-to-b from-brand-300 to-brand-600 px-4 py-2.5 text-sm font-semibold text-zinc-950 shadow-glow transition hover:from-brand-200 hover:to-brand-500"
             >
-              Request a quote
-            </Link>
+              Contact
+            </a>
           ) : (
             <button
               type="button"

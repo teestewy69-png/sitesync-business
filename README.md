@@ -1,19 +1,3 @@
-# Sitesinc Website Factory
-
-Sitesinc (`sitesinc.co`) is a done-for-you website build service. Public brand: **Sitesinc**. Product descriptor: **Website Factory**. Contact: `save@sitesinc.co`.
-
-Do not use SiteSync, Sitesync, or Sitesync Business in public or operator copy.
-
-Website builds start at $1,995 ($997.50 to start, $997.50 at launch). Optional monitoring is $129/month, cancel anytime, no long-term contract. Submitting the homepage form is a request, not a purchase.
-
-## Persistence
-
-Local development writes leads and client projects to `data/store/*.json`.
-
-On Netlify (`NETLIFY=true`), the CRM adapter uses Netlify Blobs (`sitesinc-crm`). That is required for durable lead storage. Do not treat the local JSON files as production storage.
-
-Force a backend with `SITESINC_STORE=local` or `SITESINC_STORE=blobs`.
-
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
