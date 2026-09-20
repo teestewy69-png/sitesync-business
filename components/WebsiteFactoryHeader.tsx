@@ -10,6 +10,18 @@ export default function WebsiteFactoryHeader() {
       </div>
       <div className="flex gap-2">
         <a
+          href="/case-study"
+          className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-200 hover:border-slate-500"
+        >
+          Case study
+        </a>
+        <a
+          href="/app"
+          className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-200 hover:border-slate-500"
+        >
+          Factory
+        </a>
+        <a
           href="#pick-design"
           className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-500"
         >

@@ -1,14 +1,11 @@
-"use client";
-
-import { useState } from "react";
+import Image from "next/image";
 import content from "@/content.json";
-import { scrollToId } from "@/lib/scroll";
-import { SITESYNC_SITE } from "@/lib/design-styles";
+import { SITESINC_SITE } from "@/lib/design-styles";
+import HeroScrollButton from "@/components/HeroScrollButton";
 
 export default function Hero() {
   const { hero, site, pricing } = content;
-  const [spotsLeft] = useState(hero.offer.totalSpots);
-  const launchCheckout = pricing.build.cta.href;
+  const startHref = pricing.build.cta.href;
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-black via-canvas to-black text-white">
@@ -17,20 +14,20 @@ export default function Hero() {
 
       <nav className="relative mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         <a href="#" className="flex items-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src="/logo.png"
             alt={`${site.name} logo`}
+            width={192}
+            height={96}
+            priority
             className="h-20 w-auto rounded-lg ring-1 ring-white/10 sm:h-24"
           />
         </a>
         <a
-          href={launchCheckout}
-          target="_blank"
-          rel="noopener noreferrer"
+          href="#pricing"
           className="rounded-lg bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 ring-1 ring-white/10 transition hover:bg-white/10"
         >
-          Secure your spot
+          See pricing
         </a>
       </nav>
 
@@ -50,8 +47,8 @@ export default function Hero() {
           </p>
 
           <div className="inline-flex items-center gap-3 rounded-xl border border-brand-400/30 bg-brand-500/10 px-4 py-2 text-base">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-400/20 text-brand-300">
-              50%
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-400/20 text-xs font-semibold text-brand-300">
+              50/50
             </div>
             <div>
               <p className="font-medium text-brand-200">{hero.offer.title}</p>
@@ -63,9 +60,7 @@ export default function Hero() {
 
           <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:gap-4">
             <a
-              href={launchCheckout}
-              target="_blank"
-              rel="noopener noreferrer"
+              href={startHref}
               className="group inline-flex items-center justify-center rounded-full bg-gradient-to-b from-brand-300 to-brand-600 px-6 py-3 text-sm font-semibold text-zinc-950 shadow-lg shadow-brand-500/30 transition hover:from-brand-200 hover:to-brand-500"
             >
               {hero.primaryCta.label}
@@ -73,28 +68,22 @@ export default function Hero() {
                 →
               </span>
             </a>
-            <button
-              type="button"
+            <HeroScrollButton
+              target={hero.secondaryCta.target}
+              label={hero.secondaryCta.label}
               className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/5 px-6 py-3 text-sm font-medium text-slate-100 transition hover:border-brand-400/60 hover:bg-brand-400/5"
-              onClick={() => scrollToId(hero.secondaryCta.target)}
-            >
-              {hero.secondaryCta.label}
-            </button>
+            />
           </div>
 
           <div className="space-y-1 text-base text-slate-300">
             <p>{hero.pricingLine}</p>
             <p className="text-slate-400">{hero.stackLine}</p>
             <p className="text-base text-emerald-300/90">
-              Spots left at 50% off:{" "}
-              <span className="font-semibold">{spotsLeft}</span> /{" "}
-              {hero.offer.totalSpots}
+              No long-term contract. Monitoring is optional.
             </p>
           </div>
 
-          <p className="pt-1 text-base text-slate-400">
-            {hero.trustLine}
-          </p>
+          <p className="pt-1 text-base text-slate-400">{hero.trustLine}</p>
         </div>
 
         <div className="flex-1">
@@ -105,20 +94,20 @@ export default function Hero() {
                 Live · sitesinc.co
               </span>
               <span className="rounded-full bg-white/5 px-3 py-1 text-xs uppercase tracking-wider">
-                Sitesync Business
+                Sitesinc
               </span>
             </div>
             <div className="space-y-4">
               <div>
                 <p className="text-lg font-semibold tracking-tight text-white">
-                  {SITESYNC_SITE.business}
+                  {SITESINC_SITE.business}
                 </p>
                 <p className="mt-2 text-base leading-relaxed text-slate-300">
-                  {SITESYNC_SITE.tagline}
+                  {SITESINC_SITE.tagline}
                 </p>
               </div>
               <div className="grid grid-cols-3 gap-3">
-                {SITESYNC_SITE.services.slice(0, 3).map((service) => (
+                {SITESINC_SITE.services.slice(0, 3).map((service) => (
                   <div
                     key={service.name}
                     className="rounded-2xl border border-white/5 bg-surface/80 p-3"
@@ -139,13 +128,11 @@ export default function Hero() {
                     Same live offer, eight different layouts.
                   </p>
                 </div>
-                <button
-                  type="button"
+                <HeroScrollButton
+                  target="designs"
+                  label="See 8 designs"
                   className="shrink-0 rounded-full bg-white/10 px-4 py-2 text-xs font-medium text-slate-50 transition hover:bg-brand-500 hover:text-zinc-950"
-                  onClick={() => scrollToId("designs")}
-                >
-                  See 8 designs
-                </button>
+                />
               </div>
             </div>
             <div className="pointer-events-none absolute inset-0 rounded-3xl border border-white/5" />

@@ -27,7 +27,7 @@ type CartContextValue = {
   getLineProduct: (slug: string) => Product | undefined;
 };
 
-const STORAGE_KEY = "sitesync-cart-v1";
+const STORAGE_KEY = "sitesinc-cart-v1";
 const CartContext = createContext<CartContextValue | null>(null);
 
 function readStored(): CartLine[] {

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import MiniSiteFrame from "@/components/MiniSiteFrame";
-import { DESIGN_STYLES, SITESYNC_SITE } from "@/lib/design-styles";
+import { DESIGN_STYLES, SITESINC_SITE } from "@/lib/design-styles";
 
 const ROTATE_MS = 8000;
 
@@ -34,7 +34,7 @@ export default function DesignShowcase() {
           </h2>
           <p className="text-base text-slate-300">
             Ultra-modern layouts with different structure and personality —
-            watching Sitesync Business rotate through each one. This is the live
+            watching Sitesinc rotate through each one. This is the live
             sitesinc.co offer, not a fake demo client.
           </p>
         </div>
@@ -67,7 +67,7 @@ export default function DesignShowcase() {
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/80" />
             </div>
             <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-wider text-slate-300">
-              Sitesync · {active.name}
+              Sitesinc · {active.name}
             </div>
           </div>
 
@@ -75,7 +75,7 @@ export default function DesignShowcase() {
             key={active.id}
             className="animate-design-fade-in rounded-[26px] border border-white/5 bg-black/40 p-4 sm:p-5"
           >
-            <MiniSiteFrame style={active} content={SITESYNC_SITE} />
+            <MiniSiteFrame style={active} content={SITESINC_SITE} />
           </div>
         </div>
       </div>

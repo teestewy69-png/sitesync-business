@@ -148,7 +148,7 @@ export default function RealSmallBusinessWebsiteNeeds() {
 
           <section>
             <h2 className="text-lg font-semibold text-slate-50 sm:text-xl">
-              How Sitesync Business bakes all of this into your site
+              How Sitesinc bakes all of this into your site
             </h2>
             <p className="mt-2">
               When we build your site, these elements aren&apos;t
@@ -183,7 +183,7 @@ export default function RealSmallBusinessWebsiteNeeds() {
                 href="/"
                 className="font-semibold text-brand-300 hover:underline"
               >
-                Click here to see how Sitesync Business can build it for you.
+                Click here to see how Sitesinc can build it for you.
               </Link>{" "}
               We&apos;ll handle the structure, design, SEO basics, and
               monetization setup so you can focus on running your business.

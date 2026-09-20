@@ -1,5 +1,5 @@
 const TICKER_COPY =
-  "Be one of the 1st 10 customers and receive 1/2 off on your website build";
+  "Website builds starting at $1,995 · $997.50 to start · $997.50 at launch · Optional monitoring $129/month · Request, not a purchase";
 
 export default function AnnouncementTicker() {
   // Duplicate segments for a seamless CSS loop (translate -50%).
@@ -16,7 +16,7 @@ export default function AnnouncementTicker() {
     <div
       className="announcement-ticker sticky top-0 z-[100] flex h-11 items-center overflow-hidden border-b border-red-700 bg-red-600 sm:h-12"
       role="region"
-      aria-label="Launch offer"
+      aria-label="Current pricing"
     >
       <div className="announcement-ticker__track flex w-max whitespace-nowrap text-sm font-bold uppercase tracking-wide text-white sm:text-base">
         <div className="flex shrink-0 items-center">{segments}</div>
