@@ -93,7 +93,7 @@ export default function Pricing() {
               </li>
             ))}
           </ul>
-          <p className="mt-6 text-base text-slate-500">{onboarding.note}</p>
+          <p className="mt-6 text-base text-slate-400">{onboarding.note}</p>
         </div>
       </div>
     </section>

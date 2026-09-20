@@ -1,8 +1,7 @@
-"use client";
-
+import Image from "next/image";
 import content from "@/content.json";
-import { scrollToId } from "@/lib/scroll";
 import { SITESINC_SITE } from "@/lib/design-styles";
+import HeroScrollButton from "@/components/HeroScrollButton";
 
 export default function Hero() {
   const { hero, site, pricing } = content;
@@ -15,10 +14,12 @@ export default function Hero() {
 
       <nav className="relative mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         <a href="#" className="flex items-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src="/logo.png"
             alt={`${site.name} logo`}
+            width={192}
+            height={96}
+            priority
             className="h-20 w-auto rounded-lg ring-1 ring-white/10 sm:h-24"
           />
         </a>
@@ -67,13 +68,11 @@ export default function Hero() {
                 →
               </span>
             </a>
-            <button
-              type="button"
+            <HeroScrollButton
+              target={hero.secondaryCta.target}
+              label={hero.secondaryCta.label}
               className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/5 px-6 py-3 text-sm font-medium text-slate-100 transition hover:border-brand-400/60 hover:bg-brand-400/5"
-              onClick={() => scrollToId(hero.secondaryCta.target)}
-            >
-              {hero.secondaryCta.label}
-            </button>
+            />
           </div>
 
           <div className="space-y-1 text-base text-slate-300">
@@ -84,9 +83,7 @@ export default function Hero() {
             </p>
           </div>
 
-          <p className="pt-1 text-base text-slate-400">
-            {hero.trustLine}
-          </p>
+          <p className="pt-1 text-base text-slate-400">{hero.trustLine}</p>
         </div>
 
         <div className="flex-1">
@@ -131,13 +128,11 @@ export default function Hero() {
                     Same live offer, eight different layouts.
                   </p>
                 </div>
-                <button
-                  type="button"
+                <HeroScrollButton
+                  target="designs"
+                  label="See 8 designs"
                   className="shrink-0 rounded-full bg-white/10 px-4 py-2 text-xs font-medium text-slate-50 transition hover:bg-brand-500 hover:text-zinc-950"
-                  onClick={() => scrollToId("designs")}
-                >
-                  See 8 designs
-                </button>
+                />
               </div>
             </div>
             <div className="pointer-events-none absolute inset-0 rounded-3xl border border-white/5" />

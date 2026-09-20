@@ -40,7 +40,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                 {product.price}
               </span>
               {product.regularPrice ? (
-                <span className="text-base text-slate-500 line-through">
+                <span className="text-base text-slate-400 line-through">
                   {product.regularPrice}
                 </span>
               ) : null}

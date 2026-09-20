@@ -74,7 +74,7 @@ export default async function ProductPage({ params }: Props) {
                   {product.price}
                 </span>
                 {product.regularPrice ? (
-                  <span className="text-base text-slate-500 line-through">
+                  <span className="text-base text-slate-400 line-through">
                     {product.regularPrice}
                   </span>
                 ) : null}
@@ -94,17 +94,17 @@ export default async function ProductPage({ params }: Props) {
             </h2>
             <ul className="mt-3 space-y-2 text-base text-slate-400">
               <li>
-                <span className="text-slate-500">Category:</span>{" "}
+                <span className="text-slate-400">Category:</span>{" "}
                 {product.category}
               </li>
               {product.badge ? (
                 <li>
-                  <span className="text-slate-500">Offer:</span>{" "}
+                  <span className="text-slate-400">Offer:</span>{" "}
                   {product.badge}
                 </li>
               ) : null}
               <li>
-                <span className="text-slate-500">Fulfillment:</span>{" "}
+                <span className="text-slate-400">Fulfillment:</span>{" "}
                 {product.contactOnly
                   ? "Contact / custom quote"
                   : "Digital / affiliate bundle"}

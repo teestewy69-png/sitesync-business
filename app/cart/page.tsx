@@ -77,7 +77,7 @@ export default function CartPage() {
                   </p>
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-3">
-                  <label className="text-xs uppercase tracking-wider text-slate-500">
+                  <label className="text-xs uppercase tracking-wider text-slate-400">
                     Qty
                     <input
                       type="number"

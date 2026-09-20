@@ -14,10 +14,10 @@ export default function Analytics({ measurementId }: AnalyticsProps) {
       {/* This matches the first script tag from Google */}
       <Script
         src={`https://www.googletagmanager.com/gtag/js?id=${measurementId}`}
-        strategy="afterInteractive"
+        strategy="lazyOnload"
       />
       {/* This matches the second script tag from Google */}
-      <Script id="ga4-init" strategy="afterInteractive">
+      <Script id="ga4-init" strategy="lazyOnload">
         {`
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}

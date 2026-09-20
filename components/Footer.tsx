@@ -20,7 +20,7 @@ export default function Footer() {
             alt={site.name}
             className="h-14 w-auto rounded-lg ring-1 ring-white/10 sm:h-16"
           />
-          <p className="text-sm text-slate-500 sm:text-sm">
+          <p className="text-sm text-slate-400 sm:text-sm">
             © {new Date().getFullYear()} {footer.legalName}. All rights
             reserved.
           </p>

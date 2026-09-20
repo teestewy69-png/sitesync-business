@@ -47,7 +47,7 @@ export default function ProductCard({ product }: { product: Product }) {
                 {product.price}
               </span>
               {product.regularPrice ? (
-                <span className="text-sm text-slate-500 line-through">
+                <span className="text-sm text-slate-400 line-through">
                   {product.regularPrice}
                 </span>
               ) : null}

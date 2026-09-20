@@ -80,10 +80,10 @@ export default async function PublicCaseStudy() {
           </ul>
         </section>
 
-        <p className="mt-10 text-sm text-slate-500">
+        <p className="mt-10 text-sm text-slate-400">
           Internal operators review evidence in the factory workspace.
         </p>
-        <p className="mt-2 text-sm text-slate-500">
+        <p className="mt-2 text-sm text-slate-400">
           <Link href="/" className="text-brand-300">
             Back to Sitesinc
           </Link>

@@ -49,7 +49,7 @@ export default function PickYourDesign() {
               value={businessName}
               onChange={(event) => setBusinessName(event.target.value)}
               placeholder="e.g. Harbor Barbers"
-              className="w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-base text-white outline-none transition placeholder:text-slate-500 focus:border-brand-400/60"
+              className="w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-base text-white outline-none transition placeholder:text-slate-400 focus:border-brand-400/60"
             />
           </label>
           <label className="block">
@@ -61,7 +61,7 @@ export default function PickYourDesign() {
               value={keyword}
               onChange={(event) => setKeyword(event.target.value)}
               placeholder="e.g. fades & beard trims"
-              className="w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-base text-white outline-none transition placeholder:text-slate-500 focus:border-brand-400/60"
+              className="w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-base text-white outline-none transition placeholder:text-slate-400 focus:border-brand-400/60"
             />
           </label>
         </div>
