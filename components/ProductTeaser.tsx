@@ -60,7 +60,7 @@ export default function ProductTeaser() {
                     {cta.label}
                   </a>
                 ) : (
-                  <p className="mt-5 text-sm font-medium text-slate-500">
+                  <p className="mt-5 text-sm font-medium text-slate-400">
                     Join the checklist list to hear when it drops.
                   </p>
                 )}

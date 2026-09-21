@@ -208,7 +208,7 @@ export default function DiyVsDoneForYouWebsites() {
               long-term
             </h2>
             <p className="mt-2">
-              A $1,499 professional build can feel expensive next to a $20/month
+              A $1,995 professional build can feel expensive next to a $20/month
               DIY tool. But if a proper site helps you:
             </p>
             <ul className="mt-2 list-disc pl-5">
@@ -225,10 +225,10 @@ export default function DiyVsDoneForYouWebsites() {
 
           <section>
             <h2 className="text-lg font-semibold text-slate-50 sm:text-xl">
-              How Sitesync Business fits into this picture
+              How Sitesinc fits into this picture
             </h2>
             <p className="mt-2">
-              Sitesync Business is for small and local businesses who:
+              Sitesinc is for small and local businesses who:
             </p>
             <ul className="mt-2 list-disc pl-5">
               <li>
@@ -273,7 +273,7 @@ export default function DiyVsDoneForYouWebsites() {
                 href="/"
                 className="font-semibold text-brand-300 hover:underline"
               >
-                Click here to see how Sitesync Business can build it for you.
+                Click here to see how Sitesinc can build it for you.
               </Link>{" "}
               We&apos;ll handle the design, tech, SEO basics, and funnels so you
               can get back to running your business.

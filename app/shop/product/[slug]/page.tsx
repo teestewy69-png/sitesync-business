@@ -1,22 +1,23 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getProduct, products } from "@/data/products";
+import ProductActions from "@/components/shop/ProductActions";
+import { getProduct, getPublicProducts } from "@/data/products";
 
 type Props = {
   params: Promise<{ slug: string }>;
 };
 
 export function generateStaticParams() {
-  return products.map((p) => ({ slug: p.slug }));
+  return getPublicProducts().map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
   const product = getProduct(slug);
-  if (!product) return { title: "Product | Sitesync Business" };
+  if (!product) return { title: "Product | Sitesinc" };
   return {
-    title: `${product.name} | Sitesync Shop`,
+    title: `${product.name} | Sitesinc Shop`,
     description: product.description,
   };
 }
@@ -73,7 +74,7 @@ export default async function ProductPage({ params }: Props) {
                   {product.price}
                 </span>
                 {product.regularPrice ? (
-                  <span className="text-base text-slate-500 line-through">
+                  <span className="text-base text-slate-400 line-through">
                     {product.regularPrice}
                   </span>
                 ) : null}
@@ -85,23 +86,7 @@ export default async function ProductPage({ params }: Props) {
             {product.description}
           </p>
 
-          {product.contactOnly ? (
-            <div className="rounded-2xl border border-brand-400/30 bg-brand-500/10 p-5">
-              <p className="text-sm font-semibold text-brand-200">
-                Contact required
-              </p>
-              <p className="mt-1 text-base text-slate-400">
-                This offer is available by inquiry only. Email us for pricing,
-                availability, and next steps.
-              </p>
-              <a
-                href="mailto:save@sitesinc.co"
-                className="mt-4 inline-flex items-center justify-center rounded-xl bg-gradient-to-b from-brand-300 to-brand-600 px-5 py-2.5 text-sm font-semibold text-zinc-950 shadow-glow transition hover:from-brand-200 hover:to-brand-500"
-              >
-                Email save@sitesinc.co
-              </a>
-            </div>
-          ) : null}
+          {product.contactOnly ? <ProductActions product={product} /> : null}
 
           <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
             <h2 className="text-sm font-semibold text-white">
@@ -109,17 +94,17 @@ export default async function ProductPage({ params }: Props) {
             </h2>
             <ul className="mt-3 space-y-2 text-base text-slate-400">
               <li>
-                <span className="text-slate-500">Category:</span>{" "}
+                <span className="text-slate-400">Category:</span>{" "}
                 {product.category}
               </li>
               {product.badge ? (
                 <li>
-                  <span className="text-slate-500">Offer:</span>{" "}
+                  <span className="text-slate-400">Offer:</span>{" "}
                   {product.badge}
                 </li>
               ) : null}
               <li>
-                <span className="text-slate-500">Fulfillment:</span>{" "}
+                <span className="text-slate-400">Fulfillment:</span>{" "}
                 {product.contactOnly
                   ? "Contact / custom quote"
                   : "Digital / affiliate bundle"}
@@ -127,31 +112,7 @@ export default async function ProductPage({ params }: Props) {
             </ul>
           </div>
 
-          <div className="flex flex-col gap-3 pt-1 sm:flex-row">
-            {product.contactOnly ? (
-              <a
-                href="mailto:save@sitesinc.co"
-                className="inline-flex flex-1 items-center justify-center rounded-xl bg-gradient-to-b from-brand-300 to-brand-600 px-6 py-3 text-sm font-semibold text-zinc-950 shadow-glow transition hover:from-brand-200 hover:to-brand-500"
-              >
-                Contact us
-              </a>
-            ) : (
-              <>
-                <Link
-                  href="/cart"
-                  className="inline-flex flex-1 items-center justify-center rounded-xl bg-gradient-to-b from-brand-300 to-brand-600 px-6 py-3 text-sm font-semibold text-zinc-950 shadow-glow transition hover:from-brand-200 hover:to-brand-500"
-                >
-                  Add to Cart
-                </Link>
-                <Link
-                  href="/checkout"
-                  className="inline-flex flex-1 items-center justify-center rounded-xl border border-white/20 bg-white/5 px-6 py-3 text-sm font-medium text-slate-100 transition hover:border-brand-400/50"
-                >
-                  Buy Now
-                </Link>
-              </>
-            )}
-          </div>
+          {product.contactOnly ? null : <ProductActions product={product} />}
         </div>
       </div>
     </section>

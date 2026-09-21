@@ -13,14 +13,14 @@ export default function Footer() {
       <div className="relative mx-auto flex max-w-6xl flex-col gap-6 px-6 text-sm text-slate-400 sm:flex-row sm:items-center sm:justify-between sm:text-base">
         {/* Left: brand & rights */}
         <div className="space-y-2">
-          {/* The logo lockup already contains the Sitesync wordmark */}
+          {/* The logo lockup already contains the Sitesinc wordmark */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/logo.png"
             alt={site.name}
             className="h-14 w-auto rounded-lg ring-1 ring-white/10 sm:h-16"
           />
-          <p className="text-sm text-slate-500 sm:text-sm">
+          <p className="text-sm text-slate-400 sm:text-sm">
             © {new Date().getFullYear()} {footer.legalName}. All rights
             reserved.
           </p>

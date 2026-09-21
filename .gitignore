@@ -40,6 +40,22 @@ yarn-error.log*
 # netlify local deploy cache
 .netlify/
 
+# local JSON store (leads, orders, inquiries, factory)
+/data/store/*.json
+/data/store/.write-probe
+/data/store/uploads/
+!/data/store/.gitkeep
+
+# internal factory workspace + dated baselines
+/data/factory/**
+!/data/factory/.gitkeep
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+!/data/factory/screenshots/.gitkeep
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

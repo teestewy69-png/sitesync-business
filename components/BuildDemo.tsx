@@ -186,7 +186,7 @@ export default function BuildDemo() {
                       <span className="block text-base font-medium text-slate-100">
                         {s.label}
                       </span>
-                      <span className="block text-sm text-slate-500">
+                      <span className="block text-sm text-slate-400">
                         {s.detail}
                       </span>
                     </span>
@@ -293,7 +293,7 @@ export default function BuildDemo() {
                       </button>
                     </div>
                   ) : (
-                    <p className="text-sm text-slate-500">
+                    <p className="text-sm text-slate-400">
                       Loading hero, services, and CTAs…
                     </p>
                   )}
@@ -346,7 +346,7 @@ export default function BuildDemo() {
               )}
             </div>
           </div>
-          <p className="mt-3 text-sm text-slate-500">
+          <p className="mt-3 text-sm text-slate-400">
             Sample client build (demo data). Paying customers get their own niche,
             copy, and design theme — same pipeline.
           </p>
