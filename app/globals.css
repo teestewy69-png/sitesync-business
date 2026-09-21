@@ -84,7 +84,7 @@
 }
 
 .announcement-ticker__track {
-  animation: announcement-ticker-scroll 22s linear infinite;
+  animation: announcement-ticker-scroll 48s linear infinite;
   will-change: transform;
 }
 
