@@ -1,8 +1,9 @@
 import type { MetadataRoute } from "next";
 import { isPreviewEnv } from "@/lib/factory/preview";
+import { isStagingEnv } from "@/lib/site-env";
 
 export default function robots(): MetadataRoute.Robots {
-  if (isPreviewEnv()) {
+  if (isPreviewEnv() || isStagingEnv()) {
     return {
       rules: [{ userAgent: "*", disallow: "/" }],
     };

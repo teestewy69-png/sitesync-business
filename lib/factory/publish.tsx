@@ -26,15 +26,17 @@ export async function getPreviewPage(slug: string): Promise<FactoryPage | null> 
 
 export async function factoryPageMetadata(slug: string): Promise<Metadata> {
   const { isPreviewRequest } = await import("./preview");
+  const { isStagingEnv } = await import("@/lib/site-env");
   const preview = await isPreviewRequest();
   const page = preview ? await getPreviewPage(slug) : await getPublishedPage(slug);
   if (!page) {
     return { robots: { index: false, follow: false } };
   }
+  const blockIndexing = preview || isStagingEnv();
   return {
     title: page.title,
     description: page.metaDescription,
-    robots: preview ? { index: false, follow: false } : { index: true, follow: true },
+    robots: blockIndexing ? { index: false, follow: false } : { index: true, follow: true },
   };
 }
 

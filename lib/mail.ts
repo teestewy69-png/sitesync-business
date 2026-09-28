@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { stagingMailBody, stagingMailSubject } from "@/lib/site-env";
 
 export function isMailConfigured(): boolean {
   return Boolean(process.env.TITAN_SMTP_USER && process.env.TITAN_SMTP_PASS);
@@ -76,8 +77,8 @@ export async function sendMail(opts: {
   const mail = {
     from: `"Sitesinc" <${user}>`,
     to: opts.to,
-    subject: opts.subject,
-    text: opts.text,
+    subject: stagingMailSubject(opts.subject),
+    text: stagingMailBody(opts.text),
     replyTo: opts.replyTo,
   };
 

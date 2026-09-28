@@ -11,6 +11,7 @@ import {
   writeRecord,
   writeRecords,
 } from "@/lib/persistence";
+import { isStagingEnv } from "@/lib/site-env";
 
 export type Lead = {
   id: string;
@@ -25,6 +26,7 @@ export type Lead = {
   linkageState?: "linked" | "project_pending";
   idempotencyKey?: string;
   notificationState?: "sent" | "failed" | "not_configured";
+  env?: "staging";
 };
 
 export type Inquiry = {
@@ -35,6 +37,7 @@ export type Inquiry = {
   email: string;
   message: string;
   createdAt: string;
+  env?: "staging";
 };
 
 export type ClientProject = {
@@ -44,6 +47,7 @@ export type ClientProject = {
   label: string;
   leadId?: string;
   monitoringInterest?: boolean;
+  env?: "staging";
 };
 
 export type OrderItem = {
@@ -67,7 +71,13 @@ export type Order = {
   notes?: string;
   stripeCheckoutUrl?: string;
   createdAt: string;
+  env?: "staging";
 };
+
+function withSiteEnv<T extends { env?: "staging" }>(record: T): T {
+  if (!isStagingEnv()) return record;
+  return { ...record, env: "staging" };
+}
 
 type Collection = "leads" | "inquiries" | "orders" | "projects";
 
@@ -148,12 +158,13 @@ export async function storeWritable(): Promise<boolean> {
 }
 
 export async function appendLead(lead: Lead): Promise<Lead> {
-  await writeRecord("leads", lead);
-  await writeIndex(emailIndexKey(lead.email, lead.source), lead.id);
-  if (lead.idempotencyKey) {
-    await writeIndex(idempotencyIndexKey(lead.source, lead.idempotencyKey), lead.id);
+  const record = withSiteEnv(lead);
+  await writeRecord("leads", record);
+  await writeIndex(emailIndexKey(record.email, record.source), record.id);
+  if (record.idempotencyKey) {
+    await writeIndex(idempotencyIndexKey(record.source, record.idempotencyKey), record.id);
   }
-  return lead;
+  return record;
 }
 
 export async function listLeads(): Promise<Lead[]> {
@@ -212,14 +223,16 @@ export async function updateLead(id: string, patch: Partial<Lead>): Promise<Lead
 }
 
 export async function appendInquiry(inquiry: Inquiry): Promise<Inquiry> {
-  await writeRecord("inquiries", inquiry);
-  return inquiry;
+  const record = withSiteEnv(inquiry);
+  await writeRecord("inquiries", record);
+  return record;
 }
 
 export async function appendProject(project: ClientProject): Promise<ClientProject> {
-  await writeRecord("projects", project);
-  if (project.leadId) await writeIndex(projectLeadIndexKey(project.leadId), project.id);
-  return project;
+  const record = withSiteEnv(project);
+  await writeRecord("projects", record);
+  if (record.leadId) await writeIndex(projectLeadIndexKey(record.leadId), record.id);
+  return record;
 }
 
 export async function listProjects(): Promise<ClientProject[]> {
@@ -239,8 +252,9 @@ export async function findProjectByLeadId(leadId: string): Promise<ClientProject
 }
 
 export async function appendOrder(order: Order): Promise<Order> {
-  await writeRecord("orders", order);
-  return order;
+  const record = withSiteEnv(order);
+  await writeRecord("orders", record);
+  return record;
 }
 
 export async function updateOrder(id: string, patch: Partial<Order>): Promise<Order | null> {

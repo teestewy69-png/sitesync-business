@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isMailConfigured } from "@/lib/mail";
 import { isStripeConfigured } from "@/lib/stripe-checkout";
+import { isStagingEnv } from "@/lib/site-env";
 import { ensureBlobsFromRequest, storeInfo, storeWritable } from "@/lib/store";
 
 export const runtime = "nodejs";
@@ -17,5 +18,6 @@ export async function GET(req: NextRequest) {
     store: storeInfo(),
     storeWritable: writable,
     factory: "sitesinc-growth-case-study",
+    ...(isStagingEnv() ? { siteEnv: "staging" as const } : {}),
   });
 }

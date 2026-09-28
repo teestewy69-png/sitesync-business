@@ -29,7 +29,8 @@ export default async function InboxPage() {
       <p className="max-w-3xl text-sm text-slate-400">
         Name and email stay in the private store. Public pages and the case study never show this.
         SMTP is a follow-up channel, not the source of truth. Store: {store.backend}
-        {store.durable ? " (durable)" : " (local development only — not safe on Netlify)"}.
+        {store.durable ? " (durable)" : " (local development only — not safe on Netlify)"}
+        {store.storeName === "sitesinc-crm-staging" ? " · staging blob store" : ""}.
       </p>
 
       <h2 className="mt-8 text-lg font-semibold">Checklist leads</h2>
@@ -45,7 +46,8 @@ export default async function InboxPage() {
                 monitoring {lead.monitoringInterest ? "yes" : "no"}
                 {lead.notificationState ? ` · notify ${lead.notificationState}` : ""}
                 {lead.goals ? ` · goals saved` : ""}
-                {lead.details ? ` · details saved` : ""} · {lead.createdAt}
+                {lead.details ? ` · details saved` : ""}
+                {lead.env === "staging" ? " · env staging" : ""} · {lead.createdAt}
               </span>
             </li>
           ))
@@ -61,7 +63,8 @@ export default async function InboxPage() {
             <li key={item.id} className="rounded-xl border border-white/10 px-4 py-3">
               <strong>{item.name}</strong> · {item.email} · {item.productName}
               <span className="block text-slate-400">
-                {item.id} · {item.createdAt}
+                {item.id}
+                {item.env === "staging" ? " · env staging" : ""} · {item.createdAt}
               </span>
             </li>
           ))

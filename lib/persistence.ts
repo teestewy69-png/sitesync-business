@@ -1,11 +1,13 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { connectLambda, getStore, type Store } from "@netlify/blobs";
+import { isStagingEnv } from "@/lib/site-env";
 
 export type StoreBackend = "local-json" | "netlify-blobs";
 
 const LOCAL_DIR = path.join(process.cwd(), "data", "store");
 const BLOB_STORE_NAME = "sitesinc-crm";
+const STAGING_BLOB_STORE_NAME = "sitesinc-crm-staging";
 
 export function envFlag(name: string): string {
   return (process.env[name] || "").trim();
@@ -42,7 +44,7 @@ export function storeIsDurable(): boolean {
 }
 
 export function blobStoreName(): string {
-  return BLOB_STORE_NAME;
+  return isStagingEnv() ? STAGING_BLOB_STORE_NAME : BLOB_STORE_NAME;
 }
 
 export function blobsContextPresent(): boolean {
@@ -70,14 +72,15 @@ export function ensureBlobsFromRequest(req: { headers: Headers }): void {
 }
 
 export function getCrmStore(): Store {
+  const name = blobStoreName();
   try {
     return getStore({
-      name: BLOB_STORE_NAME,
+      name,
       consistency: "strong",
     });
   } catch (err) {
     const detail = err instanceof Error ? `${err.name}: ${err.message}` : "unknown";
-    console.error(`Netlify Blobs getStore failed (${BLOB_STORE_NAME}): ${detail}`);
+    console.error(`Netlify Blobs getStore failed (${name}): ${detail}`);
     throw new Error(`Netlify Blobs is unavailable (${detail}). Local filesystem storage is not used on this host.`);
   }
 }
