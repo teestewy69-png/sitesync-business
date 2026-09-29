@@ -29,6 +29,14 @@ export const SEO_SITE_CATALOG: SeoCatalogSite[] = [
     crawlPaths: ["/", "/emergency", "/services", "/contact"],
     note: "Internal noindex demo for multi-site SEO tests. Not a Google property and not in the sitemap.",
   },
+  {
+    id: "kurtis",
+    name: "Kurtis — artist portfolio",
+    origin: `${PRODUCTION_ORIGIN}/demo/kurtis`,
+    kind: "internal_demo",
+    crawlPaths: ["/", "/portfolio", "/about", "/exhibitions", "/contact"],
+    note: "Internal artist-portfolio preview. noindex. Not the live Kurtis domain, not a Google property, and not in the sitemap.",
+  },
 ];
 
 export function catalogSite(id?: string): SeoCatalogSite {
