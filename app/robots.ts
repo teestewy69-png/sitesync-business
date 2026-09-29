@@ -12,7 +12,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/app/", "/api/", "/cart", "/checkout", "/case-study"],
+        disallow: ["/app/", "/api/", "/cart", "/checkout", "/case-study", "/demo/"],
       },
     ],
     sitemap: "https://sitesinc.co/sitemap.xml",

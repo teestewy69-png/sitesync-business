@@ -154,6 +154,7 @@ export function seedWorkspace(): FactoryWorkspace {
     },
     visibleGaps: seedGaps(),
     latestBaselineId: "",
+    latestBaselineBySite: {},
     productionLive: true,
     rollbackOf: "",
     productionRelease: {
@@ -176,6 +177,7 @@ function withDefaults(workspace: FactoryWorkspace): FactoryWorkspace {
     visibleGaps: workspace.visibleGaps?.length ? workspace.visibleGaps : seeded.visibleGaps,
     screenshots: workspace.screenshots || [],
     productionRelease: workspace.productionRelease || seeded.productionRelease,
+    latestBaselineBySite: workspace.latestBaselineBySite || {},
   };
 }
 
@@ -289,15 +291,16 @@ export async function recordEvent(
   return event;
 }
 
-export async function captureAndStoreBaseline(origin: string): Promise<FactoryWorkspace> {
+export async function captureAndStoreBaseline(origin: string, siteId?: string): Promise<FactoryWorkspace> {
   const { captureBaseline } = await import("./crawl");
-  const snapshot = await captureBaseline({
-    origin,
-    source: origin.includes("sitesinc.co") ? "live_production" : "local",
-  });
+  const snapshot = await captureBaseline({ origin, siteId });
   await saveBaseline(snapshot);
   return updateWorkspace((workspace) => {
-    workspace.latestBaselineId = snapshot.id;
+    const id = snapshot.siteId || siteId || workspace.project.id;
+    workspace.latestBaselineBySite = { ...(workspace.latestBaselineBySite || {}), [id]: snapshot.id };
+    if (id === FACTORY_PROJECT_ID || (origin.includes("sitesinc.co") && !origin.includes("/demo/"))) {
+      workspace.latestBaselineId = snapshot.id;
+    }
     return workspace;
   });
 }

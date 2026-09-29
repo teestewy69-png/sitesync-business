@@ -1,6 +1,6 @@
 import { isMailConfigured } from "@/lib/mail";
 import { newId, storeWritable } from "@/lib/store";
-import { PUBLIC_PATHS, PRODUCTION_ORIGIN } from "./pipeline";
+import { PRODUCTION_ORIGIN } from "./pipeline";
 import type {
   BaselineSnapshot,
   BrokenLink,
@@ -268,9 +268,18 @@ async function intakeHealth(origin: string): Promise<BaselineSnapshot["intakeFor
 export async function captureBaseline(opts?: {
   origin?: string;
   source?: BaselineSnapshot["source"];
+  siteId?: string;
+  paths?: string[];
+  skipIntake?: boolean;
 }): Promise<BaselineSnapshot> {
-  const origin = (opts?.origin || PRODUCTION_ORIGIN).replace(/\/$/, "");
-  const source = opts?.source || (origin.includes("sitesinc.co") ? "live_production" : "local");
+  const { catalogSite } = await import("./seo-sites");
+  const site = catalogSite(opts?.siteId);
+  const origin = (opts?.origin || site.origin || PRODUCTION_ORIGIN).replace(/\/$/, "");
+  const siteId = opts?.siteId || site.id;
+  const demo = site.kind === "internal_demo" || origin.includes("/demo/");
+  const source =
+    opts?.source ||
+    (demo ? "manual" : origin.includes("sitesinc.co") ? "live_production" : "local");
   const capturedAt = new Date().toISOString();
 
   const robots = await fetchText(`${origin}/robots.txt`);
@@ -278,20 +287,25 @@ export async function captureBaseline(opts?: {
   const sitemapList = sitemapFetch.ok ? sitemapUrls(sitemapFetch.body) : [];
 
   const extraPaths: string[] = [];
-  try {
-    const { readWorkspace } = await import("./workspace");
-    const workspace = await readWorkspace();
-    for (const page of workspace.pages) {
-      if (page.status === "published" || page.status === "staged") extraPaths.push(page.path);
+  if (!demo) {
+    try {
+      const { readWorkspace } = await import("./workspace");
+      const workspace = await readWorkspace();
+      for (const page of workspace.pages) {
+        if (page.status === "published" || page.status === "staged") extraPaths.push(page.path);
+      }
+    } catch {
+      /* first capture may seed the workspace; inventory still covers PUBLIC_PATHS */
     }
-  } catch {
-    /* first capture may seed the workspace; inventory still covers PUBLIC_PATHS */
   }
 
+  const seedPaths = opts?.paths?.length ? opts.paths : [...site.crawlPaths];
   const pageInventory: PageAudit[] = [];
-  const paths = [...new Set<string>([...PUBLIC_PATHS, ...extraPaths, "/case-study"])];
+  const paths = demo
+    ? [...new Set<string>(seedPaths)]
+    : [...new Set<string>([...seedPaths, ...extraPaths, "/case-study"])];
   for (const pathName of paths) {
-    const fetched = await fetchText(`${origin}${pathName}`);
+    const fetched = await fetchText(`${origin}${pathName === "/" ? "" : pathName}`);
     pageInventory.push(parsePage(origin, pathName, fetched));
   }
 
@@ -328,7 +342,8 @@ export async function captureBaseline(opts?: {
 
   return {
     id: newId("base"),
-    projectId: "sitesinc-growth-case-study",
+    projectId: siteId,
+    siteId,
     capturedAt,
     origin,
     source,
@@ -378,7 +393,18 @@ export async function captureBaseline(opts?: {
         ? "GA4 is installed on the public site. This snapshot does not import numeric reports (in progress)."
         : "NEXT_PUBLIC_GA_MEASUREMENT_ID is empty. No analytics metrics claimed.",
     },
-    intakeFormHealth: await intakeHealth(origin),
+    intakeFormHealth: demo || opts?.skipIntake
+      ? {
+          checklistEndpoint: "ok" as const,
+          inquiryEndpoint: "ok" as const,
+          storeWritable: true,
+          smtpConfigured: isMailConfigured(),
+          notes: [
+            "Intake form checks are skipped for this internal demo origin. They belong to the Sitesinc property, not this crawl.",
+          ],
+          launchBlocking: false,
+        }
+      : await intakeHealth(origin.includes("/demo/") ? PRODUCTION_ORIGIN : origin),
     screenshots: [],
     secretsRedacted: true,
   };

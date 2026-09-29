@@ -8,7 +8,8 @@ import type {
   IndexingRecord,
   PageAudit,
 } from "./types";
-import { latestBaseline, listBaselines, readWorkspace } from "./workspace";
+import { catalogSite, originKey, SEO_SITE_CATALOG } from "./seo-sites";
+import { listBaselines, readWorkspace } from "./workspace";
 
 export type SeoSite = {
   id: string;
@@ -16,6 +17,9 @@ export type SeoSite = {
   origin: string;
   projectId: string;
   internal: boolean;
+  kind: "production" | "internal_demo";
+  note: string;
+  crawlOrigin?: string;
 };
 
 export type SeoIssue = {
@@ -78,41 +82,60 @@ export type SeoModel = {
   absentCapabilities: string[];
 };
 
-function originKey(origin: string) {
-  return origin.replace(/^https?:\/\//, "").replace(/\/$/, "").toLowerCase() || "site";
-}
-
 export function listSeoSites(workspace: FactoryWorkspace, baselines: BaselineSnapshot[]): SeoSite[] {
   const sites = new Map<string, SeoSite>();
-  const primary: SeoSite = {
-    id: workspace.project.id || FACTORY_PROJECT_ID,
-    name: workspace.project.name,
-    origin: workspace.project.productionUrl,
-    projectId: workspace.project.id,
-    internal: true,
-  };
-  sites.set(primary.id, primary);
+  for (const row of SEO_SITE_CATALOG) {
+    sites.set(row.id, {
+      id: row.id,
+      name: row.name,
+      origin: row.origin,
+      projectId: row.id,
+      internal: true,
+      kind: row.kind,
+      note: row.note,
+    });
+  }
+  const primary = sites.get(workspace.project.id || FACTORY_PROJECT_ID);
+  if (primary) {
+    primary.origin = workspace.project.productionUrl || primary.origin;
+    primary.name = workspace.project.name || primary.name;
+  }
   for (const snapshot of baselines) {
+    const catalogId =
+      snapshot.siteId && sites.has(snapshot.siteId)
+        ? snapshot.siteId
+        : [...sites.values()].find((site) => originKey(site.origin) === originKey(snapshot.origin))?.id;
+    if (catalogId) {
+      const site = sites.get(catalogId);
+      if (site) site.crawlOrigin = snapshot.origin;
+      continue;
+    }
     const id = `origin:${originKey(snapshot.origin)}`;
-    if (![...sites.values()].some((site) => originKey(site.origin) === originKey(snapshot.origin))) {
+    if (!sites.has(id)) {
       sites.set(id, {
         id,
-        name: `${workspace.project.name} (${snapshot.source})`,
+        name: snapshot.origin,
         origin: snapshot.origin,
-        projectId: workspace.project.id,
+        projectId: snapshot.siteId || snapshot.projectId,
         internal: true,
+        kind: snapshot.origin.includes("/demo/") ? "internal_demo" : "production",
+        note: "Discovered from a stored baseline. Not a Search Console property unless proven otherwise.",
+        crawlOrigin: snapshot.origin,
       });
     }
   }
-  // CRM intakes are not independent SEO inventories until they have their own origin.
   return [...sites.values()];
 }
 
-function pickBaseline(baselines: BaselineSnapshot[], site: SeoSite, fallback: BaselineSnapshot | null) {
-  const matches = baselines
-    .filter((row) => originKey(row.origin) === originKey(site.origin))
+function pickBaseline(baselines: BaselineSnapshot[], site: SeoSite) {
+  const bySite = baselines
+    .filter((row) => row.siteId === site.id || row.projectId === site.id)
     .sort((a, b) => a.capturedAt.localeCompare(b.capturedAt));
-  return matches.at(-1) || fallback;
+  if (bySite.length) return bySite.at(-1) || null;
+  const byOrigin = baselines
+    .filter((row) => originKey(row.origin) === originKey(site.crawlOrigin || site.origin))
+    .sort((a, b) => a.capturedAt.localeCompare(b.capturedAt));
+  return byOrigin.at(-1) || null;
 }
 
 function duplicateKeys(values: string[]) {
@@ -324,10 +347,12 @@ function buildRefresh(
 export async function loadSeoModel(siteId?: string): Promise<SeoModel> {
   const workspace = await readWorkspace();
   const baselines = await listBaselines();
-  const fallback = await latestBaseline();
   const sites = listSeoSites(workspace, baselines);
   const site = sites.find((row) => row.id === siteId) || sites[0];
-  const baseline = pickBaseline(baselines, site, fallback);
+  const catalog = catalogSite(site.id);
+  site.note = catalog.note || site.note;
+  site.kind = catalog.kind || site.kind;
+  const baseline = pickBaseline(baselines, site);
   const preflight = buildPreflight(workspace, baseline);
   const inventory = baseline?.pageInventory || [];
   const duplicateTitles = duplicateKeys(inventory.filter((p) => p.statusCode === 200).map((p) => p.title));
@@ -352,32 +377,36 @@ export async function loadSeoModel(siteId?: string): Promise<SeoModel> {
     source: "baseline",
   }));
 
-  const inventoriedPaths = new Set(pages.map((page) => page.path));
-  for (const planned of workspace.pages) {
-    if (inventoriedPaths.has(planned.path)) continue;
-    pages.push({
-      path: planned.path,
-      url: `${site.origin}${planned.path}`,
-      statusCode: null,
-      title: planned.title,
-      metaDescription: planned.metaDescription,
-      wordCount: planned.wordCount,
-      h1: planned.headings.slice(0, 1),
-      h2: planned.headings.slice(1),
-      h3Count: 0,
-      canonical: "",
-      robots: planned.noindex ? "noindex" : "",
-      schemaTypes: [],
-      warnings: ["Not in live baseline — planned factory page"],
-      source: "planned",
-    });
+  const isSitesinc = site.id === FACTORY_PROJECT_ID;
+  if (isSitesinc) {
+    const inventoriedPaths = new Set(pages.map((page) => page.path));
+    for (const planned of workspace.pages) {
+      if (inventoriedPaths.has(planned.path)) continue;
+      pages.push({
+        path: planned.path,
+        url: `${site.origin}${planned.path}`,
+        statusCode: null,
+        title: planned.title,
+        metaDescription: planned.metaDescription,
+        wordCount: planned.wordCount,
+        h1: planned.headings.slice(0, 1),
+        h2: planned.headings.slice(1),
+        h3Count: 0,
+        canonical: "",
+        robots: planned.noindex ? "noindex" : "",
+        schemaTypes: [],
+        warnings: ["Not in live baseline — planned factory page"],
+        source: "planned",
+      });
+    }
   }
 
   const issues = buildIssues(baseline, inventory);
-  const refresh = buildRefresh(inventory, workspace.briefs, workspace);
-  const gsc = gscConfigured();
-  const indexingKnown = workspace.indexing.filter((row) => row.lastChecked || row.state !== "not_submitted").length;
-  const indexingIndexed = workspace.indexing.filter((row) => row.state === "indexed" && row.source === "search_console").length;
+  const refresh = isSitesinc ? buildRefresh(inventory, workspace.briefs, workspace) : buildRefresh(inventory, [], { ...workspace, pages: [] });
+  const gsc = isSitesinc ? gscConfigured() : false;
+  const indexing = isSitesinc ? workspace.indexing : [];
+  const indexingKnown = indexing.filter((row) => row.lastChecked || row.state !== "not_submitted").length;
+  const indexingIndexed = indexing.filter((row) => row.state === "indexed" && row.source === "search_console").length;
 
   return {
     site,
@@ -388,8 +417,8 @@ export async function loadSeoModel(siteId?: string): Promise<SeoModel> {
     pages,
     issues,
     refresh,
-    indexing: workspace.indexing,
-    backlinkCount: workspace.backlinks.length,
+    indexing,
+    backlinkCount: isSitesinc ? workspace.backlinks.length : 0,
     summary: {
       inventoried: inventory.length,
       plannedNotLive: pages.filter((page) => page.source === "planned").length,
@@ -408,6 +437,9 @@ export async function loadSeoModel(siteId?: string): Promise<SeoModel> {
       "Keyword rank tracking",
       "Crawl budget modeling",
       "Link spam scoring",
+      ...(isSitesinc
+        ? []
+        : ["Independent production domain (this is an internal noindex demo until a live client origin exists)"]),
     ],
   };
 }

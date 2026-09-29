@@ -2,7 +2,6 @@ import Link from "next/link";
 import CaptureButton from "@/components/factory/CaptureButton";
 import { Pill } from "@/components/factory/Shell";
 import SeoWorkspace, { siteFromSearchParams } from "@/components/factory/SeoWorkspace";
-import { PRODUCTION_ORIGIN } from "@/lib/factory/pipeline";
 
 export const dynamic = "force-dynamic";
 
@@ -21,8 +20,12 @@ export default async function SeoOverviewPage({
               <p className="text-xs text-slate-400">Selected site</p>
               <p className="text-lg font-semibold">{model.site.name}</p>
               <p className="text-sm text-slate-400">{model.site.origin}</p>
+              {model.site.note ? <p className="mt-1 max-w-xl text-xs text-slate-500">{model.site.note}</p> : null}
+              {model.baseline?.origin && model.baseline.origin !== model.site.origin ? (
+                <p className="mt-1 text-xs text-slate-500">Last crawl origin: {model.baseline.origin}</p>
+              ) : null}
             </div>
-            <CaptureButton origin={model.site.origin || PRODUCTION_ORIGIN} />
+            <CaptureButton origin={model.site.crawlOrigin || model.site.origin} siteId={model.site.id} />
           </div>
 
           {!model.gscConfigured ? (
