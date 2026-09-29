@@ -4,8 +4,8 @@ export default function WebsiteFactoryHeader() {
       <div>
         <h1 className="text-lg font-semibold text-white">Website Factory</h1>
         <p className="text-base text-slate-400">
-          Create projects, generate sites, then audit and optimize them with the
-          SEO Intelligence engine.
+          Create projects, generate sites, then review them in the protected SEO
+          Intelligence workspace (baseline crawl, issues, refresh, indexing).
         </p>
       </div>
       <div className="flex gap-2">
