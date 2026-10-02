@@ -12,6 +12,7 @@ import {
   writeRecords,
 } from "@/lib/persistence";
 import { isStagingEnv } from "@/lib/site-env";
+import type { LeadStage } from "@/lib/lead-stage";
 
 export type Lead = {
   id: string;
@@ -27,6 +28,9 @@ export type Lead = {
   idempotencyKey?: string;
   notificationState?: "sent" | "failed" | "not_configured";
   env?: "staging";
+  /** Operator-only pipeline stage; absent means "new". */
+  stage?: LeadStage;
+  stageUpdatedAt?: string;
 };
 
 export type Inquiry = {
@@ -41,6 +45,8 @@ export type Inquiry = {
   idempotencyKey?: string;
   fingerprint?: string;
   notificationState?: "sent" | "failed" | "not_configured";
+  stage?: LeadStage;
+  stageUpdatedAt?: string;
 };
 
 export type ClientProject = {
@@ -51,6 +57,9 @@ export type ClientProject = {
   leadId?: string;
   monitoringInterest?: boolean;
   env?: "staging";
+  /** Operator-only pipeline stage; absent means "new". */
+  stage?: LeadStage;
+  stageUpdatedAt?: string;
 };
 
 export type OrderItem = {
@@ -231,6 +240,42 @@ export async function updateLead(id: string, patch: Partial<Lead>): Promise<Lead
     })
   );
   return updated;
+}
+
+type StageCollection = "leads" | "inquiries" | "projects";
+type StageKind = "lead" | "inquiry" | "project";
+
+const STAGE_COLLECTIONS: { collection: StageCollection; kind: StageKind }[] = [
+  { collection: "leads", kind: "lead" },
+  { collection: "inquiries", kind: "inquiry" },
+  { collection: "projects", kind: "project" },
+];
+
+/**
+ * Operator-only: set the pipeline stage on a lead, inquiry, or project by id.
+ * Writes only `stage` and `stageUpdatedAt`; `status`, dedupe keys and notification state are untouched.
+ * Returns null when no record has that id. Never returns contact details.
+ */
+export async function updateRecordStage(
+  id: string,
+  stage: LeadStage
+): Promise<{ id: string; kind: StageKind; stage: LeadStage; stageUpdatedAt: string } | null> {
+  const stageUpdatedAt = new Date().toISOString();
+  for (const { collection, kind } of STAGE_COLLECTIONS) {
+    const current = await readRecord<RecordMap[StageCollection]>(collection, id);
+    if (!current) continue;
+    if (storeBackend() === "netlify-blobs") {
+      await writeRecord(collection, { ...current, stage, stageUpdatedAt, id });
+    } else {
+      await mutateLocal(collection, (records) =>
+        (records as RecordMap[StageCollection][]).map((row) =>
+          row.id === id ? { ...row, stage, stageUpdatedAt } : row
+        ) as RecordMap[typeof collection][]
+      );
+    }
+    return { id, kind, stage, stageUpdatedAt };
+  }
+  return null;
 }
 
 export async function appendInquiry(inquiry: Inquiry): Promise<Inquiry> {

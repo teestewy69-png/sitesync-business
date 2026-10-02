@@ -1,4 +1,6 @@
 import FactoryShell from "@/components/factory/Shell";
+import LeadStageSelect from "@/components/factory/LeadStageSelect";
+import { stageOf } from "@/lib/lead-stage";
 import { ensureBlobsFromRequest, listInquiries, listLeads, listProjects, storeInfo } from "@/lib/store";
 import { readWorkspace } from "@/lib/factory/workspace";
 import { headers } from "next/headers";
@@ -49,6 +51,7 @@ export default async function InboxPage() {
                 {lead.details ? ` · details saved` : ""}
                 {lead.env === "staging" ? " · env staging" : ""} · {lead.createdAt}
               </span>
+              <LeadStageSelect id={lead.id} stage={stageOf(lead)} who={lead.name} />
             </li>
           ))
         )}
@@ -66,6 +69,7 @@ export default async function InboxPage() {
                 {item.id}
                 {item.env === "staging" ? " · env staging" : ""} · {item.createdAt}
               </span>
+              <LeadStageSelect id={item.id} stage={stageOf(item)} who={item.name} />
             </li>
           ))
         )}
@@ -79,6 +83,9 @@ export default async function InboxPage() {
             {"monitoringInterest" in item
               ? ` · monitoring ${item.monitoringInterest ? "yes" : "no"}`
               : ""}
+            {projects.length > 0 ? (
+              <LeadStageSelect id={item.id} stage={stageOf(item as { stage?: unknown })} who={item.label} />
+            ) : null}
           </li>
         ))}
       </ul>
