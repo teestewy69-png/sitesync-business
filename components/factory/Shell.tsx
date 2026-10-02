@@ -9,6 +9,7 @@ const NAV = [
   { href: "/app/inbox", label: "Inbox" },
   { href: "/app/case-study", label: "Case study" },
   { href: "/app/release", label: "QA / release" },
+  { href: "/app/qa", label: "Operator QA" },
 ];
 
 export default function FactoryShell({
