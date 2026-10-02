@@ -35,6 +35,9 @@ export type Inquiry = {
   email: string;
   message: string;
   createdAt: string;
+  idempotencyKey?: string;
+  fingerprint?: string;
+  notificationState?: "sent" | "failed" | "not_configured";
 };
 
 export type ClientProject = {
@@ -90,6 +93,14 @@ function projectLeadIndexKey(leadId: string): string {
 
 function idempotencyIndexKey(source: string, key: string): string {
   return `idempotency/${source}/${key}`;
+}
+
+function inquiryKeyIndexKey(key: string): string {
+  return `idempotency/inquiry/${key}`;
+}
+
+function inquiryFingerprintIndexKey(fingerprint: string): string {
+  return `inquiry-fp/${fingerprint}`;
 }
 
 async function mutateLocal<K extends Collection>(
@@ -213,7 +224,60 @@ export async function updateLead(id: string, patch: Partial<Lead>): Promise<Lead
 
 export async function appendInquiry(inquiry: Inquiry): Promise<Inquiry> {
   await writeRecord("inquiries", inquiry);
+  // Lookup indexes only exist on Netlify Blobs; a failed index write must not lose the inquiry.
+  try {
+    if (inquiry.idempotencyKey) {
+      await writeIndex(inquiryKeyIndexKey(inquiry.idempotencyKey), inquiry.id);
+    }
+    if (inquiry.fingerprint) {
+      await writeIndex(inquiryFingerprintIndexKey(inquiry.fingerprint), inquiry.id);
+    }
+  } catch (err) {
+    console.error("Inquiry index write failed:", err instanceof Error ? err.name : "unknown");
+  }
   return inquiry;
+}
+
+/** Stable hash of slug + email + message (whitespace/case-insensitive) used for short-window dedupe. */
+export async function inquiryFingerprint(slug: string, email: string, message: string): Promise<string> {
+  const normalized = message.toLowerCase().replace(/\s+/g, " ").trim();
+  return stableId("inqfp", `${slug}|${email.toLowerCase()}|${normalized}`);
+}
+
+/** Deterministic inquiry id for a client idempotency key (retries overwrite instead of duplicating). */
+export async function inquiryIdForKey(key: string): Promise<string> {
+  return stableId("inq", `key:${key}`);
+}
+
+export async function findInquiryById(id: string): Promise<Inquiry | null> {
+  return readRecord<Inquiry>("inquiries", id);
+}
+
+export async function findInquiryByIdempotency(key: string): Promise<Inquiry | null> {
+  if (storeBackend() === "netlify-blobs") {
+    const id = await readIndex(inquiryKeyIndexKey(key));
+    if (!id) return null;
+    return readRecord<Inquiry>("inquiries", id);
+  }
+  const rows = await readRecords<Inquiry>("inquiries");
+  return [...rows].reverse().find((row) => row.idempotencyKey === key) || null;
+}
+
+export async function findRecentInquiryByFingerprint(
+  fingerprint: string,
+  windowMs: number
+): Promise<Inquiry | null> {
+  let candidate: Inquiry | null = null;
+  if (storeBackend() === "netlify-blobs") {
+    const id = await readIndex(inquiryFingerprintIndexKey(fingerprint));
+    candidate = id ? await readRecord<Inquiry>("inquiries", id) : null;
+  } else {
+    const rows = await readRecords<Inquiry>("inquiries");
+    candidate = [...rows].reverse().find((row) => row.fingerprint === fingerprint) || null;
+  }
+  if (!candidate) return null;
+  const age = Date.now() - Date.parse(candidate.createdAt);
+  return Number.isFinite(age) && age >= 0 && age <= windowMs ? candidate : null;
 }
 
 export async function appendProject(project: ClientProject): Promise<ClientProject> {

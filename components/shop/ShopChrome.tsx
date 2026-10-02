@@ -8,7 +8,7 @@ export default function ShopChrome({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-black text-white">
       <ShopNav />
-      {children}
+      <main id="main-content">{children}</main>
     </div>
   );
 }
