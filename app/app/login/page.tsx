@@ -1,9 +1,12 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
-export default function FactoryLoginPage() {
-  const next = "/app";
+function FactoryLoginForm() {
+  const search = useSearchParams();
+  const requested = search.get("next") || "/app";
+  const next = requested.startsWith("/app") ? requested : "/app";
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -58,5 +61,13 @@ export default function FactoryLoginPage() {
         </button>
       </form>
     </main>
+  );
+}
+
+export default function FactoryLoginPage() {
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-black" />}>
+      <FactoryLoginForm />
+    </Suspense>
   );
 }

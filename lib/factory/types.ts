@@ -99,6 +99,7 @@ export type BrokenLink = {
 export type BaselineSnapshot = {
   id: string;
   projectId: string;
+  siteId?: string;
   capturedAt: string;
   origin: string;
   source: "live_production" | "local" | "manual";
@@ -307,6 +308,37 @@ export type VisibleGap = {
   detail: string;
 };
 
+export type ChecklistSectionStatus = "not_started" | "in_progress" | "complete";
+
+export type ChecklistFinalDecision =
+  | ""
+  | "good_enough"
+  | "cleanup_pass"
+  | "major_fix";
+
+export type ChecklistItem = {
+  id: string;
+  label: string;
+  checked: boolean;
+};
+
+export type ChecklistSection = {
+  id: string;
+  title: string;
+  href?: string;
+  status: ChecklistSectionStatus;
+  notes: string;
+  items: ChecklistItem[];
+};
+
+export type OperatorChecklist = {
+  projectId: string;
+  projectName: string;
+  updatedAt: string;
+  finalDecision: ChecklistFinalDecision;
+  sections: ChecklistSection[];
+};
+
 export type FactoryWorkspace = {
   project: FactoryProject;
   stages: FactoryStage[];
@@ -332,6 +364,7 @@ export type FactoryWorkspace = {
   };
   visibleGaps: VisibleGap[];
   latestBaselineId: string;
+  latestBaselineBySite?: Record<string, string>;
   productionLive: boolean;
   rollbackOf: string;
   productionRelease: {

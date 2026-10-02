@@ -166,6 +166,15 @@ export async function POST(req: NextRequest) {
       await updateLead(lead.id, { monitoringInterest, linkageState: "project_pending" });
     }
 
+    // Retry/double-click of a request we already confirmed in the last 10 minutes: do not email again.
+    if (
+      existing &&
+      existing.notificationState === "sent" &&
+      Date.now() - Date.parse(existing.createdAt) < 10 * 60 * 1000
+    ) {
+      return NextResponse.json({ ok: true, id: lead.id, projectId, reused: true, duplicate: true });
+    }
+
     let mailed = { sent: false };
     try {
       mailed = await sendMail({
