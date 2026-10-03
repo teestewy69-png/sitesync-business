@@ -6,7 +6,7 @@ export default function AnnouncementTicker() {
   const segments = Array.from({ length: 6 }, (_, i) => (
     <span key={i} className="inline-flex shrink-0 items-center gap-10 px-5">
       <span>{TICKER_COPY}</span>
-      <span aria-hidden className="text-white/70">
+      <span aria-hidden className="text-black">
         •
       </span>
     </span>
@@ -14,11 +14,11 @@ export default function AnnouncementTicker() {
 
   return (
     <div
-      className="announcement-ticker sticky top-0 z-[100] flex h-11 items-center overflow-hidden border-b border-red-700 bg-red-600 sm:h-12"
+      className="announcement-ticker sticky top-0 z-[100] flex h-11 items-center overflow-hidden border-b border-brand-600 bg-brand-400 sm:h-12"
       role="region"
       aria-label="Current pricing"
     >
-      <div className="announcement-ticker__track flex w-max whitespace-nowrap text-sm font-bold uppercase tracking-wide text-white sm:text-base">
+      <div className="announcement-ticker__track flex w-max whitespace-nowrap text-sm font-bold uppercase tracking-wide text-black sm:text-base">
         <div className="flex shrink-0 items-center">{segments}</div>
         <div className="flex shrink-0 items-center" aria-hidden>
           {segments}
