@@ -13,7 +13,7 @@ import type {
   StageStatus,
 } from "./types";
 import { FACTORY_PROJECT_ID } from "./types";
-import { latestBaseline, updateWorkspace } from "./workspace";
+import { initWorkspace, latestBaseline, updateExistingWorkspace, updateWorkspace } from "./workspace";
 
 function markStage(
   stages: FactoryStage[],
@@ -77,7 +77,9 @@ export async function recordIntakeProject(input: {
   };
 
   try {
-    await updateWorkspace((workspace) => {
+    // Mirror only into an EXISTING workspace document. A public submission must never create the
+    // code-default seed: that would block a later create-only migration of the real workspace.
+    const mirrored = await updateExistingWorkspace((workspace) => {
       workspace.intakeProjects = [project, ...workspace.intakeProjects].slice(0, 200);
       workspace.conversions.events = [
         conversionEvent("internal_project", "/app", project.id),
@@ -86,6 +88,12 @@ export async function recordIntakeProject(input: {
       ].slice(0, 400);
       return workspace;
     });
+    if (mirrored === null) {
+      console.warn(
+        "Factory workspace mirror SKIPPED: no workspace document exists in this store yet (not migrated/initialized). " +
+          "The lead and project are saved in the CRM. Migrate the workspace or POST /api/factory/action {op:'init-workspace'} to enable the mirror."
+      );
+    }
   } catch (err) {
     // The lead/project is already durable in the CRM store and the public submit must not fail
     // because the internal workspace mirror could not be written. Logged as an error (not a warning).
@@ -98,9 +106,15 @@ export async function recordIntakeProject(input: {
 export async function applyFactoryAction(
   op: string,
   body: Record<string, string | string[] | undefined>
-): Promise<{ ok: boolean; error?: string; workspace?: FactoryWorkspace }> {
+): Promise<{ ok: boolean; error?: string; workspace?: FactoryWorkspace; created?: boolean }> {
   const actor = String(body.approvedBy || "operator");
   const when = nowIso();
+
+  if (op === "init-workspace") {
+    // Marks the store as initialized (create-only; never overwrites an existing/migrated workspace).
+    const { created, workspace } = await initWorkspace();
+    return { ok: true, created, workspace };
+  }
 
   if (op === "approve-stage") {
     const key = String(body.key || "") as StageKey;

@@ -1,4 +1,5 @@
 import path from "node:path";
+import { unstable_rethrow } from "next/navigation";
 import {
   StoreError,
   isStoreConflict,
@@ -232,6 +233,72 @@ export async function readWorkspace(): Promise<FactoryWorkspace> {
 
 export const ensureWorkspace = readWorkspace;
 
+/** Workspace plus whether a document is actually persisted (false = code-default seed only). */
+export async function readWorkspaceState(): Promise<{ workspace: FactoryWorkspace; persisted: boolean }> {
+  const { workspace, version } = await loadWorkspace();
+  return { workspace, persisted: version !== null };
+}
+
+/**
+ * Public-page reader: never throws. A store outage or corrupt document is logged and null is returned
+ * so public pages can degrade (notFound / placeholder) instead of answering 500. /app pages keep using
+ * readWorkspace(), which stays strict.
+ */
+export async function readPublicWorkspace(): Promise<FactoryWorkspace | null> {
+  try {
+    return await readWorkspace();
+  } catch (err) {
+    unstable_rethrow(err);
+    const kind = err instanceof StoreError ? err.kind : "unknown";
+    console.error(`Public page: factory workspace unavailable (${kind}); serving fallback.`);
+    return null;
+  }
+}
+
+/** Public /case-study data: workspace + latest baseline, or null when the store cannot serve them. */
+export async function readPublicCaseStudy(): Promise<{
+  workspace: FactoryWorkspace;
+  baseline: BaselineSnapshot | null;
+} | null> {
+  try {
+    const workspace = await readWorkspace();
+    const baseline = await latestBaseline();
+    return { workspace, baseline };
+  } catch (err) {
+    unstable_rethrow(err);
+    const kind = err instanceof StoreError ? err.kind : "unknown";
+    console.error(`Public /case-study: factory state unavailable (${kind}); serving fallback.`);
+    return null;
+  }
+}
+
+/** Small, secret-free workspace health used by /api/health. */
+export async function workspaceHealth(): Promise<"ok" | "not_initialized" | "corrupt" | "unreadable"> {
+  try {
+    const { persisted } = await readWorkspaceState();
+    return persisted ? "ok" : "not_initialized";
+  } catch (err) {
+    return err instanceof StoreError && err.kind === "corrupt" ? "corrupt" : "unreadable";
+  }
+}
+
+/**
+ * Persist the code-default workspace (create-only) so the store is "initialized": after this the public
+ * intake mirror starts writing. Does nothing (created:false) when a workspace already exists, and fails
+ * loudly if the stored document is corrupt. Operator action `init-workspace`.
+ */
+export async function initWorkspace(): Promise<{ created: boolean; workspace: FactoryWorkspace }> {
+  const { workspace, version } = await loadWorkspace();
+  if (version !== null) return { created: false, workspace };
+  try {
+    await writeDoc(WORKSPACE_KEY, workspace, { expectedVersion: null });
+    return { created: true, workspace };
+  } catch (err) {
+    if (isStoreConflict(err)) return { created: false, workspace: (await loadWorkspace()).workspace };
+    throw err;
+  }
+}
+
 /** Unconditional (last write wins) write of the whole workspace. Throws if the store rejects it. */
 export async function writeWorkspace(workspace: FactoryWorkspace): Promise<void> {
   await writeDoc(WORKSPACE_KEY, workspace);
@@ -243,19 +310,39 @@ export async function writeWorkspace(workspace: FactoryWorkspace): Promise<void>
  * conflict (another instance wrote first) the mutation is re-applied to the fresh copy, up to
  * MAX_UPDATE_ATTEMPTS times. Calls inside one process are queued. Write failures are thrown, never swallowed.
  */
-export function updateWorkspace(
+export async function updateWorkspace(
   mutate: (workspace: FactoryWorkspace) => FactoryWorkspace | void
 ): Promise<FactoryWorkspace> {
-  const run = updateChain.then(() => applyUpdate(mutate));
+  return (await queueUpdate(mutate, false)) as FactoryWorkspace;
+}
+
+/**
+ * Like updateWorkspace, but only when a workspace document is already persisted. On an uninitialized
+ * store it writes NOTHING and returns null (so an unattended writer, e.g. the public intake mirror,
+ * can never create the code-default seed ahead of a migration).
+ */
+export function updateExistingWorkspace(
+  mutate: (workspace: FactoryWorkspace) => FactoryWorkspace | void
+): Promise<FactoryWorkspace | null> {
+  return queueUpdate(mutate, true);
+}
+
+function queueUpdate(
+  mutate: (workspace: FactoryWorkspace) => FactoryWorkspace | void,
+  requireExisting: boolean
+): Promise<FactoryWorkspace | null> {
+  const run = updateChain.then(() => applyUpdate(mutate, requireExisting));
   updateChain = run.catch(() => undefined);
   return run;
 }
 
 async function applyUpdate(
-  mutate: (workspace: FactoryWorkspace) => FactoryWorkspace | void
-): Promise<FactoryWorkspace> {
+  mutate: (workspace: FactoryWorkspace) => FactoryWorkspace | void,
+  requireExisting: boolean
+): Promise<FactoryWorkspace | null> {
   for (let attempt = 1; ; attempt += 1) {
     const { workspace, version } = await loadWorkspace();
+    if (requireExisting && version === null) return null;
     const next = mutate(workspace) || workspace;
     try {
       await writeDoc(WORKSPACE_KEY, next, { expectedVersion: version });
@@ -279,26 +366,75 @@ export async function saveBaseline(snapshot: BaselineSnapshot): Promise<void> {
   await writeDoc(baselineKey(snapshot.id), snapshot);
 }
 
-export async function readBaseline(id: string): Promise<BaselineSnapshot | null> {
-  if (!SAFE_ID.test(id)) return null;
+export type BaselineWarning = { key: string; problem: "corrupt" | "invalid"; message: string };
+
+function looksLikeBaseline(value: unknown): value is BaselineSnapshot {
+  const row = value as Partial<BaselineSnapshot> | null;
+  return Boolean(
+    row &&
+      typeof row === "object" &&
+      typeof row.id === "string" &&
+      typeof row.capturedAt === "string" &&
+      Array.isArray(row.pageInventory)
+  );
+}
+
+/** Reads one baseline; a corrupt/invalid one is reported (never silently dropped) and skipped. */
+async function readBaselineChecked(
+  key: string
+): Promise<{ snapshot: BaselineSnapshot | null; warning?: BaselineWarning }> {
   try {
-    return (await readDoc<BaselineSnapshot>(baselineKey(id)))?.value ?? null;
+    const value = (await readDoc<BaselineSnapshot>(key))?.value ?? null;
+    if (value === null) return { snapshot: null };
+    if (!looksLikeBaseline(value)) {
+      const message = "Baseline document is not a valid snapshot; skipped.";
+      console.error(`Skipping invalid baseline ${key}: ${message}`);
+      return { snapshot: null, warning: { key, problem: "invalid", message } };
+    }
+    return { snapshot: value };
   } catch (err) {
     // One corrupt baseline must not take down every SEO page; real I/O failures still throw.
     if (err instanceof StoreError && err.kind === "corrupt") {
-      console.error(`Skipping unreadable baseline ${id}: ${err.message}`);
-      return null;
+      console.error(`Skipping unreadable baseline ${key}: ${err.message}`);
+      return { snapshot: null, warning: { key, problem: "corrupt", message: err.message } };
     }
     throw err;
   }
 }
 
-export async function listBaselines(): Promise<BaselineSnapshot[]> {
+export async function readBaseline(id: string): Promise<BaselineSnapshot | null> {
+  if (!SAFE_ID.test(id)) return null;
+  return (await readBaselineChecked(baselineKey(id))).snapshot;
+}
+
+/** Baselines plus a warning for every stored baseline that had to be skipped (used by the export). */
+export async function listBaselinesDetailed(): Promise<{
+  baselines: BaselineSnapshot[];
+  warnings: BaselineWarning[];
+}> {
   const keys = await listDocKeys(BASELINE_PREFIX);
-  const rows = await Promise.all(keys.map((key) => readBaseline(key.slice(BASELINE_PREFIX.length))));
-  return rows
-    .filter((row): row is BaselineSnapshot => Boolean(row))
-    .sort((a, b) => a.capturedAt.localeCompare(b.capturedAt));
+  const warnings: BaselineWarning[] = [];
+  const rows = await Promise.all(
+    keys.map(async (key) => {
+      if (!SAFE_ID.test(key.slice(BASELINE_PREFIX.length))) {
+        warnings.push({ key, problem: "invalid", message: "Unsafe baseline key; skipped." });
+        return null;
+      }
+      const { snapshot, warning } = await readBaselineChecked(key);
+      if (warning) warnings.push(warning);
+      return snapshot;
+    })
+  );
+  return {
+    baselines: rows
+      .filter((row): row is BaselineSnapshot => Boolean(row))
+      .sort((a, b) => a.capturedAt.localeCompare(b.capturedAt)),
+    warnings,
+  };
+}
+
+export async function listBaselines(): Promise<BaselineSnapshot[]> {
+  return (await listBaselinesDetailed()).baselines;
 }
 
 export async function latestBaseline(): Promise<BaselineSnapshot | null> {

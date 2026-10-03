@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { latestBaseline, readWorkspace } from "@/lib/factory/workspace";
+import { readPublicCaseStudy } from "@/lib/factory/workspace";
 
 export const dynamic = "force-dynamic";
 
@@ -13,8 +13,27 @@ export const metadata: Metadata = {
 };
 
 export default async function PublicCaseStudy() {
-  const workspace = await readWorkspace();
-  const baseline = await latestBaseline();
+  const loaded = await readPublicCaseStudy();
+  if (!loaded) {
+    // Store failed or data is corrupt: show a safe placeholder (no 500). /app/case-study stays strict.
+    return (
+      <main className="min-h-screen bg-black text-white">
+        <div className="mx-auto max-w-3xl px-6 py-16">
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Sitesinc builds Sitesinc</h1>
+          <p className="mt-4 text-base text-slate-300">
+            The living case study is temporarily unavailable. Please check back soon. Nothing here
+            is a ranking, indexing, backlink, or conversion claim.
+          </p>
+          <p className="mt-6 text-sm text-slate-400">
+            <Link href="/" className="text-brand-300">
+              Back to Sitesinc
+            </Link>
+          </p>
+        </div>
+      </main>
+    );
+  }
+  const { workspace, baseline } = loaded;
 
   return (
     <main className="min-h-screen bg-black text-white">

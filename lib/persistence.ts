@@ -2,6 +2,8 @@ import { createHash } from "node:crypto";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { connectLambda, getStore, type Store } from "@netlify/blobs";
+import { headers } from "next/headers";
+import { unstable_rethrow } from "next/navigation";
 import { isStagingEnv } from "@/lib/site-env";
 
 export type StoreBackend = "local-json" | "netlify-blobs";
@@ -72,6 +74,30 @@ export function ensureBlobsFromRequest(req: { headers: Headers }): void {
   }
 }
 
+/**
+ * Shared Blobs context setup for server-rendered code. Server components and helpers cannot see the
+ * request object, so this reads the current request headers itself (next/headers) and connects Blobs
+ * from the `x-nf-blobs` header when the runtime did not inject NETLIFY_BLOBS_CONTEXT.
+ *
+ * Every document/record function below calls it, so a server page that reads factory state can never
+ * forget it. It is a no-op with the local-json backend, when the runtime already provides the
+ * context, and outside a request scope (scripts). Next's internal control-flow errors (dynamic
+ * rendering bail-outs) are re-thrown so static/dynamic detection keeps working.
+ */
+export async function ensureBlobsContext(): Promise<void> {
+  if (storeBackend() !== "netlify-blobs") return;
+  if (blobsContextPresent()) return;
+  try {
+    ensureBlobsFromRequest({ headers: await headers() });
+  } catch (err) {
+    unstable_rethrow(err);
+    // Not inside a request (e.g. a script): nothing to connect.
+  }
+}
+
+/** Alias for pages: `await getFactoryContext()` is equivalent to the automatic call inside the store functions. */
+export const getFactoryContext = ensureBlobsContext;
+
 export function getCrmStore(): Store {
   const name = blobStoreName();
   try {
@@ -104,6 +130,7 @@ async function writeLocal<T>(key: string, records: T[]): Promise<void> {
 }
 
 export async function readRecords<T>(key: string): Promise<T[]> {
+  await ensureBlobsContext();
   if (storeBackend() !== "netlify-blobs") return readLocal<T>(key);
   const store = getCrmStore();
   const listed = await store.list({ prefix: `${key}/` });
@@ -119,6 +146,7 @@ export async function writeRecord<T extends { id: string }>(
   collection: string,
   record: T
 ): Promise<void> {
+  await ensureBlobsContext();
   if (storeBackend() !== "netlify-blobs") {
     const records = await readLocal<T>(collection);
     const next = records.some((item) => item.id === record.id)
@@ -138,6 +166,7 @@ export async function writeRecord<T extends { id: string }>(
 }
 
 export async function readRecord<T>(collection: string, id: string): Promise<T | null> {
+  await ensureBlobsContext();
   if (storeBackend() !== "netlify-blobs") {
     const records = await readLocal<T & { id: string }>(collection);
     return (records.find((item) => item.id === id) as T | undefined) || null;
@@ -148,12 +177,14 @@ export async function readRecord<T>(collection: string, id: string): Promise<T |
 }
 
 export async function writeIndex(key: string, value: string): Promise<void> {
+  await ensureBlobsContext();
   if (storeBackend() !== "netlify-blobs") return;
   const store = getCrmStore();
   await store.set(key, value);
 }
 
 export async function readIndex(key: string): Promise<string | null> {
+  await ensureBlobsContext();
   if (storeBackend() !== "netlify-blobs") return null;
   const store = getCrmStore();
   return store.get(key, { type: "text" });
@@ -248,6 +279,7 @@ export type DocRead<T> = { value: T; version: string };
  */
 export async function readDoc<T>(key: string): Promise<DocRead<T> | null> {
   assertDocKey(key);
+  await ensureBlobsContext();
   if (storeBackend() !== "netlify-blobs") {
     let raw: string | null;
     try {
@@ -293,6 +325,7 @@ export async function writeDoc<T>(
 ): Promise<string> {
   assertDocKey(key);
   const expected = opts.expectedVersion;
+  await ensureBlobsContext();
   if (storeBackend() !== "netlify-blobs") {
     return withLocalLock(async () => {
       try {
@@ -341,6 +374,7 @@ export async function writeDoc<T>(
 export async function listDocKeys(prefix: string): Promise<string[]> {
   const base = prefix.replace(/\/+$/, "");
   assertDocKey(base);
+  await ensureBlobsContext();
   if (storeBackend() !== "netlify-blobs") {
     try {
       const names = await readdir(path.join(LOCAL_DATA_DIR, base));
@@ -361,6 +395,7 @@ export async function listDocKeys(prefix: string): Promise<string[]> {
 /** Read a binary object (e.g. an uploaded screenshot). Null when missing. */
 export async function readBinary(key: string): Promise<Buffer | null> {
   assertDocKey(key);
+  await ensureBlobsContext();
   if (storeBackend() !== "netlify-blobs") {
     try {
       return await readFile(localBinaryFile(key));
@@ -380,6 +415,7 @@ export async function readBinary(key: string): Promise<Buffer | null> {
 /** Write a binary object. Throws on any failure. */
 export async function writeBinary(key: string, bytes: Uint8Array, contentType?: string): Promise<void> {
   assertDocKey(key);
+  await ensureBlobsContext();
   if (storeBackend() !== "netlify-blobs") {
     try {
       const file = localBinaryFile(key);

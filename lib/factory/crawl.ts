@@ -300,8 +300,12 @@ export async function captureBaseline(opts?: {
       for (const page of workspace.pages) {
         if (page.status === "published" || page.status === "staged") extraPaths.push(page.path);
       }
-    } catch {
-      /* first capture may seed the workspace; inventory still covers PUBLIC_PATHS */
+    } catch (err) {
+      // A fresh store is NOT an error (readWorkspace serves the seed), so anything thrown here is a real
+      // store outage / corrupt document. Do not hide it: the capture would then be saved while the
+      // workspace pointer update fails anyway.
+      console.error("Baseline capture: factory workspace unreadable:", err instanceof Error ? err.name : "unknown");
+      throw err;
     }
   }
 

@@ -68,3 +68,33 @@ NEXT_PUBLIC_SITE_ENV=staging npm run dev
 ```
 
 Leave the flag unset for a production-identical local run.
+
+## Factory / SEO state on staging
+
+Staging uses the Blobs store `sitesinc-crm-staging` for the factory state as well as leads (see
+`docs/FACTORY_STATE.md` for the key layout, behaviour and the migration tool).
+
+**First deploy order: migrate first, then deploy.**
+
+1. Dry run on the PC (no credentials, reads local files only):
+   `node scripts/migrate-factory-state.mjs --target staging --source <main checkout>\data --only baselines,checklists`.
+   Expect the real Sitesinc baselines and 1 checklist; demo baselines (127.0.0.1 / `/demo/`) are listed as SKIP; the
+   workspace is not included.
+2. Apply with a short-lived `NETLIFY_AUTH_TOKEN` in the shell only, plus `--site-id <id> --confirm-site <id>
+   --expect-host test.sitesinc.co --apply`. The script checks with the Netlify API that the id really is the
+   `test.sitesinc.co` site (staging refuses anything that is not a `test.*` host) before writing.
+3. Deploy the new code to the staging site.
+4. Initialize the workspace once: logged in to `/app`, `POST /api/factory/action` with `{"op":"init-workspace"}`.
+   Until then public intake submissions are saved as leads but the workspace mirror is skipped (and logged).
+5. Verify, in this order: (a) a **cold-start page load first** (no API call before it) of `/app/qa` and public
+   `/case-study` returns 200 - this proves server components get a Blobs context; (b) `GET /api/factory/export`
+   is 401 without the session and 200 with it, `warnings` is empty and counts match; (c) tick a QA item, reload,
+   it persisted; (d) upload a screenshot, reload, it loads; (e) run one factory action; (f) do two actions in
+   two tabs at once; (g) search the function logs for the **"no ETag" warning** (`Netlify Blobs returned no ETag
+   on read`) - if it appears, conflict protection is off; (h) submit one test intake: the lead shows in the inbox
+   and the workspace gets one intake project; (i) redeploy and confirm state survives; (j) `GET /api/health`
+   shows `"ok": true`, `"workspace": "ok"`.
+6. Download an export as the first dated backup.
+
+**Rollback:** redeploy the previous deploy; the `factory/*` keys stay and are ignored by the old code. Export
+first, because workspace edits made while the new code was live are invisible to the old code.

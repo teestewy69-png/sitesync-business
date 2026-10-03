@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, unstable_rethrow } from "next/navigation";
 import { PAGE_DRAFTS } from "@/lib/factory/drafts";
-import { ensureWorkspace } from "@/lib/factory/workspace";
+import { readPublicWorkspace } from "@/lib/factory/workspace";
 import type { FactoryPage } from "@/lib/factory/types";
 
+// Public readers degrade: if the store fails or the workspace is corrupt they log and return null
+// (-> notFound / noindex metadata) instead of a 500. /app pages stay strict.
 export async function getPublishedPage(slug: string): Promise<FactoryPage | null> {
-  const workspace = await ensureWorkspace();
+  const workspace = await readPublicWorkspace();
+  if (!workspace) return null;
   const page = workspace.pages.find((item) => item.slug === slug);
   if (!page) return null;
   if (page.status !== "published" || page.noindex) return null;
@@ -14,7 +17,8 @@ export async function getPublishedPage(slug: string): Promise<FactoryPage | null
 }
 
 export async function getPreviewPage(slug: string): Promise<FactoryPage | null> {
-  const workspace = await ensureWorkspace();
+  const workspace = await readPublicWorkspace();
+  if (!workspace) return null;
   const page = workspace.pages.find((item) => item.slug === slug);
   if (!page || !page.body.trim()) return null;
   if (page.status === "staged" || page.status === "published" || page.status === "approved") {
@@ -27,8 +31,15 @@ export async function getPreviewPage(slug: string): Promise<FactoryPage | null> 
 export async function factoryPageMetadata(slug: string): Promise<Metadata> {
   const { isPreviewRequest } = await import("./preview");
   const { isStagingEnv } = await import("@/lib/site-env");
-  const preview = await isPreviewRequest();
-  const page = preview ? await getPreviewPage(slug) : await getPublishedPage(slug);
+  let page: FactoryPage | null = null;
+  let preview = false;
+  try {
+    preview = await isPreviewRequest();
+    page = preview ? await getPreviewPage(slug) : await getPublishedPage(slug);
+  } catch (err) {
+    unstable_rethrow(err);
+    console.error("factoryPageMetadata fallback:", err instanceof Error ? err.name : "unknown");
+  }
   if (!page) {
     return { robots: { index: false, follow: false } };
   }
@@ -83,8 +94,15 @@ export function FactoryArticle({ page, staged = false }: { page: FactoryPage; st
 
 export async function PublishedOrNotFound({ slug }: { slug: string }) {
   const { isPreviewRequest } = await import("./preview");
-  const preview = await isPreviewRequest();
-  const page = preview ? await getPreviewPage(slug) : await getPublishedPage(slug);
+  let page: FactoryPage | null = null;
+  let preview = false;
+  try {
+    preview = await isPreviewRequest();
+    page = preview ? await getPreviewPage(slug) : await getPublishedPage(slug);
+  } catch (err) {
+    unstable_rethrow(err);
+    console.error("PublishedOrNotFound fallback:", err instanceof Error ? err.name : "unknown");
+  }
   if (!page) notFound();
   return (
     <main className="min-h-screen bg-black text-white">
