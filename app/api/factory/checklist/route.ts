@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { factoryErrorResponse } from "@/lib/factory/api-errors";
 import { CHECKLIST_DECISIONS } from "@/lib/factory/checklist-model";
 import { mergeChecklist, readChecklist, writeChecklist } from "@/lib/factory/checklist";
 import { FACTORY_PROJECT_ID } from "@/lib/factory/types";
 import type { OperatorChecklist } from "@/lib/factory/types";
 import { readWorkspace } from "@/lib/factory/workspace";
+import { ensureBlobsFromRequest } from "@/lib/persistence";
 import { asNonEmptyString } from "@/lib/validate";
 
 export const runtime = "nodejs";
@@ -27,10 +29,15 @@ async function projectMeta(projectId: string, fallbackName: unknown) {
 }
 
 export async function GET(req: NextRequest) {
-  const projectId = cleanProjectId(req.nextUrl.searchParams.get("projectId"));
-  const project = await projectMeta(projectId, req.nextUrl.searchParams.get("projectName"));
-  const checklist = await readChecklist(project.id, project.name);
-  return NextResponse.json({ ok: true, checklist });
+  try {
+    ensureBlobsFromRequest(req);
+    const projectId = cleanProjectId(req.nextUrl.searchParams.get("projectId"));
+    const project = await projectMeta(projectId, req.nextUrl.searchParams.get("projectName"));
+    const checklist = await readChecklist(project.id, project.name);
+    return NextResponse.json({ ok: true, checklist });
+  } catch (err) {
+    return factoryErrorResponse(err, "Could not load checklist.");
+  }
 }
 
 export async function PATCH(req: NextRequest) {
@@ -48,6 +55,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "Unknown final decision." }, { status: 400 });
   }
   try {
+    ensureBlobsFromRequest(req);
     const project = await projectMeta(cleanProjectId(body.projectId), body.checklist.projectName);
     const merged = mergeChecklist(
       { ...body.checklist, projectId: project.id, projectName: project.name },
@@ -57,9 +65,6 @@ export async function PATCH(req: NextRequest) {
     const checklist = await writeChecklist(merged);
     return NextResponse.json({ ok: true, checklist });
   } catch (err) {
-    return NextResponse.json(
-      { ok: false, error: err instanceof Error ? err.message : "Could not save checklist." },
-      { status: 500 }
-    );
+    return factoryErrorResponse(err, "Could not save checklist.");
   }
 }

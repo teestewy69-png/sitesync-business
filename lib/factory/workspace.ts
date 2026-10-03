@@ -1,5 +1,13 @@
-import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import {
+  StoreError,
+  isStoreConflict,
+  listDocKeys,
+  readBinary,
+  readDoc,
+  writeBinary,
+  writeDoc,
+} from "@/lib/persistence";
 import { newId } from "@/lib/store";
 import {
   BLUEPRINT,
@@ -20,11 +28,25 @@ import type {
 } from "./types";
 import { FACTORY_PROJECT_ID } from "./types";
 
-const ROOT = path.join(process.cwd(), "data", "factory");
-const WORKSPACE_FILE = path.join(ROOT, "workspace.json");
-const BASELINE_DIR = path.join(ROOT, "baselines");
+/**
+ * Durable keys (lib/persistence.ts): Netlify Blobs on Netlify (staging and production use
+ * separate stores, same as leads), local files under data/ in development:
+ *   factory/workspace            -> data/factory/workspace.json
+ *   factory/baselines/<id>       -> data/factory/baselines/<id>.json
+ *   factory/screenshots/<file>   -> data/factory/screenshots/<file> (binary)
+ */
+export const WORKSPACE_KEY = "factory/workspace";
+export const BASELINE_PREFIX = "factory/baselines/";
+export const SCREENSHOT_PREFIX = "factory/screenshots/";
 
-let writeChain: Promise<void> = Promise.resolve();
+const SAFE_ID = /^[a-z0-9_-]{1,80}$/i;
+const MAX_UPDATE_ATTEMPTS = 10;
+
+/** Serialises updateWorkspace calls inside one process so they never conflict with each other. */
+let updateChain: Promise<unknown> = Promise.resolve();
+
+/** Code-default workspace used until the first successful write; cached so the seed is stable per process. */
+let seedCache: FactoryWorkspace | null = null;
 
 function addDays(iso: string, days: number): string {
   const date = new Date(iso);
@@ -181,86 +203,102 @@ function withDefaults(workspace: FactoryWorkspace): FactoryWorkspace {
   };
 }
 
-export async function readWorkspace(): Promise<FactoryWorkspace> {
-  try {
-    const raw = await readFile(WORKSPACE_FILE, "utf8");
-    const parsed = JSON.parse(raw) as FactoryWorkspace;
-    if (parsed?.project?.id === FACTORY_PROJECT_ID) return withDefaults(parsed);
-  } catch (err) {
-    const code = (err as NodeJS.ErrnoException).code;
-    if (code !== "ENOENT") {
-      console.warn("Factory workspace unreadable; reseeding", err);
+type LoadedWorkspace = {
+  workspace: FactoryWorkspace;
+  /** Store version of the persisted document; null while the store has no workspace yet (seed only). */
+  version: string | null;
+};
+
+async function loadWorkspace(): Promise<LoadedWorkspace> {
+  const doc = await readDoc<FactoryWorkspace>(WORKSPACE_KEY);
+  if (doc) {
+    if (doc.value?.project?.id !== FACTORY_PROJECT_ID) {
+      // Never reseed over data we do not understand: that would silently destroy it on the next write.
+      throw new StoreError(
+        "corrupt",
+        "Stored factory workspace has an unexpected project id; refusing to overwrite it."
+      );
     }
+    return { workspace: withDefaults(doc.value), version: doc.version };
   }
-  const seeded = seedWorkspace();
-  try {
-    await writeWorkspace(seeded);
-  } catch (err) {
-    console.warn(
-      "Factory workspace file is not writable on this host; CRM records remain the source of truth.",
-      err instanceof Error ? err.name : "unknown"
-    );
-  }
-  return seeded;
+  // Fresh store: serve code defaults. Nothing is written on read; the seed is persisted by the first write.
+  if (!seedCache) seedCache = seedWorkspace();
+  return { workspace: structuredClone(seedCache), version: null };
+}
+
+export async function readWorkspace(): Promise<FactoryWorkspace> {
+  return (await loadWorkspace()).workspace;
 }
 
 export const ensureWorkspace = readWorkspace;
 
+/** Unconditional (last write wins) write of the whole workspace. Throws if the store rejects it. */
 export async function writeWorkspace(workspace: FactoryWorkspace): Promise<void> {
-  const run = writeChain.then(async () => {
-    await mkdir(ROOT, { recursive: true });
-    await writeFile(WORKSPACE_FILE, `${JSON.stringify(workspace, null, 2)}\n`, "utf8");
-  });
-  writeChain = run.catch(() => undefined);
-  try {
-    await run;
-  } catch (err) {
-    console.warn(
-      "Factory workspace write skipped; CRM store is source of truth.",
-      err instanceof Error ? err.name : "unknown"
-    );
+  await writeDoc(WORKSPACE_KEY, workspace);
+}
+
+/**
+ * Read-modify-write with optimistic concurrency: the write only succeeds if the stored
+ * document is unchanged since it was read (ETag on Blobs, content hash locally). On a
+ * conflict (another instance wrote first) the mutation is re-applied to the fresh copy, up to
+ * MAX_UPDATE_ATTEMPTS times. Calls inside one process are queued. Write failures are thrown, never swallowed.
+ */
+export function updateWorkspace(
+  mutate: (workspace: FactoryWorkspace) => FactoryWorkspace | void
+): Promise<FactoryWorkspace> {
+  const run = updateChain.then(() => applyUpdate(mutate));
+  updateChain = run.catch(() => undefined);
+  return run;
+}
+
+async function applyUpdate(
+  mutate: (workspace: FactoryWorkspace) => FactoryWorkspace | void
+): Promise<FactoryWorkspace> {
+  for (let attempt = 1; ; attempt += 1) {
+    const { workspace, version } = await loadWorkspace();
+    const next = mutate(workspace) || workspace;
+    try {
+      await writeDoc(WORKSPACE_KEY, next, { expectedVersion: version });
+      return next;
+    } catch (err) {
+      if (isStoreConflict(err) && attempt < MAX_UPDATE_ATTEMPTS) {
+        await new Promise((resolve) => setTimeout(resolve, 20 * attempt + Math.floor(Math.random() * 40)));
+        continue;
+      }
+      throw err;
+    }
   }
 }
 
-export async function updateWorkspace(
-  mutate: (workspace: FactoryWorkspace) => FactoryWorkspace | void
-): Promise<FactoryWorkspace> {
-  const current = await readWorkspace();
-  const next = mutate(current) || current;
-  await writeWorkspace(next);
-  return next;
+function baselineKey(id: string): string {
+  if (!SAFE_ID.test(id)) throw new StoreError("write", "Invalid baseline id.");
+  return `${BASELINE_PREFIX}${id}`;
 }
 
 export async function saveBaseline(snapshot: BaselineSnapshot): Promise<void> {
-  await mkdir(BASELINE_DIR, { recursive: true });
-  await writeFile(
-    path.join(BASELINE_DIR, `${snapshot.id}.json`),
-    `${JSON.stringify(snapshot, null, 2)}\n`,
-    "utf8"
-  );
+  await writeDoc(baselineKey(snapshot.id), snapshot);
 }
 
 export async function readBaseline(id: string): Promise<BaselineSnapshot | null> {
+  if (!SAFE_ID.test(id)) return null;
   try {
-    const raw = await readFile(path.join(BASELINE_DIR, `${id}.json`), "utf8");
-    return JSON.parse(raw) as BaselineSnapshot;
-  } catch {
-    return null;
+    return (await readDoc<BaselineSnapshot>(baselineKey(id)))?.value ?? null;
+  } catch (err) {
+    // One corrupt baseline must not take down every SEO page; real I/O failures still throw.
+    if (err instanceof StoreError && err.kind === "corrupt") {
+      console.error(`Skipping unreadable baseline ${id}: ${err.message}`);
+      return null;
+    }
+    throw err;
   }
 }
 
 export async function listBaselines(): Promise<BaselineSnapshot[]> {
-  try {
-    const names = await readdir(BASELINE_DIR);
-    const rows: BaselineSnapshot[] = [];
-    for (const name of names.filter((item) => item.endsWith(".json"))) {
-      const row = await readBaseline(name.replace(/\.json$/, ""));
-      if (row) rows.push(row);
-    }
-    return rows.sort((a, b) => a.capturedAt.localeCompare(b.capturedAt));
-  } catch {
-    return [];
-  }
+  const keys = await listDocKeys(BASELINE_PREFIX);
+  const rows = await Promise.all(keys.map((key) => readBaseline(key.slice(BASELINE_PREFIX.length))));
+  return rows
+    .filter((row): row is BaselineSnapshot => Boolean(row))
+    .sort((a, b) => a.capturedAt.localeCompare(b.capturedAt));
 }
 
 export async function latestBaseline(): Promise<BaselineSnapshot | null> {
@@ -336,9 +374,7 @@ export async function saveScreenshot(input: {
   const safeExt = [".png", ".jpg", ".jpeg", ".webp"].includes(ext) ? ext : ".png";
   const id = newId("shot");
   const filename = `${id}${safeExt}`;
-  const dir = path.join(ROOT, "screenshots");
-  await mkdir(dir, { recursive: true });
-  await writeFile(path.join(dir, filename), input.bytes);
+  await writeBinary(`${SCREENSHOT_PREFIX}${filename}`, input.bytes, SCREENSHOT_TYPES[safeExt]);
   const ref = {
     id,
     viewport: input.viewport,
@@ -358,7 +394,18 @@ export async function saveScreenshot(input: {
   return ref;
 }
 
-export const UPLOAD_DIR = path.join(ROOT, "screenshots");
+const SCREENSHOT_TYPES: Record<string, string> = {
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".webp": "image/webp",
+};
+
+/** Read an uploaded screenshot by file name. Null when it does not exist. */
+export async function readScreenshot(name: string): Promise<Buffer | null> {
+  if (!/^[a-z0-9_.-]+$/i.test(name) || name.includes("..")) return null;
+  return readBinary(`${SCREENSHOT_PREFIX}${name}`);
+}
 
 export async function patchStage(input: {
   key: StageKey;

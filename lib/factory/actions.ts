@@ -87,7 +87,9 @@ export async function recordIntakeProject(input: {
       return workspace;
     });
   } catch (err) {
-    console.warn("Factory workspace write skipped; CRM store is source of truth:", err);
+    // The lead/project is already durable in the CRM store and the public submit must not fail
+    // because the internal workspace mirror could not be written. Logged as an error (not a warning).
+    console.error("Factory workspace mirror write FAILED (CRM record is saved):", err);
   }
 
   return project;

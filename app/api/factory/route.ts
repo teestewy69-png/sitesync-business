@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { applyFactoryAction } from "@/lib/factory/actions";
+import { factoryErrorResponse } from "@/lib/factory/api-errors";
 import { captureBaseline } from "@/lib/factory/crawl";
 import { PRODUCTION_ORIGIN } from "@/lib/factory/pipeline";
+import { ensureBlobsFromRequest } from "@/lib/persistence";
 import { asNonEmptyString } from "@/lib/validate";
 import {
   getFactoryPayload,
@@ -19,12 +21,12 @@ function originFrom(req: NextRequest) {
 }
 
 function errorResponse(err: unknown) {
-  const message = err instanceof Error ? err.message : "Factory request failed.";
-  return NextResponse.json({ ok: false, error: message }, { status: 400 });
+  return factoryErrorResponse(err, "Factory request failed.", 400);
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    ensureBlobsFromRequest(req);
     return NextResponse.json({ ok: true, ...(await getFactoryPayload()) });
   } catch (err) {
     console.error("Factory GET error:", err);
@@ -34,6 +36,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    ensureBlobsFromRequest(req);
     const body = (await req.json()) as Record<string, string>;
     const action = asNonEmptyString(body.action || body.op, 40);
     const local = originFrom(req);

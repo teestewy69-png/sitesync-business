@@ -1,4 +1,5 @@
 import { isMailConfigured } from "@/lib/mail";
+import { docStoreHealth } from "@/lib/persistence";
 import { newId, storeWritable } from "@/lib/store";
 import { PRODUCTION_ORIGIN } from "./pipeline";
 import type {
@@ -243,10 +244,15 @@ async function intakeHealth(origin: string): Promise<BaselineSnapshot["intakeFor
     notes.push("Inquiry endpoint did not reject an empty payload (expected 400).");
   }
 
-  const writable = await storeWritable();
+  const crmWritable = await storeWritable();
+  const factoryStore = await docStoreHealth();
+  const writable = crmWritable && factoryStore.ok;
   const smtp = isMailConfigured();
-  if (!writable) {
+  if (!crmWritable) {
     notes.push("JSON store is not writable — submissions cannot persist.");
+  }
+  if (!factoryStore.ok) {
+    notes.push(`Factory/SEO store is not writable — workspace, baselines and checklists cannot persist. ${factoryStore.detail}`);
   }
   if (!smtp) {
     notes.push("SMTP is not configured — email notifications will not send. Not treated as a crawl blocker on its own.");

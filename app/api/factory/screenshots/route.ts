@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { factoryErrorResponse } from "@/lib/factory/api-errors";
 import { saveScreenshot } from "@/lib/factory/workspace";
+import { StoreError, ensureBlobsFromRequest } from "@/lib/persistence";
 import { asNonEmptyString } from "@/lib/validate";
 
 export const runtime = "nodejs";
@@ -7,6 +9,7 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   try {
+    ensureBlobsFromRequest(req);
     const form = await req.formData();
     const file = form.get("file");
     if (!(file instanceof File)) {
@@ -25,7 +28,7 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json({ ok: true, screenshot: ref });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Upload failed.";
-    return NextResponse.json({ ok: false, error: message }, { status: 400 });
+    // Bad input stays a 400; a store failure is a real 500 (or 409) so the upload is not reported as saved.
+    return factoryErrorResponse(err, "Upload failed.", err instanceof StoreError ? 500 : 400);
   }
 }

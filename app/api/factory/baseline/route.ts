@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { factoryErrorResponse } from "@/lib/factory/api-errors";
 import { captureBaseline } from "@/lib/factory/crawl";
 import { catalogSite } from "@/lib/factory/seo-sites";
 import { FACTORY_PROJECT_ID } from "@/lib/factory/types";
 import { saveBaseline, updateWorkspace } from "@/lib/factory/workspace";
+import { ensureBlobsFromRequest } from "@/lib/persistence";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,6 +12,7 @@ export const maxDuration = 120;
 
 export async function POST(req: NextRequest) {
   try {
+    ensureBlobsFromRequest(req);
     const body = (await req.json().catch(() => ({}))) as { origin?: string; siteId?: string };
     const site = catalogSite(body.siteId);
     const origin = (body.origin || site.origin || process.env.NEXT_PUBLIC_SITE_URL || "https://sitesinc.co").replace(
@@ -35,9 +38,6 @@ export async function POST(req: NextRequest) {
       pages: snapshot.pageInventory.length,
     });
   } catch (err) {
-    return NextResponse.json(
-      { ok: false, error: err instanceof Error ? err.message : "Baseline failed" },
-      { status: 500 }
-    );
+    return factoryErrorResponse(err, "Baseline failed");
   }
 }
