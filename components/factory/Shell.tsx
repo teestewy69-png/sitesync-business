@@ -5,10 +5,11 @@ const NAV = [
   { href: "/app/baseline", label: "Baseline" },
   { href: "/app/content", label: "Briefs & drafts" },
   { href: "/app/staging", label: "Staging" },
-  { href: "/app/ops", label: "SEO / index / links" },
+  { href: "/app/seo", label: "SEO Intelligence" },
   { href: "/app/inbox", label: "Inbox" },
   { href: "/app/case-study", label: "Case study" },
   { href: "/app/release", label: "QA / release" },
+  { href: "/app/qa", label: "Operator QA" },
 ];
 
 export default function FactoryShell({

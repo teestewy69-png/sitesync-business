@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { factoryErrorResponse } from "@/lib/factory/api-errors";
 import { conversionEvent } from "@/lib/factory/conversions";
 import { updateWorkspace } from "@/lib/factory/workspace";
+import { ensureBlobsFromRequest } from "@/lib/persistence";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,9 +22,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "Unknown event type." }, { status: 400 });
   }
   const event = conversionEvent(body.type as "cta_click", body.path || "/", String(body.meta || ""));
-  await updateWorkspace((workspace) => {
-    workspace.conversions.events = [event, ...workspace.conversions.events].slice(0, 400);
-    return workspace;
-  });
+  try {
+    ensureBlobsFromRequest(req);
+    await updateWorkspace((workspace) => {
+      workspace.conversions.events = [event, ...workspace.conversions.events].slice(0, 400);
+      return workspace;
+    });
+  } catch (err) {
+    return factoryErrorResponse(err, "Could not record event.");
+  }
   return NextResponse.json({ ok: true, id: event.id });
 }

@@ -59,3 +59,7 @@ next-env.d.ts
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local dev artifacts
+.next-seo-dev/
+tailwindcss-*.log

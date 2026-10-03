@@ -1,5 +1,14 @@
-import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { unstable_rethrow } from "next/navigation";
+import {
+  StoreError,
+  isStoreConflict,
+  listDocKeys,
+  readBinary,
+  readDoc,
+  writeBinary,
+  writeDoc,
+} from "@/lib/persistence";
 import { newId } from "@/lib/store";
 import {
   BLUEPRINT,
@@ -20,11 +29,25 @@ import type {
 } from "./types";
 import { FACTORY_PROJECT_ID } from "./types";
 
-const ROOT = path.join(process.cwd(), "data", "factory");
-const WORKSPACE_FILE = path.join(ROOT, "workspace.json");
-const BASELINE_DIR = path.join(ROOT, "baselines");
+/**
+ * Durable keys (lib/persistence.ts): Netlify Blobs on Netlify (staging and production use
+ * separate stores, same as leads), local files under data/ in development:
+ *   factory/workspace            -> data/factory/workspace.json
+ *   factory/baselines/<id>       -> data/factory/baselines/<id>.json
+ *   factory/screenshots/<file>   -> data/factory/screenshots/<file> (binary)
+ */
+export const WORKSPACE_KEY = "factory/workspace";
+export const BASELINE_PREFIX = "factory/baselines/";
+export const SCREENSHOT_PREFIX = "factory/screenshots/";
 
-let writeChain: Promise<void> = Promise.resolve();
+const SAFE_ID = /^[a-z0-9_-]{1,80}$/i;
+const MAX_UPDATE_ATTEMPTS = 10;
+
+/** Serialises updateWorkspace calls inside one process so they never conflict with each other. */
+let updateChain: Promise<unknown> = Promise.resolve();
+
+/** Code-default workspace used until the first successful write; cached so the seed is stable per process. */
+let seedCache: FactoryWorkspace | null = null;
 
 function addDays(iso: string, days: number): string {
   const date = new Date(iso);
@@ -154,6 +177,7 @@ export function seedWorkspace(): FactoryWorkspace {
     },
     visibleGaps: seedGaps(),
     latestBaselineId: "",
+    latestBaselineBySite: {},
     productionLive: true,
     rollbackOf: "",
     productionRelease: {
@@ -176,89 +200,241 @@ function withDefaults(workspace: FactoryWorkspace): FactoryWorkspace {
     visibleGaps: workspace.visibleGaps?.length ? workspace.visibleGaps : seeded.visibleGaps,
     screenshots: workspace.screenshots || [],
     productionRelease: workspace.productionRelease || seeded.productionRelease,
+    latestBaselineBySite: workspace.latestBaselineBySite || {},
   };
 }
 
-export async function readWorkspace(): Promise<FactoryWorkspace> {
-  try {
-    const raw = await readFile(WORKSPACE_FILE, "utf8");
-    const parsed = JSON.parse(raw) as FactoryWorkspace;
-    if (parsed?.project?.id === FACTORY_PROJECT_ID) return withDefaults(parsed);
-  } catch (err) {
-    const code = (err as NodeJS.ErrnoException).code;
-    if (code !== "ENOENT") {
-      console.warn("Factory workspace unreadable; reseeding", err);
+type LoadedWorkspace = {
+  workspace: FactoryWorkspace;
+  /** Store version of the persisted document; null while the store has no workspace yet (seed only). */
+  version: string | null;
+};
+
+async function loadWorkspace(): Promise<LoadedWorkspace> {
+  const doc = await readDoc<FactoryWorkspace>(WORKSPACE_KEY);
+  if (doc) {
+    if (doc.value?.project?.id !== FACTORY_PROJECT_ID) {
+      // Never reseed over data we do not understand: that would silently destroy it on the next write.
+      throw new StoreError(
+        "corrupt",
+        "Stored factory workspace has an unexpected project id; refusing to overwrite it."
+      );
     }
+    return { workspace: withDefaults(doc.value), version: doc.version };
   }
-  const seeded = seedWorkspace();
-  try {
-    await writeWorkspace(seeded);
-  } catch (err) {
-    console.warn(
-      "Factory workspace file is not writable on this host; CRM records remain the source of truth.",
-      err instanceof Error ? err.name : "unknown"
-    );
-  }
-  return seeded;
+  // Fresh store: serve code defaults. Nothing is written on read; the seed is persisted by the first write.
+  if (!seedCache) seedCache = seedWorkspace();
+  return { workspace: structuredClone(seedCache), version: null };
+}
+
+export async function readWorkspace(): Promise<FactoryWorkspace> {
+  return (await loadWorkspace()).workspace;
 }
 
 export const ensureWorkspace = readWorkspace;
 
-export async function writeWorkspace(workspace: FactoryWorkspace): Promise<void> {
-  const run = writeChain.then(async () => {
-    await mkdir(ROOT, { recursive: true });
-    await writeFile(WORKSPACE_FILE, `${JSON.stringify(workspace, null, 2)}\n`, "utf8");
-  });
-  writeChain = run.catch(() => undefined);
+/** Workspace plus whether a document is actually persisted (false = code-default seed only). */
+export async function readWorkspaceState(): Promise<{ workspace: FactoryWorkspace; persisted: boolean }> {
+  const { workspace, version } = await loadWorkspace();
+  return { workspace, persisted: version !== null };
+}
+
+/**
+ * Public-page reader: never throws. A store outage or corrupt document is logged and null is returned
+ * so public pages can degrade (notFound / placeholder) instead of answering 500. /app pages keep using
+ * readWorkspace(), which stays strict.
+ */
+export async function readPublicWorkspace(): Promise<FactoryWorkspace | null> {
   try {
-    await run;
+    return await readWorkspace();
   } catch (err) {
-    console.warn(
-      "Factory workspace write skipped; CRM store is source of truth.",
-      err instanceof Error ? err.name : "unknown"
-    );
-  }
-}
-
-export async function updateWorkspace(
-  mutate: (workspace: FactoryWorkspace) => FactoryWorkspace | void
-): Promise<FactoryWorkspace> {
-  const current = await readWorkspace();
-  const next = mutate(current) || current;
-  await writeWorkspace(next);
-  return next;
-}
-
-export async function saveBaseline(snapshot: BaselineSnapshot): Promise<void> {
-  await mkdir(BASELINE_DIR, { recursive: true });
-  await writeFile(
-    path.join(BASELINE_DIR, `${snapshot.id}.json`),
-    `${JSON.stringify(snapshot, null, 2)}\n`,
-    "utf8"
-  );
-}
-
-export async function readBaseline(id: string): Promise<BaselineSnapshot | null> {
-  try {
-    const raw = await readFile(path.join(BASELINE_DIR, `${id}.json`), "utf8");
-    return JSON.parse(raw) as BaselineSnapshot;
-  } catch {
+    unstable_rethrow(err);
+    const kind = err instanceof StoreError ? err.kind : "unknown";
+    console.error(`Public page: factory workspace unavailable (${kind}); serving fallback.`);
     return null;
   }
 }
 
-export async function listBaselines(): Promise<BaselineSnapshot[]> {
+/** Public /case-study data: workspace + latest baseline, or null when the store cannot serve them. */
+export async function readPublicCaseStudy(): Promise<{
+  workspace: FactoryWorkspace;
+  baseline: BaselineSnapshot | null;
+} | null> {
   try {
-    const names = await readdir(BASELINE_DIR);
-    const rows: BaselineSnapshot[] = [];
-    for (const name of names.filter((item) => item.endsWith(".json"))) {
-      const row = await readBaseline(name.replace(/\.json$/, ""));
-      if (row) rows.push(row);
-    }
-    return rows.sort((a, b) => a.capturedAt.localeCompare(b.capturedAt));
-  } catch {
-    return [];
+    const workspace = await readWorkspace();
+    const baseline = await latestBaseline();
+    return { workspace, baseline };
+  } catch (err) {
+    unstable_rethrow(err);
+    const kind = err instanceof StoreError ? err.kind : "unknown";
+    console.error(`Public /case-study: factory state unavailable (${kind}); serving fallback.`);
+    return null;
   }
+}
+
+/** Small, secret-free workspace health used by /api/health. */
+export async function workspaceHealth(): Promise<"ok" | "not_initialized" | "corrupt" | "unreadable"> {
+  try {
+    const { persisted } = await readWorkspaceState();
+    return persisted ? "ok" : "not_initialized";
+  } catch (err) {
+    return err instanceof StoreError && err.kind === "corrupt" ? "corrupt" : "unreadable";
+  }
+}
+
+/**
+ * Persist the code-default workspace (create-only) so the store is "initialized": after this the public
+ * intake mirror starts writing. Does nothing (created:false) when a workspace already exists, and fails
+ * loudly if the stored document is corrupt. Operator action `init-workspace`.
+ */
+export async function initWorkspace(): Promise<{ created: boolean; workspace: FactoryWorkspace }> {
+  const { workspace, version } = await loadWorkspace();
+  if (version !== null) return { created: false, workspace };
+  try {
+    await writeDoc(WORKSPACE_KEY, workspace, { expectedVersion: null });
+    return { created: true, workspace };
+  } catch (err) {
+    if (isStoreConflict(err)) return { created: false, workspace: (await loadWorkspace()).workspace };
+    throw err;
+  }
+}
+
+/** Unconditional (last write wins) write of the whole workspace. Throws if the store rejects it. */
+export async function writeWorkspace(workspace: FactoryWorkspace): Promise<void> {
+  await writeDoc(WORKSPACE_KEY, workspace);
+}
+
+/**
+ * Read-modify-write with optimistic concurrency: the write only succeeds if the stored
+ * document is unchanged since it was read (ETag on Blobs, content hash locally). On a
+ * conflict (another instance wrote first) the mutation is re-applied to the fresh copy, up to
+ * MAX_UPDATE_ATTEMPTS times. Calls inside one process are queued. Write failures are thrown, never swallowed.
+ */
+export async function updateWorkspace(
+  mutate: (workspace: FactoryWorkspace) => FactoryWorkspace | void
+): Promise<FactoryWorkspace> {
+  return (await queueUpdate(mutate, false)) as FactoryWorkspace;
+}
+
+/**
+ * Like updateWorkspace, but only when a workspace document is already persisted. On an uninitialized
+ * store it writes NOTHING and returns null (so an unattended writer, e.g. the public intake mirror,
+ * can never create the code-default seed ahead of a migration).
+ */
+export function updateExistingWorkspace(
+  mutate: (workspace: FactoryWorkspace) => FactoryWorkspace | void
+): Promise<FactoryWorkspace | null> {
+  return queueUpdate(mutate, true);
+}
+
+function queueUpdate(
+  mutate: (workspace: FactoryWorkspace) => FactoryWorkspace | void,
+  requireExisting: boolean
+): Promise<FactoryWorkspace | null> {
+  const run = updateChain.then(() => applyUpdate(mutate, requireExisting));
+  updateChain = run.catch(() => undefined);
+  return run;
+}
+
+async function applyUpdate(
+  mutate: (workspace: FactoryWorkspace) => FactoryWorkspace | void,
+  requireExisting: boolean
+): Promise<FactoryWorkspace | null> {
+  for (let attempt = 1; ; attempt += 1) {
+    const { workspace, version } = await loadWorkspace();
+    if (requireExisting && version === null) return null;
+    const next = mutate(workspace) || workspace;
+    try {
+      await writeDoc(WORKSPACE_KEY, next, { expectedVersion: version });
+      return next;
+    } catch (err) {
+      if (isStoreConflict(err) && attempt < MAX_UPDATE_ATTEMPTS) {
+        await new Promise((resolve) => setTimeout(resolve, 20 * attempt + Math.floor(Math.random() * 40)));
+        continue;
+      }
+      throw err;
+    }
+  }
+}
+
+function baselineKey(id: string): string {
+  if (!SAFE_ID.test(id)) throw new StoreError("write", "Invalid baseline id.");
+  return `${BASELINE_PREFIX}${id}`;
+}
+
+export async function saveBaseline(snapshot: BaselineSnapshot): Promise<void> {
+  await writeDoc(baselineKey(snapshot.id), snapshot);
+}
+
+export type BaselineWarning = { key: string; problem: "corrupt" | "invalid"; message: string };
+
+function looksLikeBaseline(value: unknown): value is BaselineSnapshot {
+  const row = value as Partial<BaselineSnapshot> | null;
+  return Boolean(
+    row &&
+      typeof row === "object" &&
+      typeof row.id === "string" &&
+      typeof row.capturedAt === "string" &&
+      Array.isArray(row.pageInventory)
+  );
+}
+
+/** Reads one baseline; a corrupt/invalid one is reported (never silently dropped) and skipped. */
+async function readBaselineChecked(
+  key: string
+): Promise<{ snapshot: BaselineSnapshot | null; warning?: BaselineWarning }> {
+  try {
+    const value = (await readDoc<BaselineSnapshot>(key))?.value ?? null;
+    if (value === null) return { snapshot: null };
+    if (!looksLikeBaseline(value)) {
+      const message = "Baseline document is not a valid snapshot; skipped.";
+      console.error(`Skipping invalid baseline ${key}: ${message}`);
+      return { snapshot: null, warning: { key, problem: "invalid", message } };
+    }
+    return { snapshot: value };
+  } catch (err) {
+    // One corrupt baseline must not take down every SEO page; real I/O failures still throw.
+    if (err instanceof StoreError && err.kind === "corrupt") {
+      console.error(`Skipping unreadable baseline ${key}: ${err.message}`);
+      return { snapshot: null, warning: { key, problem: "corrupt", message: err.message } };
+    }
+    throw err;
+  }
+}
+
+export async function readBaseline(id: string): Promise<BaselineSnapshot | null> {
+  if (!SAFE_ID.test(id)) return null;
+  return (await readBaselineChecked(baselineKey(id))).snapshot;
+}
+
+/** Baselines plus a warning for every stored baseline that had to be skipped (used by the export). */
+export async function listBaselinesDetailed(): Promise<{
+  baselines: BaselineSnapshot[];
+  warnings: BaselineWarning[];
+}> {
+  const keys = await listDocKeys(BASELINE_PREFIX);
+  const warnings: BaselineWarning[] = [];
+  const rows = await Promise.all(
+    keys.map(async (key) => {
+      if (!SAFE_ID.test(key.slice(BASELINE_PREFIX.length))) {
+        warnings.push({ key, problem: "invalid", message: "Unsafe baseline key; skipped." });
+        return null;
+      }
+      const { snapshot, warning } = await readBaselineChecked(key);
+      if (warning) warnings.push(warning);
+      return snapshot;
+    })
+  );
+  return {
+    baselines: rows
+      .filter((row): row is BaselineSnapshot => Boolean(row))
+      .sort((a, b) => a.capturedAt.localeCompare(b.capturedAt)),
+    warnings,
+  };
+}
+
+export async function listBaselines(): Promise<BaselineSnapshot[]> {
+  return (await listBaselinesDetailed()).baselines;
 }
 
 export async function latestBaseline(): Promise<BaselineSnapshot | null> {
@@ -289,15 +465,16 @@ export async function recordEvent(
   return event;
 }
 
-export async function captureAndStoreBaseline(origin: string): Promise<FactoryWorkspace> {
+export async function captureAndStoreBaseline(origin: string, siteId?: string): Promise<FactoryWorkspace> {
   const { captureBaseline } = await import("./crawl");
-  const snapshot = await captureBaseline({
-    origin,
-    source: origin.includes("sitesinc.co") ? "live_production" : "local",
-  });
+  const snapshot = await captureBaseline({ origin, siteId });
   await saveBaseline(snapshot);
   return updateWorkspace((workspace) => {
-    workspace.latestBaselineId = snapshot.id;
+    const id = snapshot.siteId || siteId || workspace.project.id;
+    workspace.latestBaselineBySite = { ...(workspace.latestBaselineBySite || {}), [id]: snapshot.id };
+    if (id === FACTORY_PROJECT_ID || (origin.includes("sitesinc.co") && !origin.includes("/demo/"))) {
+      workspace.latestBaselineId = snapshot.id;
+    }
     return workspace;
   });
 }
@@ -333,9 +510,7 @@ export async function saveScreenshot(input: {
   const safeExt = [".png", ".jpg", ".jpeg", ".webp"].includes(ext) ? ext : ".png";
   const id = newId("shot");
   const filename = `${id}${safeExt}`;
-  const dir = path.join(ROOT, "screenshots");
-  await mkdir(dir, { recursive: true });
-  await writeFile(path.join(dir, filename), input.bytes);
+  await writeBinary(`${SCREENSHOT_PREFIX}${filename}`, input.bytes, SCREENSHOT_TYPES[safeExt]);
   const ref = {
     id,
     viewport: input.viewport,
@@ -355,7 +530,18 @@ export async function saveScreenshot(input: {
   return ref;
 }
 
-export const UPLOAD_DIR = path.join(ROOT, "screenshots");
+const SCREENSHOT_TYPES: Record<string, string> = {
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".webp": "image/webp",
+};
+
+/** Read an uploaded screenshot by file name. Null when it does not exist. */
+export async function readScreenshot(name: string): Promise<Buffer | null> {
+  if (!/^[a-z0-9_.-]+$/i.test(name) || name.includes("..")) return null;
+  return readBinary(`${SCREENSHOT_PREFIX}${name}`);
+}
 
 export async function patchStage(input: {
   key: StageKey;

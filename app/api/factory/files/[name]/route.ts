@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { UPLOAD_DIR } from "@/lib/factory/workspace";
+import { factoryErrorResponse } from "@/lib/factory/api-errors";
+import { readScreenshot } from "@/lib/factory/workspace";
+import { ensureBlobsFromRequest } from "@/lib/persistence";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,7 +15,7 @@ const TYPES: Record<string, string> = {
 };
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   context: { params: Promise<{ name: string }> }
 ) {
   const { name } = await context.params;
@@ -27,14 +28,18 @@ export async function GET(
     return NextResponse.json({ ok: false, error: "Unsupported file." }, { status: 400 });
   }
   try {
-    const bytes = await readFile(path.join(UPLOAD_DIR, name));
+    ensureBlobsFromRequest(req);
+    const bytes = await readScreenshot(name);
+    if (!bytes) {
+      return NextResponse.json({ ok: false, error: "Not found." }, { status: 404 });
+    }
     return new NextResponse(Uint8Array.from(bytes), {
       headers: {
         "content-type": type,
         "cache-control": "private, max-age=3600",
       },
     });
-  } catch {
-    return NextResponse.json({ ok: false, error: "Not found." }, { status: 404 });
+  } catch (err) {
+    return factoryErrorResponse(err, "Could not read file.");
   }
 }

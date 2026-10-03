@@ -35,7 +35,6 @@ export default function ShopNav() {
         <Link
           href="/"
           className="group flex min-w-0 items-center gap-2.5 sm:gap-3"
-          aria-label={`${site.name} home`}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -75,6 +74,7 @@ export default function ShopNav() {
             href="/cart"
             className={`${linkClass(onCart)} inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 sm:px-3`}
             aria-current={onCart ? "page" : undefined}
+            aria-label={itemCount > 0 ? `Cart, ${itemCount} ${itemCount === 1 ? "item" : "items"}` : "Cart"}
           >
             <ShoppingBag
               className="h-4 w-4 shrink-0 opacity-80"

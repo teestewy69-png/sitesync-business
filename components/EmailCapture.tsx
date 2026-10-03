@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { CheckCircle2, Mail } from "lucide-react";
 import content from "@/content.json";
 
@@ -17,15 +17,30 @@ export default function EmailCapture() {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
+  // One idempotency key per form instance, plus a lock so double-clicks and retries cannot create twice.
+  const idempotencyKey = useRef("");
+  const submitting = useRef(false);
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (submitting.current || status === "success") return;
+    submitting.current = true;
+    if (!idempotencyKey.current) {
+      idempotencyKey.current =
+        typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+          ? crypto.randomUUID()
+          : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+    }
     setStatus("loading");
     setErrorMessage("");
 
     try {
       const res = await fetch("/api/subscribe", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": idempotencyKey.current,
+        },
         body: JSON.stringify({
           name,
           email,
@@ -45,6 +60,7 @@ export default function EmailCapture() {
       );
       setStatus("success");
     } catch (err) {
+      submitting.current = false;
       setStatus("error");
       setErrorMessage(
         err instanceof Error ? err.message : "Something went wrong. Please try again."

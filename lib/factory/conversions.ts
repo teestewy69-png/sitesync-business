@@ -1,4 +1,5 @@
 import { isMailConfigured } from "@/lib/mail";
+import { docStoreHealth } from "@/lib/persistence";
 import { newId, storeWritable } from "@/lib/store";
 import { FACTORY_PROJECT_ID } from "./types";
 import type { ConversionCheck, FactoryWorkspace } from "./types";
@@ -73,14 +74,21 @@ export async function runConversionChecks(
   );
 
   const writable = await storeWritable();
+  const factoryStore = await docStoreHealth();
   checks.push(
     check(
       "store",
       "Internal project creation / persistence",
-      writable && workspace.project.id === FACTORY_PROJECT_ID,
-      writable
-        ? "Factory workspace and JSON store are writable."
-        : "Store is not writable — launch blocking.",
+      writable && factoryStore.ok && workspace.project.id === FACTORY_PROJECT_ID,
+      writable && factoryStore.ok
+        ? `CRM store and factory/SEO store are writable (${factoryStore.backend}).`
+        : [
+            writable ? "" : "CRM store is not writable.",
+            factoryStore.ok ? "" : `Factory/SEO store is not writable: ${factoryStore.detail}`,
+            "Launch blocking.",
+          ]
+            .filter(Boolean)
+            .join(" "),
       true
     )
   );

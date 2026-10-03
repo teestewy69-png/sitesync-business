@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function CaptureButton({ origin }: { origin: string }) {
+export default function CaptureButton({
+  origin,
+  siteId,
+}: {
+  origin: string;
+  siteId?: string;
+}) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -15,7 +21,7 @@ export default function CaptureButton({ origin }: { origin: string }) {
       const res = await fetch("/api/factory/baseline", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ origin }),
+        body: JSON.stringify({ origin, siteId }),
       });
       const data = (await res.json()) as { ok?: boolean; error?: string; id?: string };
       if (!res.ok || !data.ok) throw new Error(data.error || "Capture failed");

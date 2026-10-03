@@ -50,3 +50,14 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Factory / SEO state (durable)
+
+Workspace, baselines, QA checklists and screenshots are stored through `lib/persistence.ts` too: Netlify Blobs on
+Netlify (`sitesinc-crm` production, `sitesinc-crm-staging` staging) and `data/factory/**` locally. Write failures are
+reported (HTTP 500/409), public pages degrade instead of returning 500, `/api/health` includes the factory store and
+workspace status, and `GET /api/factory/export` (operator session) downloads a JSON backup with a `warnings` list.
+
+Moving local factory state to a deployed store is done with `scripts/migrate-factory-state.mjs` (dry run by default;
+real baselines and the QA checklist only, workspace opt-in). **Migrate first, then deploy**; see
+`docs/FACTORY_STATE.md` (first-deploy order, rollback, the "no ETag" warning) and `docs/STAGING.md`.

@@ -1,12 +1,13 @@
 import type { NextConfig } from "next";
 import path from "path";
+import { isStagingEnv } from "./lib/site-env";
 
 const nextConfig: NextConfig = {
   turbopack: {
     root: path.join(__dirname),
   },
   async headers() {
-    if (process.env.NEXT_PUBLIC_FACTORY_PREVIEW !== "1") return [];
+    if (process.env.NEXT_PUBLIC_FACTORY_PREVIEW !== "1" && !isStagingEnv()) return [];
     return [
       {
         source: "/:path*",

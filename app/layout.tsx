@@ -3,7 +3,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import content from "@/content.json";
 import Analytics from "@/components/Analytics";
 import AnnouncementTicker from "@/components/AnnouncementTicker";
+import StagingBanner from "@/components/StagingBanner";
 import { CartProvider } from "@/components/shop/CartProvider";
+import { isStagingEnv, publicAnalyticsMeasurementId } from "@/lib/site-env";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -16,7 +18,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "";
+const GA_MEASUREMENT_ID = publicAnalyticsMeasurementId();
 const { seo } = content;
 
 export const metadata: Metadata = {
@@ -44,6 +46,9 @@ export const metadata: Metadata = {
   icons: {
     icon: "/logo.png",
   },
+  ...(isStagingEnv()
+    ? { robots: { index: false, follow: false, nocache: true } }
+    : {}),
 };
 
 export default function RootLayout({
@@ -60,6 +65,7 @@ export default function RootLayout({
         <CartProvider>
           <AnnouncementTicker />
           {children}
+          <StagingBanner />
           <Analytics measurementId={GA_MEASUREMENT_ID} />
         </CartProvider>
       </body>
