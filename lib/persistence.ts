@@ -4,6 +4,7 @@ import path from "node:path";
 import { connectLambda, getStore, type Store } from "@netlify/blobs";
 import { headers } from "next/headers";
 import { unstable_rethrow } from "next/navigation";
+import { RevConflictError, readRevisioned, writeRevisioned, type RevStore } from "@/lib/revisioned-docs";
 import { isStagingEnv } from "@/lib/site-env";
 
 export type StoreBackend = "local-json" | "netlify-blobs";
@@ -235,6 +236,19 @@ function errDetail(err: unknown): string {
   return "unknown";
 }
 
+/**
+ * Documents that are read-modify-written (workspace, QA checklists) use race-safe revisions on Blobs
+ * (lib/revisioned-docs.ts) instead of ETag onlyIfMatch, which lost updates under overlap on real Blobs.
+ * Everything else keeps the plain get/set path. Local-json mode is unchanged for all keys.
+ */
+export function usesRevisions(key: string): boolean {
+  return key === "factory/workspace" || key.startsWith("factory/checklists/");
+}
+
+function revStore(): RevStore {
+  return getCrmStore() as unknown as RevStore;
+}
+
 function assertDocKey(key: string): void {
   if (key.length > 200 || key.includes("..") || !DOC_KEY_PATTERN.test(key)) {
     throw new StoreError("write", `Invalid store key "${key.slice(0, 80)}".`);
@@ -294,6 +308,17 @@ export async function readDoc<T>(key: string): Promise<DocRead<T> | null> {
       throw new StoreError("corrupt", `Stored document ${key} is not valid JSON; refusing to overwrite it.`);
     }
   }
+  if (usesRevisions(key)) {
+    try {
+      const head = await readRevisioned(revStore(), key);
+      return head ? { value: head.value as T, version: String(head.rev) } : null;
+    } catch (err) {
+      if (err instanceof SyntaxError) {
+        throw new StoreError("corrupt", `Stored document ${key} is not valid JSON; refusing to overwrite it.`);
+      }
+      throw new StoreError("read", `Netlify Blobs read failed for ${key} (${errDetail(err)}).`);
+    }
+  }
   let found: { data: unknown; etag?: string } | null;
   try {
     found = (await getCrmStore().getWithMetadata(key, { type: "json" })) as {
@@ -347,6 +372,26 @@ export async function writeDoc<T>(
         throw new StoreError("write", `Local store write failed for ${key} (${errDetail(err)}).`);
       }
     });
+  }
+  if (usesRevisions(key)) {
+    let expectedRev: number | null | undefined;
+    if (expected === undefined || expected === null) {
+      expectedRev = expected;
+    } else {
+      expectedRev = expected === "" ? Number.NaN : Number(expected);
+      if (!Number.isInteger(expectedRev)) {
+        throw new StoreError("conflict", `Document ${key} version is not recognised; re-read it and retry.`);
+      }
+    }
+    try {
+      return String(await writeRevisioned(revStore(), key, value, expectedRev));
+    } catch (err) {
+      if (err instanceof RevConflictError) {
+        throw new StoreError("conflict", `Document ${key} was changed by another request.`);
+      }
+      console.error(`Netlify Blobs revisioned write failed for ${key}: ${errDetail(err)}`);
+      throw new StoreError("write", `Netlify Blobs write failed for ${key} (${errDetail(err)}).`);
+    }
   }
   let result: { modified: boolean; etag?: string };
   try {

@@ -38,11 +38,12 @@ durable layer as leads: `lib/persistence.ts`.
   create-only, returns `created:false` and changes nothing if a workspace exists), or (c) any other `/app`
   operator action that updates the workspace runs (operator actions are deliberate, so they may create it).
   Until then the mirror is off and `/api/health` reports `workspace: "not_initialized"` (informational, not unhealthy).
-- **Concurrency:** `updateWorkspace` is optimistic read-modify-write: the write is conditional on the version read
-  (Blobs ETag; content hash locally). On a conflict the mutation is re-applied to the fresh copy (up to 10 tries,
-  jittered backoff; calls inside one process are queued), then a 409 is returned. Limitations: the whole workspace
-  is one document (every change rewrites it); the checklist is a whole-document replace sent by the browser, so two
-  tabs saving different edits means the last save wins; local-dev locking is per process only.
+- **Concurrency (revisioned documents).** The workspace and the QA checklists are read-modify-written through
+  `updateWorkspace` / `writeChecklist`. On Netlify Blobs they use race-safe revisions (see "Write path" below), not
+  ETag `onlyIfMatch`. On a conflict the mutation is re-applied to the fresh copy (up to 30 rounds, jittered backoff;
+  calls inside one process are queued), then a 409 is returned (never a silent loss). Limitations: the whole workspace is
+  one document (every change rewrites it); the checklist is a whole-document replace sent by the browser, so two tabs
+  saving different edits means the last save wins; local-dev locking is per process only.
 - **Blobs context in server components.** Server-rendered pages cannot see the request, so every
   document/record function in `lib/persistence.ts` calls `ensureBlobsContext()` (alias `getFactoryContext()`),
   which reads `headers()` itself and connects Blobs from the `x-nf-blobs` header when the runtime did not
@@ -126,23 +127,50 @@ node scripts/migrate-factory-state.mjs --target staging --source <main checkout>
   The migration script has no undo. Never delete other keys.
 - Do not use `--overwrite` on a store that has live edits: it replaces keys without a backup.
 
-### Watch for: "no ETag" warning
+### Write path on Blobs: why not `onlyIfMatch` (finding from real staging Blobs)
 
-If Blobs ever returns no ETag on read, `readDoc` returns an empty version and conflict protection silently turns
-off (writes become last-write-wins). The server logs once per instance:
-`Netlify Blobs returned no ETag on read; factory writes are unconditional (last write wins).`
-Search the Netlify function logs for it after the first staging session. If it appears, concurrent edits can
-overwrite each other; do not rely on conflict detection until it is understood.
+Staging verification on real Blobs found that ETag `onlyIfMatch` is **not airtight under overlap**: with 10 simultaneous
+read-modify-write updates to one key, several writers read the same ETag and all got `modified:true`, so 7-9 of 10 updates
+survived in every trial (pairs of writers were safe 20/20). `onlyIfMatch` on a missing key also answered
+`{modified:true, etag:""}` while creating nothing. `onlyIfNew` was race-safe (20/20 single winner). Reads do return ETags.
+
+Chosen design (`lib/revisioned-docs.ts`, used for `factory/workspace` and `factory/checklists/*` only):
+
+- Revision *n* of a document is the append-only claim blob `_rev/<key>/<n>` = `{rev, id, at, value}`. A writer that last saw
+  revision *r* writes claim *r+1* with `onlyIfNew`. Exactly one writer can win slot *r+1*; everyone else gets
+  `modified:false` = conflict, re-reads, re-applies its change and retries. No lock, lease, expiry or stale-lock takeover.
+- The document key itself stays a readable copy with `metadata.rev` (created with `onlyIfNew` = revision 1, rolled forward
+  after each win). It is only a hint: readers follow claims `r+1, r+2, ...` until one is missing, so a failed or stale
+  roll-forward can never hide a committed update, and a writer that dies after winning has still committed.
+- Creation never uses `onlyIfMatch`. A document without metadata (the migration script's output) is revision 0.
+- The newest 50 claims are kept (older ones deleted). A writer would have to be 50 revisions stale to re-claim a deleted slot.
+- Cost: a read is 2 requests (base + one probe for the next claim) instead of 1; a write is 2 (claim + base copy) plus an
+  occasional delete. Fine for one operator.
+- Local-json mode is unchanged (content-hash compare inside one process); the in-process update queue is kept.
+- Other keys (baselines, screenshots, health probe, leads) keep the plain get/set path.
+- The ETag "no ETag" fallback no longer applies to the workspace/checklists. It only remains for keys written with the
+  generic unconditional `writeDoc`.
+
+Storage notes: the `_rev/...` keys live in the same store (`sitesinc-crm` / `sitesinc-crm-staging`) and are not listed by
+`listDocKeys`. To discard a revisioned document completely, delete BOTH `factory/workspace` (or the checklist key) and its
+`_rev/<key>/` keys; `migrate-factory-state.mjs --overwrite` on a store with live revisions would only replace the hint copy
+(revision 0) and the old claims would win again, so do not use `--overwrite` there. Rollback to older code is still clean:
+older code reads only the base key, which is kept current by the roll-forward (it may lag a revision or two).
 
 ## Local mock-Blobs run (what it did and did not show)
 
 The e2e run also exercised `SITESINC_STORE=blobs` against the BlobsServer mock that ships with
-`@netlify/blobs` (`@netlify/blobs/server`): create-only init, 10 concurrent workspace updates without loss, a
+`@netlify/blobs` (`@netlify/blobs/server`): create-only init, 20 simultaneous updates across two app instances without loss, a
 binary screenshot round trip, corrupt-JSON detection (`SyntaxError` -> `corrupt`), and graceful public pages.
 Two findings to carry to staging:
 
-- **The mock sends no ETag on GET**, so that run used the "no ETag" fallback (warning logged once). Whether real
-  Blobs returns an ETag on `getWithMetadata` is still unproven; check the logs as described above.
+- **Concurrency mock (kept outside the repo) and `scripts/revisioned-docs.test.mjs`** simulate the real finding: stale
+  ETags accepted while writers overlap, `onlyIfMatch` on a missing key reporting success, atomic `onlyIfNew`. The old
+  algorithm loses updates there; the revisioned algorithm loses none at 10- and 20-way concurrency. This is a model of the
+  observed behaviour, not the real service. Local results: OLD (onlyIfMatch) lost 90/100 (10-way x10) and 107/120 (20-way x6)
+  against the stale-ETag mock; NEW lost 0 (unit sim 10-way x30 and 20-way x20; real @netlify/blobs client 10-way x10 and
+  20-way x6). The mock is deliberately harsher than staging (which kept 7-9 of 10), so the OLD counts are an upper bound;
+  the NEW result, zero lost, is what matters.
 - **Header-derived context and strong reads:** with the installed `@netlify/blobs` 11.1.0, `connectLambda()` (the
   `x-nf-blobs` header route) sets no `uncachedEdgeURL`, and the store is opened with `consistency: "strong"`, which
   that library refuses without it (`BlobsConsistencyError`). The header route therefore only works if the platform also
@@ -150,8 +178,11 @@ Two findings to carry to staging:
   this change, and must be confirmed on staging. The shared `ensureBlobsContext()` does connect the context from
   the header in server components (verified), it just cannot add what the header does not carry.
 
-## Not proven locally
+## Still to re-verify on real staging Blobs (needs Tony's OK and a short-lived token)
 
-Everything that touches real Netlify Blobs: ETag on read, `onlyIfNew` / `onlyIfMatch`, list, binary round trip,
-and whether server-rendered pages receive a Blobs context from the `x-nf-blobs` header. Local runs use the
-`local-json` backend only.
+Run a scratch-key test only (never `factory/workspace` itself): create `scratch/rev-test` via the revisioned path, then
+run 10-way and 20-way simultaneous read-modify-write trials (a few trials each) and confirm zero lost updates; confirm
+`onlyIfNew` on claim keys keeps a single winner under 20 writers; confirm `get` of the next claim key is visible
+immediately after a `set` on another connection (strong consistency / `uncachedEdgeURL`); confirm `delete` of old claims
+works; then delete the scratch keys. Also still unproven: the `x-nf-blobs` header route (see above), list behaviour,
+the binary round trip, and the Netlify build/function runtime. Local runs use the `local-json` backend or in-memory mocks.

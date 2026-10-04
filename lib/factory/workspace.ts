@@ -41,7 +41,8 @@ export const BASELINE_PREFIX = "factory/baselines/";
 export const SCREENSHOT_PREFIX = "factory/screenshots/";
 
 const SAFE_ID = /^[a-z0-9_-]{1,80}$/i;
-const MAX_UPDATE_ATTEMPTS = 10;
+// One winner per round when several instances write at once, so allow enough rounds for a burst of ~20.
+const MAX_UPDATE_ATTEMPTS = 30;
 
 /** Serialises updateWorkspace calls inside one process so they never conflict with each other. */
 let updateChain: Promise<unknown> = Promise.resolve();
@@ -349,7 +350,7 @@ async function applyUpdate(
       return next;
     } catch (err) {
       if (isStoreConflict(err) && attempt < MAX_UPDATE_ATTEMPTS) {
-        await new Promise((resolve) => setTimeout(resolve, 20 * attempt + Math.floor(Math.random() * 40)));
+        await new Promise((resolve) => setTimeout(resolve, Math.min(20 * attempt, 150) + Math.floor(Math.random() * 40)));
         continue;
       }
       throw err;

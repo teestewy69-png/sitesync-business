@@ -38,7 +38,10 @@ export async function writeChecklist(checklist: OperatorChecklist) {
       await writeDoc(key, next, { expectedVersion: current ? current.version : null });
       break;
     } catch (err) {
-      if (isStoreConflict(err) && attempt < 5) continue;
+      if (isStoreConflict(err) && attempt < 30) {
+        await new Promise((resolve) => setTimeout(resolve, Math.min(20 * attempt, 150) + Math.floor(Math.random() * 40)));
+        continue;
+      }
       throw err;
     }
   }

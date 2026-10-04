@@ -90,8 +90,9 @@ Staging uses the Blobs store `sitesinc-crm-staging` for the factory state as wel
    `/case-study` returns 200 - this proves server components get a Blobs context; (b) `GET /api/factory/export`
    is 401 without the session and 200 with it, `warnings` is empty and counts match; (c) tick a QA item, reload,
    it persisted; (d) upload a screenshot, reload, it loads; (e) run one factory action; (f) do two actions in
-   two tabs at once; (g) search the function logs for the **"no ETag" warning** (`Netlify Blobs returned no ETag
-   on read`) - if it appears, conflict protection is off; (h) submit one test intake: the lead shows in the inbox
+   two tabs at once; (g) save 10 quick edits from two tabs at once and confirm none is lost (the workspace and checklists use revisioned
+   `onlyIfNew` claims, not ETags - see FACTORY_STATE.md "Write path on Blobs"; the old "no ETag" warning no longer
+   applies to them); (h) submit one test intake: the lead shows in the inbox
    and the workspace gets one intake project; (i) redeploy and confirm state survives; (j) `GET /api/health`
    shows `"ok": true`, `"workspace": "ok"`.
 6. Download an export as the first dated backup.
