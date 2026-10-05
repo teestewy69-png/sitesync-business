@@ -1,10 +1,12 @@
-import { recordIntakeProject } from "./actions";
+import { recordIntakeProject } from "./record-intake";
+import type { IntakeConfigInput } from "./client-config";
 
 export async function intakeToProject(
   source: "inquiry" | "subscribe",
   publicLabel: string,
   leadId?: string,
-  monitoringInterest?: boolean
+  monitoringInterest?: boolean,
+  extras?: Omit<IntakeConfigInput, "label" | "source" | "monitoringInterest">
 ) {
   try {
     return await recordIntakeProject({
@@ -12,6 +14,7 @@ export async function intakeToProject(
       label: publicLabel,
       leadId,
       monitoringInterest,
+      ...extras,
     });
   } catch (err) {
     console.error("Factory intake project failed:", err);

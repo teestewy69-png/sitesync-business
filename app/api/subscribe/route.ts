@@ -149,7 +149,13 @@ export async function POST(req: NextRequest) {
           "subscribe",
           "Website build request",
           lead.id,
-          monitoringInterest
+          monitoringInterest,
+          {
+            name,
+            email,
+            goals: goals || undefined,
+            details: details || undefined,
+          }
         );
         projectId = project?.id || "";
       }

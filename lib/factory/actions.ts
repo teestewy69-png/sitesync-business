@@ -1,5 +1,9 @@
-import { appendProject, findProjectByLeadId, newId, stableId } from "@/lib/store";
-import { runConversionChecks, conversionEvent } from "./conversions";
+import { newId } from "@/lib/store";
+import { applyConfigToProject, buildClientConfig, normalizeDesignStyleId } from "./client-config";
+import { initClientWorkspace, setClientBriefCompetitors, updateClientWorkspace, readClientWorkspace } from "./client-workspace";
+import { recordIntakeProject } from "./record-intake";
+export { recordIntakeProject } from "./record-intake";
+import { runConversionChecks } from "./conversions";
 import { draftFromBrief, wordCount } from "./drafts";
 import { DISCLAIMERS, SEED_BRIEFS, STAGE_DEFS } from "./pipeline";
 import { slugsForSurfaces } from "./surfaces";
@@ -12,7 +16,7 @@ import type {
   StageStatus,
 } from "./types";
 import { FACTORY_PROJECT_ID } from "./types";
-import { initWorkspace, latestBaseline, updateExistingWorkspace, updateWorkspace } from "./workspace";
+import { initWorkspace, latestBaseline, updateWorkspace } from "./workspace";
 import {
   createBacklinkRecord,
   isAddBacklinkOp,
@@ -46,68 +50,6 @@ function markStage(
 
 function nowIso() {
   return new Date().toISOString();
-}
-
-export async function recordIntakeProject(input: {
-  source: IntakeProject["source"];
-  label: string;
-  leadId?: string;
-  monitoringInterest?: boolean;
-}): Promise<IntakeProject> {
-  if (input.leadId) {
-    const existing = await findProjectByLeadId(input.leadId);
-    if (existing) {
-      return {
-        id: existing.id,
-        source: existing.source,
-        createdAt: existing.createdAt,
-        label: existing.label,
-        factoryProjectId: FACTORY_PROJECT_ID,
-        leadId: existing.leadId,
-        monitoringInterest: existing.monitoringInterest ?? input.monitoringInterest,
-      };
-    }
-  }
-
-  const stored = await appendProject({
-    id: input.leadId ? await stableId("proj", `lead:${input.leadId}`) : newId("proj"),
-    source: input.source,
-    createdAt: nowIso(),
-    label: input.label.slice(0, 160),
-    leadId: input.leadId,
-    monitoringInterest: input.monitoringInterest,
-  });
-
-  const project: IntakeProject = {
-    ...stored,
-    factoryProjectId: FACTORY_PROJECT_ID,
-  };
-
-  try {
-    // Mirror only into an EXISTING workspace document. A public submission must never create the
-    // code-default seed: that would block a later create-only migration of the real workspace.
-    const mirrored = await updateExistingWorkspace((workspace) => {
-      workspace.intakeProjects = [project, ...workspace.intakeProjects].slice(0, 200);
-      workspace.conversions.events = [
-        conversionEvent("internal_project", "/app", project.id),
-        conversionEvent("intake_success", input.source, project.label),
-        ...workspace.conversions.events,
-      ].slice(0, 400);
-      return workspace;
-    });
-    if (mirrored === null) {
-      console.warn(
-        "Factory workspace mirror SKIPPED: no workspace document exists in this store yet (not migrated/initialized). " +
-          "The lead and project are saved in the CRM. Migrate the workspace or POST /api/factory/action {op:'init-workspace'} to enable the mirror."
-      );
-    }
-  } catch (err) {
-    // The lead/project is already durable in the CRM store and the public submit must not fail
-    // because the internal workspace mirror could not be written. Logged as an error (not a warning).
-    console.error("Factory workspace mirror write FAILED (CRM record is saved):", err);
-  }
-
-  return project;
 }
 
 export async function applyFactoryAction(
@@ -587,6 +529,136 @@ export async function applyFactoryAction(
     });
     return { ok: true, workspace };
   }
+
+
+  if (op === "init-client-factory") {
+    const projectId = String(body.projectId || "");
+    if (!projectId) return { ok: false, error: "projectId required." };
+    const { findProjectById, updateProject } = await import("@/lib/store");
+    const project = await findProjectById(projectId);
+    if (!project) return { ok: false, error: "Client project not found." };
+    const config = buildClientConfig({
+      name: project.businessName || String(body.businessName || project.label),
+      email: project.email || String(body.email || ""),
+      niche: project.niche || String(body.niche || ""),
+      businessType: project.businessType || String(body.businessType || ""),
+      city: project.city || String(body.city || ""),
+      state: project.state || String(body.state || ""),
+      phone: project.phone || String(body.phone || ""),
+      primaryGoal: project.primaryGoal || String(body.primaryGoal || ""),
+      notes: project.notes || String(body.notes || ""),
+      monitoringInterest: project.monitoringInterest,
+      designStyleId: project.designStyleId || String(body.designStyleId || ""),
+      preferredDesign: String(body.preferredDesign || ""),
+      templateId: project.templateId || String(body.templateId || ""),
+      label: project.label,
+      source: project.source,
+    });
+    const patched = applyConfigToProject(project, config);
+    await updateProject(project.id, {
+      businessName: patched.businessName,
+      email: patched.email,
+      niche: patched.niche,
+      businessType: patched.businessType,
+      city: patched.city,
+      state: patched.state,
+      phone: patched.phone,
+      primaryGoal: patched.primaryGoal,
+      notes: patched.notes,
+      designStyleId: patched.designStyleId,
+      templateId: patched.templateId,
+      seededPages: patched.seededPages,
+      factoryWorkspaceId: project.id,
+      monitoringInterest: patched.monitoringInterest,
+    });
+    const result = await initClientWorkspace(project.id, config);
+    return { ok: true, created: result.created, workspace: result.workspace };
+  }
+
+  if (op === "set-brief-competitors") {
+    const projectId = String(body.projectId || "");
+    const briefId = String(body.id || body.briefId || "");
+    const raw = body.competitorUrls;
+    const urls = (Array.isArray(raw) ? raw : String(raw || "").split(/[\n,]/))
+      .map((item) => String(item).trim())
+      .filter(Boolean);
+    if (!projectId || !briefId) return { ok: false, error: "projectId and brief id required." };
+    if (projectId === FACTORY_PROJECT_ID) {
+      const workspace = await updateWorkspace((current) => {
+        current.briefs = current.briefs.map((brief) =>
+          brief.id === briefId
+            ? {
+                ...brief,
+                competitorUrls: urls.filter((url) => /^https?:\/\//i.test(url)).slice(0, 3),
+                notes:
+                  urls.length > 0
+                    ? `competitorUrls set (${Math.min(urls.length, 3)}). Analyze gaps before approving.`
+                    : brief.notes,
+              }
+            : brief
+        );
+        return current;
+      });
+      return { ok: true, workspace };
+    }
+    const workspace = await setClientBriefCompetitors(projectId, briefId, urls);
+    return { ok: true, workspace };
+  }
+
+  if (op === "bind-client-design") {
+    const projectId = String(body.projectId || "");
+    const designStyleId = String(body.designStyleId || body.preferredDesign || "");
+    if (!projectId || !designStyleId) return { ok: false, error: "projectId and designStyleId required." };
+    const { findProjectById, updateProject } = await import("@/lib/store");
+    const project = await findProjectById(projectId);
+    if (!project) return { ok: false, error: "Client project not found." };
+    const normalized = normalizeDesignStyleId(designStyleId);
+    await updateProject(projectId, { designStyleId: normalized });
+    try {
+      const existing = await readClientWorkspace(projectId);
+      if (!existing) return { ok: true };
+      const workspace = await updateClientWorkspace(projectId, (current) => {
+        if (current.clientContext) current.clientContext.designStyleId = normalized;
+        return current;
+      });
+      return { ok: true, workspace };
+    } catch {
+      return { ok: true };
+    }
+  }
+
+  if (op === "draft-client-page") {
+    const projectId = String(body.projectId || "");
+    const slug = String(body.slug || "");
+    if (!projectId || !slug) return { ok: false, error: "projectId and slug required." };
+    const { findProjectById } = await import("@/lib/store");
+    const { draftFromClientBrief, wordCount: clientWordCount } = await import("./client-drafts");
+    const { configFromProject } = await import("./client-config");
+    const project = await findProjectById(projectId);
+    if (!project) return { ok: false, error: "Client project not found." };
+    const config = configFromProject(project);
+    const workspace = await updateClientWorkspace(projectId, (current) => {
+      const brief = current.briefs.find((item) => item.slug === slug);
+      if (!brief) throw new Error("No brief for that slug.");
+      if (brief.status !== "approved") throw new Error("Approve the content brief before drafting.");
+      const draft = draftFromClientBrief(brief, config);
+      current.pages = current.pages.map((page) =>
+        page.slug === slug
+          ? {
+              ...page,
+              ...draft,
+              wordCount: clientWordCount(draft.body),
+              status: "ready_for_review",
+              briefId: brief.id,
+              noindex: true,
+            }
+          : page
+      );
+      return current;
+    });
+    return { ok: true, workspace };
+  }
+
 
   return { ok: false, error: `Unknown action: ${op}` };
 }

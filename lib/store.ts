@@ -49,6 +49,15 @@ export type Inquiry = {
   stageUpdatedAt?: string;
 };
 
+/** Planned page seeded from a client site template. Visible on the CRM project. */
+export type SeededClientPage = {
+  slug: string;
+  path: string;
+  title: string;
+  purpose: string;
+  targetKeywords?: string[];
+};
+
 export type ClientProject = {
   id: string;
   source: "inquiry" | "subscribe" | "factory_intake";
@@ -60,6 +69,24 @@ export type ClientProject = {
   /** Operator-only pipeline stage; absent means "new". */
   stage?: LeadStage;
   stageUpdatedAt?: string;
+  /** Structured client build config (optional on legacy thin projects). */
+  businessName?: string;
+  email?: string;
+  niche?: string;
+  businessType?: string;
+  city?: string;
+  state?: string;
+  phone?: string;
+  primaryGoal?: string;
+  notes?: string;
+  /** Bound DesignStyleId from lib/design-styles.ts */
+  designStyleId?: string;
+  /** Bound client site template id (see lib/factory/client-templates.ts) */
+  templateId?: string;
+  /** Planned pages seeded from the bound template — visible, not implied. */
+  seededPages?: SeededClientPage[];
+  /** Per-client factory workspace key (usually same as project id). */
+  factoryWorkspaceId?: string;
 };
 
 export type OrderItem = {
@@ -358,6 +385,32 @@ export async function findProjectByLeadId(leadId: string): Promise<ClientProject
   }
   const projects = await readRecords<ClientProject>("projects");
   return projects.find((project) => project.leadId === leadId) || null;
+}
+
+export async function findProjectById(id: string): Promise<ClientProject | null> {
+  return readRecord<ClientProject>("projects", id);
+}
+
+export async function updateProject(
+  id: string,
+  patch: Partial<ClientProject>
+): Promise<ClientProject | null> {
+  const current = await readRecord<ClientProject>("projects", id);
+  if (storeBackend() === "netlify-blobs") {
+    if (!current) return null;
+    const updated = { ...current, ...patch, id };
+    await writeRecord("projects", updated);
+    return updated;
+  }
+  let updated: ClientProject | null = null;
+  await mutateLocal("projects", (records) =>
+    records.map((project) => {
+      if (project.id !== id) return project;
+      updated = { ...project, ...patch, id: project.id };
+      return updated;
+    })
+  );
+  return updated;
 }
 
 export async function appendOrder(order: Order): Promise<Order> {

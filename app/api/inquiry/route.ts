@@ -143,7 +143,14 @@ export async function POST(req: NextRequest) {
 
       try {
         const { intakeToProject } = await import("@/lib/factory/intake");
-        await intakeToProject("inquiry", `Shop inquiry: ${product.name}`, inquiry.id);
+        await intakeToProject("inquiry", `Shop inquiry: ${product.name}`, inquiry.id, undefined, {
+          name,
+          email,
+          details: message,
+          primaryGoal: `Inquiry about ${product.name}`,
+          niche: "shop / product inquiry",
+          businessType: "general",
+        });
       } catch {
         /* factory tracking must not break inquiry */
       }

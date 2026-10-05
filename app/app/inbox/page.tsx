@@ -79,10 +79,31 @@ export default async function InboxPage() {
       <ul className="mt-3 space-y-2 text-sm text-slate-300">
         {linkedProjects.slice(0, 10).map((item) => (
           <li key={item.id} className="rounded-xl border border-white/10 px-4 py-3">
-            {item.id} · {item.label} · lead {item.leadId || "none"}
-            {"monitoringInterest" in item
-              ? ` · monitoring ${item.monitoringInterest ? "yes" : "no"}`
-              : ""}
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span>
+                {item.id} · {item.label} · lead {item.leadId || "none"}
+                {"monitoringInterest" in item
+                  ? ` · monitoring ${item.monitoringInterest ? "yes" : "no"}`
+                  : ""}
+                {"businessName" in item && (item as { businessName?: string }).businessName
+                  ? ` · ${(item as { businessName?: string }).businessName}`
+                  : ""}
+                {"templateId" in item && (item as { templateId?: string }).templateId
+                  ? ` · template ${(item as { templateId?: string }).templateId}`
+                  : ""}
+                {"designStyleId" in item && (item as { designStyleId?: string }).designStyleId
+                  ? ` · design ${(item as { designStyleId?: string }).designStyleId}`
+                  : ""}
+              </span>
+              <span className="flex flex-wrap gap-3 text-xs">
+                <a className="text-brand-300" href={`/app/clients/${item.id}`}>
+                  Client build
+                </a>
+                <a className="text-brand-300" href={`/demo/client/${item.id}`}>
+                  Preview
+                </a>
+              </span>
+            </div>
             {projects.length > 0 ? (
               <LeadStageSelect id={item.id} stage={stageOf(item as { stage?: unknown })} who={item.label} />
             ) : null}

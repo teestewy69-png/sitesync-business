@@ -242,7 +242,11 @@ function errDetail(err: unknown): string {
  * Everything else keeps the plain get/set path. Local-json mode is unchanged for all keys.
  */
 export function usesRevisions(key: string): boolean {
-  return key === "factory/workspace" || key.startsWith("factory/checklists/");
+  return (
+    key === "factory/workspace" ||
+    key.startsWith("factory/checklists/") ||
+    key.startsWith("factory/clients/")
+  );
 }
 
 function revStore(): RevStore {

@@ -260,7 +260,7 @@ export type DeploymentRecord = {
 export type FactoryProject = {
   id: string;
   name: string;
-  internal: true;
+  internal: boolean;
   brand: string;
   productionUrl: string;
   stagingPath: string;
@@ -339,6 +339,19 @@ export type OperatorChecklist = {
   sections: ChecklistSection[];
 };
 
+export type ClientWorkspaceContext = {
+  clientProjectId: string;
+  businessName: string;
+  niche: string;
+  city: string;
+  state: string;
+  designStyleId: string;
+  templateId: string;
+  email?: string;
+  phone?: string;
+  primaryGoal?: string;
+};
+
 export type FactoryWorkspace = {
   project: FactoryProject;
   stages: FactoryStage[];
@@ -374,4 +387,6 @@ export type FactoryWorkspace = {
     notes: string;
     homepageReplaced: false;
   };
+  /** Present on per-client workspaces; absent on Sitesinc growth case study. */
+  clientContext?: ClientWorkspaceContext;
 };
