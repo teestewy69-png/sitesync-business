@@ -123,6 +123,8 @@ export default function CartPage() {
           </div>
           <Link
             href="/checkout"
+            data-analytics-cta="proceed_to_checkout"
+            data-analytics-location="cart"
             className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-gradient-to-b from-brand-300 to-brand-600 px-6 py-3 text-sm font-semibold text-zinc-950 shadow-glow transition hover:from-brand-200 hover:to-brand-500"
           >
             Proceed to Checkout

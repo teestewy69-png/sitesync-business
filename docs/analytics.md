@@ -19,7 +19,7 @@ GA loads only when **all** of these hold:
 1. The hostname is `sitesinc.co` or `www.sitesinc.co` (staging build: `test.sitesinc.co`, and only with the staging ID set).
    So localhost, `*.netlify.app` deploy previews / branch deploys, and any other host load nothing.
 2. `NEXT_PUBLIC_SITE_ENV=staging` (or `SITE_ENV=staging`) is **not** set. On staging the production ID is never used.
-3. The route is not `/demo/client/*` (client previews), `/app/*` (factory admin) or `/api/*`.
+3. The route is not `/demo/*` (all demo sites, including `/demo/client/*` client previews), `/app/*` (factory admin) or `/api/*`.
    Page views and events are dropped on those paths even after gtag has loaded.
 
 Every helper in `lib/analytics.ts` is a no-op when `window.gtag` is missing (blocked, not loaded, excluded host)
@@ -38,7 +38,8 @@ and is wrapped in `try/catch`, so forms and checkout behave the same with or wit
 | `click` | Elements with `data-analytics-cta` (delegated listener in `Analytics.tsx`) | `cta_name`, `cta_location`, `link_url`, `page_path` |
 
 `click` CTAs: `see_pricing` (hero nav), `start_build` (hero + pricing), `see_designs` (hero),
-`monitoring` (pricing), `proof_<target>` (proof section), `product_teaser`.
+`monitoring` (pricing), `proof_<target>` (proof section), `product_teaser`,
+`proceed_to_checkout` (cart page "Proceed to Checkout" link, `cta_location=cart`).
 To track another CTA add `data-analytics-cta="name"` (and optionally `data-analytics-location`).
 
 No PII is ever sent: no email, phone, name or message text.

@@ -14,8 +14,8 @@ declare global {
   }
 }
 
-/** Routes that never send analytics: client previews and the factory admin. */
-const EXCLUDED_PATH_PREFIXES = ["/demo/client", "/app", "/api"];
+/** Routes that never send analytics: all demo sites/client previews, factory admin, API. */
+const EXCLUDED_PATH_PREFIXES = ["/demo", "/app", "/api"];
 
 export function isExcludedAnalyticsPath(pathname: string): boolean {
   return EXCLUDED_PATH_PREFIXES.some(
