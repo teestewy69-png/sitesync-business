@@ -910,6 +910,13 @@ function BacklinksPanel({
                 {status}
               </button>
             ))}
+            <button
+              type="button"
+              onClick={() => onRun(`remove-${row.id}`, () => postAction("remove_backlink", { id: row.id }))}
+              className="text-xs text-red-300"
+            >
+              remove
+            </button>
           </div>
         </div>
       ))}

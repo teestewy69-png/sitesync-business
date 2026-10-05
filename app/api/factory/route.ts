@@ -89,6 +89,8 @@ export async function POST(req: NextRequest) {
       deploy_production: "publish-pages",
       rollback: "rollback",
       add_backlink: "add-backlink",
+      patch_backlink: "patch-backlink",
+      remove_backlink: "remove-backlink",
       run_conversions: "run-conversions",
       submit_indexing: "submit-indexing",
     };

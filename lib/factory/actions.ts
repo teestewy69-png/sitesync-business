@@ -5,7 +5,6 @@ import { DISCLAIMERS, SEED_BRIEFS, STAGE_DEFS } from "./pipeline";
 import { slugsForSurfaces } from "./surfaces";
 import { inspectUrl, sitemapSubmission } from "./search-console";
 import type {
-  BacklinkRecord,
   FactoryStage,
   FactoryWorkspace,
   IntakeProject,
@@ -14,6 +13,14 @@ import type {
 } from "./types";
 import { FACTORY_PROJECT_ID } from "./types";
 import { initWorkspace, latestBaseline, updateExistingWorkspace, updateWorkspace } from "./workspace";
+import {
+  createBacklinkRecord,
+  isAddBacklinkOp,
+  isPatchBacklinkOp,
+  isRemoveBacklinkOp,
+  patchBacklinkList,
+  removeBacklinkList,
+} from "./backlink-ops";
 
 function markStage(
   stages: FactoryStage[],
@@ -393,21 +400,10 @@ export async function applyFactoryAction(
     return { ok: true, workspace };
   }
 
-  if (op === "add-backlink") {
-    const record: BacklinkRecord = {
-      id: newId("bl"),
-      referringDomain: String(body.referringDomain || "").trim(),
-      destinationUrl: String(body.destinationUrl || "").trim(),
-      anchor: String(body.anchor || "").trim(),
-      relevance: String(body.relevance || "").trim(),
-      qualityNotes: String(body.qualityNotes || "").trim(),
-      acquisitionMethod: String(body.acquisitionMethod || "").trim(),
-      discoveredDate: when.slice(0, 10),
-      status: "active",
-    };
-    if (!record.referringDomain || !record.destinationUrl) {
-      return { ok: false, error: "Referring domain and destination URL are required. Do not fabricate links." };
-    }
+  if (isAddBacklinkOp(op)) {
+    const built = createBacklinkRecord(body, newId("bl"), when);
+    if (!built.ok) return built;
+    const record = built.record;
     const workspace = await updateWorkspace((current) => {
       current.backlinks.unshift(record);
       current.stages = markStage(current.stages, "backlink_authority", "in_progress", {
@@ -416,6 +412,44 @@ export async function applyFactoryAction(
       });
       return current;
     });
+    return { ok: true, workspace };
+  }
+
+  if (isPatchBacklinkOp(op)) {
+    let patchError: string | undefined;
+    const workspace = await updateWorkspace((current) => {
+      const patched = patchBacklinkList(current.backlinks, body);
+      if (!patched.ok) {
+        patchError = patched.error;
+        return current;
+      }
+      current.backlinks = patched.backlinks;
+      current.stages = markStage(current.stages, "backlink_authority", "in_progress", {
+        notes: `${DISCLAIMERS.backlinks} ${current.backlinks.length} live referring domain(s) documented. Empty would mean none earned.`,
+        artifacts: current.backlinks.map((item) => item.referringDomain),
+      });
+      return current;
+    });
+    if (patchError) return { ok: false, error: patchError };
+    return { ok: true, workspace };
+  }
+
+  if (isRemoveBacklinkOp(op)) {
+    let removeError: string | undefined;
+    const workspace = await updateWorkspace((current) => {
+      const removed = removeBacklinkList(current.backlinks, body);
+      if (!removed.ok) {
+        removeError = removed.error;
+        return current;
+      }
+      current.backlinks = removed.backlinks;
+      current.stages = markStage(current.stages, "backlink_authority", "in_progress", {
+        notes: `${DISCLAIMERS.backlinks} ${current.backlinks.length} live referring domain(s) documented. Empty would mean none earned.`,
+        artifacts: current.backlinks.map((item) => item.referringDomain),
+      });
+      return current;
+    });
+    if (removeError) return { ok: false, error: removeError };
     return { ok: true, workspace };
   }
 

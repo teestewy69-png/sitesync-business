@@ -663,13 +663,32 @@ export async function addBacklink(input: {
   });
 }
 
-export async function patchBacklink(id: string, status?: string) {
-  return updateWorkspace((workspace) => {
-    workspace.backlinks = workspace.backlinks.map((link) =>
-      link.id === id ? { ...link, status: (status as typeof link.status) || link.status } : link
-    );
-    return workspace;
+export async function patchBacklink(
+  id: string,
+  patch:
+    | {
+        status?: string;
+        referringDomain?: string;
+        destinationUrl?: string;
+        anchor?: string;
+        relevance?: string;
+        qualityNotes?: string;
+        acquisitionMethod?: string;
+        discoveredDate?: string;
+      }
+    | string = {}
+) {
+  const fields = typeof patch === "string" ? { status: patch } : patch;
+  const { applyFactoryAction } = await import("./actions");
+  return applyFactoryAction("patch-backlink", {
+    id,
+    ...fields,
   });
+}
+
+export async function removeBacklink(id: string) {
+  const { applyFactoryAction } = await import("./actions");
+  return applyFactoryAction("remove-backlink", { id });
 }
 
 export async function runChecks(origin: string) {
