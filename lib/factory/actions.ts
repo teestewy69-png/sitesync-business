@@ -627,6 +627,31 @@ export async function applyFactoryAction(
     }
   }
 
+
+  if (op === "capture-client-baseline") {
+    const projectId = String(body.projectId || "");
+    if (!projectId) return { ok: false, error: "projectId required." };
+    const { captureClientBaseline } = await import("./client-baseline");
+    const hostOrigin = String(body.origin || body.hostOrigin || process.env.NEXT_PUBLIC_SITE_URL || "http://127.0.0.1:3000");
+    try {
+      const result = await captureClientBaseline({
+        projectId,
+        hostOrigin,
+        origin: body.previewOrigin ? String(body.previewOrigin) : undefined,
+      });
+      return {
+        ok: true,
+        workspace: result.workspace,
+        // surface truthfulness for callers that read JSON extras
+        created: !result.limited,
+      };
+    } catch (err) {
+      return {
+        ok: false,
+        error: err instanceof Error ? err.message : "Client baseline capture failed.",
+      };
+    }
+  }
   if (op === "draft-client-page") {
     const projectId = String(body.projectId || "");
     const slug = String(body.slug || "");

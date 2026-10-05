@@ -8,7 +8,9 @@ import type {
   IndexingRecord,
   PageAudit,
 } from "./types";
-import { catalogSite, originKey, SEO_SITE_CATALOG } from "./seo-sites";
+import { listClientSeoCatalogSites } from "./client-baseline";
+import { findCatalogSite, originKey, SEO_SITE_CATALOG } from "./seo-sites";
+import { readClientWorkspace } from "./client-workspace";
 import { listBaselines, readWorkspace } from "./workspace";
 
 export type SeoSite = {
@@ -17,7 +19,7 @@ export type SeoSite = {
   origin: string;
   projectId: string;
   internal: boolean;
-  kind: "production" | "internal_demo";
+  kind: "production" | "internal_demo" | "client_preview";
   note: string;
   crawlOrigin?: string;
 };
@@ -82,7 +84,11 @@ export type SeoModel = {
   absentCapabilities: string[];
 };
 
-export function listSeoSites(workspace: FactoryWorkspace, baselines: BaselineSnapshot[]): SeoSite[] {
+export async function listSeoSites(
+  workspace: FactoryWorkspace,
+  baselines: BaselineSnapshot[],
+  hostOrigin?: string
+): Promise<SeoSite[]> {
   const sites = new Map<string, SeoSite>();
   for (const row of SEO_SITE_CATALOG) {
     sites.set(row.id, {
@@ -90,6 +96,17 @@ export function listSeoSites(workspace: FactoryWorkspace, baselines: BaselineSna
       name: row.name,
       origin: row.origin,
       projectId: row.id,
+      internal: true,
+      kind: row.kind,
+      note: row.note,
+    });
+  }
+  for (const row of await listClientSeoCatalogSites(hostOrigin)) {
+    sites.set(row.id, {
+      id: row.id,
+      name: row.name,
+      origin: row.origin,
+      projectId: row.clientProjectId || row.id,
       internal: true,
       kind: row.kind,
       note: row.note,
@@ -110,16 +127,26 @@ export function listSeoSites(workspace: FactoryWorkspace, baselines: BaselineSna
       if (site) site.crawlOrigin = snapshot.origin;
       continue;
     }
-    const id = `origin:${originKey(snapshot.origin)}`;
+    const id =
+      snapshot.siteId && snapshot.siteId !== FACTORY_PROJECT_ID
+        ? snapshot.siteId
+        : `origin:${originKey(snapshot.origin)}`;
     if (!sites.has(id)) {
+      const isClientPreview = snapshot.origin.includes("/demo/client/");
       sites.set(id, {
         id,
-        name: snapshot.origin,
+        name: isClientPreview ? `Client preview ${snapshot.siteId || id}` : snapshot.origin,
         origin: snapshot.origin,
         projectId: snapshot.siteId || snapshot.projectId,
         internal: true,
-        kind: snapshot.origin.includes("/demo/") ? "internal_demo" : "production",
-        note: "Discovered from a stored baseline. Not a Search Console property unless proven otherwise.",
+        kind: isClientPreview
+          ? "client_preview"
+          : snapshot.origin.includes("/demo/")
+            ? "internal_demo"
+            : "production",
+        note: isClientPreview
+          ? "Discovered from a client baseline. Inventory belongs only to this client project."
+          : "Discovered from a stored baseline. Not a Search Console property unless proven otherwise.",
         crawlOrigin: snapshot.origin,
       });
     }
@@ -132,6 +159,7 @@ function pickBaseline(baselines: BaselineSnapshot[], site: SeoSite) {
     .filter((row) => row.siteId === site.id || row.projectId === site.id)
     .sort((a, b) => a.capturedAt.localeCompare(b.capturedAt));
   if (bySite.length) return bySite.at(-1) || null;
+  // Origin fallback only when the site id did not match — still same-origin, never cross-site invent.
   const byOrigin = baselines
     .filter((row) => originKey(row.origin) === originKey(site.crawlOrigin || site.origin))
     .sort((a, b) => a.capturedAt.localeCompare(b.capturedAt));
@@ -347,14 +375,31 @@ function buildRefresh(
 export async function loadSeoModel(siteId?: string): Promise<SeoModel> {
   const workspace = await readWorkspace();
   const baselines = await listBaselines();
-  const sites = listSeoSites(workspace, baselines);
+  const hostOrigin = process.env.NEXT_PUBLIC_SITE_URL || undefined;
+  const sites = await listSeoSites(workspace, baselines, hostOrigin);
   const site = sites.find((row) => row.id === siteId) || sites[0];
-  const catalog = catalogSite(site.id);
-  site.note = catalog.note || site.note;
-  site.kind = catalog.kind || site.kind;
+  const catalog = findCatalogSite(site.id);
+  if (catalog) {
+    site.note = catalog.note || site.note;
+    site.kind = catalog.kind || site.kind;
+  }
+
+  const isSitesinc = site.id === FACTORY_PROJECT_ID;
+  const isClient = site.kind === "client_preview" || site.origin.includes("/demo/client/");
+  const clientWorkspace = isClient ? await readClientWorkspace(site.projectId || site.id) : null;
+  const effectiveWorkspace = clientWorkspace || workspace;
+
   const baseline = pickBaseline(baselines, site);
-  const preflight = buildPreflight(workspace, baseline);
-  const inventory = baseline?.pageInventory || [];
+  const boundBaseline =
+    isClient && baseline && baseline.siteId !== site.id && baseline.projectId !== site.id
+      ? null
+      : baseline;
+
+  const preflight = buildPreflight(
+    isSitesinc ? workspace : { ...effectiveWorkspace, pages: isClient ? effectiveWorkspace.pages : [] },
+    boundBaseline
+  );
+  const inventory = boundBaseline?.pageInventory || [];
   const duplicateTitles = duplicateKeys(inventory.filter((p) => p.statusCode === 200).map((p) => p.title));
   const duplicateMetas = duplicateKeys(
     inventory.filter((p) => p.statusCode === 200).map((p) => p.metaDescription)
@@ -374,17 +419,17 @@ export async function loadSeoModel(siteId?: string): Promise<SeoModel> {
     robots: page.robots,
     schemaTypes: page.schemaTypes,
     warnings: pageWarnings(page, duplicateTitles, duplicateMetas),
-    source: "baseline",
+    source: "baseline" as const,
   }));
 
-  const isSitesinc = site.id === FACTORY_PROJECT_ID;
-  if (isSitesinc) {
+  if (isSitesinc || isClient) {
     const inventoriedPaths = new Set(pages.map((page) => page.path));
-    for (const planned of workspace.pages) {
+    const plannedSource = isSitesinc ? workspace.pages : effectiveWorkspace.pages;
+    for (const planned of plannedSource) {
       if (inventoriedPaths.has(planned.path)) continue;
       pages.push({
         path: planned.path,
-        url: `${site.origin}${planned.path}`,
+        url: `${site.origin}${planned.path === "/" ? "" : planned.path}`,
         statusCode: null,
         title: planned.title,
         metaDescription: planned.metaDescription,
@@ -395,23 +440,34 @@ export async function loadSeoModel(siteId?: string): Promise<SeoModel> {
         canonical: "",
         robots: planned.noindex ? "noindex" : "",
         schemaTypes: [],
-        warnings: ["Not in live baseline — planned factory page"],
+        warnings: [
+          boundBaseline
+            ? "Not in live baseline ? planned factory page"
+            : "No baseline yet ? planned page only (not invented crawl data)",
+        ],
         source: "planned",
       });
     }
   }
 
-  const issues = buildIssues(baseline, inventory);
-  const refresh = isSitesinc ? buildRefresh(inventory, workspace.briefs, workspace) : buildRefresh(inventory, [], { ...workspace, pages: [] });
+  const issues = buildIssues(boundBaseline, inventory);
+  const refresh = isSitesinc
+    ? buildRefresh(inventory, workspace.briefs, workspace)
+    : isClient
+      ? buildRefresh(inventory, effectiveWorkspace.briefs || [], {
+          ...effectiveWorkspace,
+          pages: effectiveWorkspace.pages || [],
+        })
+      : buildRefresh(inventory, [], { ...workspace, pages: [] });
   const gsc = isSitesinc ? gscConfigured() : false;
-  const indexing = isSitesinc ? workspace.indexing : [];
+  const indexing = isSitesinc ? workspace.indexing : isClient ? effectiveWorkspace.indexing || [] : [];
   const indexingKnown = indexing.filter((row) => row.lastChecked || row.state !== "not_submitted").length;
   const indexingIndexed = indexing.filter((row) => row.state === "indexed" && row.source === "search_console").length;
 
   return {
     site,
     sites,
-    baseline,
+    baseline: boundBaseline,
     gscConfigured: gsc,
     preflight,
     pages,
@@ -428,8 +484,8 @@ export async function loadSeoModel(siteId?: string): Promise<SeoModel> {
       issueWarns: issues.filter((item) => item.severity === "warn").length,
       indexingKnown,
       indexingIndexed,
-      avgTtfbMs: baseline?.performance.avgTtfbMs ?? null,
-      lighthouse: baseline?.performance.lighthouse || "not_run",
+      avgTtfbMs: boundBaseline?.performance.avgTtfbMs ?? null,
+      lighthouse: boundBaseline?.performance.lighthouse || "not_run",
     },
     absentCapabilities: [
       "Live Search Console coverage counts (token not configured or account locked)",
@@ -439,7 +495,9 @@ export async function loadSeoModel(siteId?: string): Promise<SeoModel> {
       "Link spam scoring",
       ...(isSitesinc
         ? []
-        : ["Independent production domain (this is an internal noindex demo until a live client origin exists)"]),
+        : [
+            "Independent production domain (this is an internal noindex preview until a live client origin exists)",
+          ]),
     ],
   };
 }

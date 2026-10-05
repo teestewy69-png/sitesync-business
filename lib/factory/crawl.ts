@@ -1,4 +1,4 @@
-import { isMailConfigured } from "@/lib/mail";
+﻿import { isMailConfigured } from "@/lib/mail";
 import { docStoreHealth } from "@/lib/persistence";
 import { newId, storeWritable } from "@/lib/store";
 import { PRODUCTION_ORIGIN } from "./pipeline";
@@ -249,13 +249,13 @@ async function intakeHealth(origin: string): Promise<BaselineSnapshot["intakeFor
   const writable = crmWritable && factoryStore.ok;
   const smtp = isMailConfigured();
   if (!crmWritable) {
-    notes.push("JSON store is not writable — submissions cannot persist.");
+    notes.push("JSON store is not writable â€” submissions cannot persist.");
   }
   if (!factoryStore.ok) {
-    notes.push(`Factory/SEO store is not writable — workspace, baselines and checklists cannot persist. ${factoryStore.detail}`);
+    notes.push(`Factory/SEO store is not writable â€” workspace, baselines and checklists cannot persist. ${factoryStore.detail}`);
   }
   if (!smtp) {
-    notes.push("SMTP is not configured — email notifications will not send. Not treated as a crawl blocker on its own.");
+    notes.push("SMTP is not configured â€” email notifications will not send. Not treated as a crawl blocker on its own.");
   }
 
   const launchBlocking =
@@ -278,11 +278,15 @@ export async function captureBaseline(opts?: {
   paths?: string[];
   skipIntake?: boolean;
 }): Promise<BaselineSnapshot> {
-  const { catalogSite } = await import("./seo-sites");
-  const site = catalogSite(opts?.siteId);
-  const origin = (opts?.origin || site.origin || PRODUCTION_ORIGIN).replace(/\/$/, "");
-  const siteId = opts?.siteId || site.id;
-  const demo = site.kind === "internal_demo" || origin.includes("/demo/");
+  const { findCatalogSite } = await import("./seo-sites");
+  // Never silently borrow Sitesinc catalog when siteId is a client project (unknown to static catalog).
+  const catalog = opts?.siteId ? findCatalogSite(opts.siteId) : findCatalogSite("sitesinc-growth-case-study");
+  const siteId = opts?.siteId || catalog?.id || "sitesinc-growth-case-study";
+  const origin = (opts?.origin || catalog?.origin || PRODUCTION_ORIGIN).replace(/\/$/, "");
+  const demo =
+    catalog?.kind === "internal_demo" ||
+    catalog?.kind === "client_preview" ||
+    origin.includes("/demo/");
   const source =
     opts?.source ||
     (demo ? "manual" : origin.includes("sitesinc.co") ? "live_production" : "local");
@@ -309,7 +313,14 @@ export async function captureBaseline(opts?: {
     }
   }
 
-  const seedPaths = opts?.paths?.length ? opts.paths : [...site.crawlPaths];
+  const seedPaths = opts?.paths?.length
+    ? opts.paths
+    : [...(catalog?.crawlPaths || (demo ? ["/"] : []))];
+  if (!seedPaths.length) {
+    throw new Error(
+      `No crawl paths for siteId=${siteId}. Pass paths explicitly for client/unknown sites.`
+    );
+  }
   const pageInventory: PageAudit[] = [];
   const paths = demo
     ? [...new Set<string>(seedPaths)]
@@ -385,7 +396,7 @@ export async function captureBaseline(opts?: {
       pagesTimed: timed.length,
       avgTtfbMs,
       lighthouse: "not_run",
-      note: "Lighthouse/CrUX is not wired. This is request timing only — labeled in progress for lab scores.",
+      note: "Lighthouse/CrUX is not wired. This is request timing only â€” labeled in progress for lab scores.",
     },
     indexing: {
       configured: Boolean(gsc),
@@ -419,3 +430,5 @@ export async function captureBaseline(opts?: {
     secretsRedacted: true,
   };
 }
+
+

@@ -25,7 +25,7 @@ export default async function SeoOverviewPage({
                 <p className="mt-1 text-xs text-slate-500">Last crawl origin: {model.baseline.origin}</p>
               ) : null}
             </div>
-            <CaptureButton origin={model.site.crawlOrigin || model.site.origin} siteId={model.site.id} />
+            <CaptureButton origin={model.site.crawlOrigin || model.site.origin} siteId={model.site.id} projectId={model.site.kind === "client_preview" ? model.site.id : undefined} label={model.site.kind === "client_preview" ? "Capture client baseline" : undefined} />
           </div>
 
           {!model.gscConfigured ? (

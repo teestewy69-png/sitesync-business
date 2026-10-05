@@ -5,6 +5,7 @@ import { ensureBlobsFromRequest } from "@/lib/persistence";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 120;
 
 export async function POST(req: NextRequest) {
   try {

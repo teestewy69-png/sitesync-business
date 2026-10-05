@@ -1,11 +1,15 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import CaptureButton from "@/components/factory/CaptureButton";
 import FactoryShell, { Pill } from "@/components/factory/Shell";
 import { configFromProject } from "@/lib/factory/client-config";
 import { getClientTemplate } from "@/lib/factory/client-templates";
 import { readClientWorkspace } from "@/lib/factory/client-workspace";
+import { clientPreviewOrigin, hostOriginFrom } from "@/lib/factory/seo-sites";
 import { DESIGN_STYLES } from "@/lib/design-styles";
 import { findProjectById } from "@/lib/store";
+import { readBaseline } from "@/lib/factory/workspace";
 
 export const dynamic = "force-dynamic";
 
@@ -26,12 +30,29 @@ export default async function ClientProjectDetailPage({
   const workspace = await readClientWorkspace(projectId);
   const pages = project.seededPages?.length ? project.seededPages : config.seededPages;
 
+  const h = await headers();
+  const proto = h.get("x-forwarded-proto") || "http";
+  const host = h.get("host") || "127.0.0.1:3000";
+  const hostOrigin = hostOriginFrom(process.env.NEXT_PUBLIC_SITE_URL || `${proto}://${host}`);
+  const previewOrigin = clientPreviewOrigin(projectId, hostOrigin);
+
+  const baselineId = workspace?.latestBaselineId || workspace?.latestBaselineBySite?.[projectId] || "";
+  const baseline = baselineId ? await readBaseline(baselineId) : null;
+  const ownBaseline =
+    baseline && (baseline.siteId === projectId || baseline.projectId === projectId) ? baseline : null;
+  const pagesOk = ownBaseline
+    ? ownBaseline.pageInventory.filter((page) => page.statusCode === 200).length
+    : 0;
+  const pagesTotal = ownBaseline?.pageInventory.length || 0;
+  const limited = ownBaseline ? pagesOk === 0 : false;
+
   return (
     <FactoryShell title={`Client project · ${config.businessName}`}>
       <p className="max-w-3xl text-sm text-slate-400">
         Structured client config bound to template + design. Client factory workspace is separate from the
         Sitesinc growth case study (<code className="text-slate-300">sitesinc-growth-case-study</code>).
-        Preview is honest: no auto-publish to Netlify.
+        Preview is honest: no auto-publish to Netlify. Baseline/crawl, when captured, belongs only to this
+        client.
       </p>
 
       <div className="mt-6 flex flex-wrap gap-2">
@@ -40,13 +61,72 @@ export default async function ClientProjectDetailPage({
         <Pill tone={workspace ? "ok" : "warn"}>
           workspace {workspace ? "initialized" : "missing"}
         </Pill>
+        <Pill tone={ownBaseline ? (limited ? "warn" : "ok") : "muted"}>
+          baseline {ownBaseline ? (limited ? "limited" : `${pagesOk} pages`) : "none"}
+        </Pill>
         <Link
           href={`/demo/client/${projectId}`}
           className="rounded-full border border-emerald-400/40 px-3 py-1 text-xs text-emerald-200 hover:bg-emerald-400/10"
         >
           Open deliverable preview
         </Link>
+        <Link
+          href={`/app/seo?site=${encodeURIComponent(projectId)}`}
+          className="rounded-full border border-white/15 px-3 py-1 text-xs text-slate-200 hover:bg-white/5"
+        >
+          SEO workspace
+        </Link>
       </div>
+
+      <section className="mt-6 rounded-2xl border border-white/10 p-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold">Baseline / crawl</h2>
+            <p className="mt-1 max-w-2xl text-sm text-slate-400">
+              Crawls <code className="text-slate-300">{previewOrigin}</code> using this client&apos;s seeded
+              paths. Result is stored under siteId <code className="text-slate-300">{projectId}</code> — never
+              borrowed from Sitesinc or demo fixtures.
+            </p>
+            {ownBaseline ? (
+              <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
+                <div>
+                  <dt className="text-xs uppercase tracking-wider text-slate-500">Baseline id</dt>
+                  <dd className="text-slate-200">{ownBaseline.id}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs uppercase tracking-wider text-slate-500">Captured at</dt>
+                  <dd className="text-slate-200">{ownBaseline.capturedAt}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs uppercase tracking-wider text-slate-500">Pages found</dt>
+                  <dd className="text-slate-200">
+                    {pagesOk} OK / {pagesTotal} inventoried
+                    {limited ? " · limited or unreachable" : ""}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs uppercase tracking-wider text-slate-500">Origin</dt>
+                  <dd className="break-all text-slate-200">{ownBaseline.origin}</dd>
+                </div>
+              </dl>
+            ) : (
+              <p className="mt-3 text-sm text-amber-100">
+                No client-owned baseline yet. Capture after the preview route is reachable on this host.
+              </p>
+            )}
+          </div>
+          {workspace ? (
+            <CaptureButton
+              origin={previewOrigin}
+              siteId={projectId}
+              projectId={projectId}
+              label="Capture client baseline"
+            />
+          ) : (
+            <p className="text-xs text-slate-500">Init the client workspace before capturing.</p>
+          )}
+        </div>
+      </section>
 
       <h2 className="mt-8 text-lg font-semibold">Client config</h2>
       <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
@@ -166,8 +246,9 @@ export default async function ClientProjectDetailPage({
       ) : null}
 
       <p className="mt-8 text-xs text-slate-500">
-        Wired: structured CRM fields, template page seed, design id, per-client workspace, preview route.
-        Still manual: real competitor research, final copy polish, photos, Netlify client deploy.
+        Wired: structured CRM fields, template page seed, design id, per-client workspace, preview route,
+        client-owned baseline/crawl into SEO Intelligence. Still manual: real competitor research, final
+        copy polish, photos, Netlify client deploy, Search Console for a live client domain.
       </p>
     </FactoryShell>
   );

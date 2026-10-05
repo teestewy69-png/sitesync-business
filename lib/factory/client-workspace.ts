@@ -37,7 +37,7 @@ function seedClientGaps(config: ClientBuildConfig): VisibleGap[] {
       owner: "operator",
       status: "open",
       detail:
-        "Analyze top 3: attach real public competitor URLs on each content brief (competitorUrls). Empty means not done — never invent domains.",
+        "Analyze top 3: attach real public competitor URLs on each content brief (competitorUrls). Empty means not done - never invent domains.",
     },
     {
       id: "client-copy",
@@ -53,7 +53,15 @@ function seedClientGaps(config: ClientBuildConfig): VisibleGap[] {
       owner: "operator",
       status: "open",
       detail:
-        "Client deliverable preview is /demo/client/<projectId>. Netlify production publish for the client is manual — not auto-wired.",
+        "Client deliverable preview is /demo/client/<projectId>. Netlify production publish for the client is manual - not auto-wired.",
+    },
+    {
+      id: "client-baseline",
+      area: "SEO / baseline",
+      owner: "operator",
+      status: "open",
+      detail:
+        "No client-owned baseline yet. Capture via capture-client-baseline (or Capture on this page / SEO workspace). Never reuse Sitesinc or demo baselines.",
     },
     {
       id: "client-photos",
@@ -124,7 +132,7 @@ export function seedClientWorkspace(
       checkpoints: [
         {
           day: 0,
-          label: "Day 0 — client intake seeded",
+          label: "Day 0 - client intake seeded",
           dueDate: startedAt,
           status: "complete",
           capturedAt: startedAt,
@@ -133,7 +141,7 @@ export function seedClientWorkspace(
         },
         {
           day: 30,
-          label: "Day 30 — optional recapture",
+          label: "Day 30 - optional recapture",
           dueDate: new Date(Date.parse(startedAt) + 30 * 86400000).toISOString(),
           status: "scheduled",
           capturedAt: "",
@@ -305,3 +313,4 @@ export async function setClientBriefCompetitors(
     return workspace;
   });
 }
+

@@ -20,8 +20,8 @@ export default function SeoChrome({ sites, selectedId }: { sites: SeoSiteOption[
       <p className="max-w-3xl text-sm text-slate-400">
         Protected SEO Intelligence workspace. Numbers come from the dated baseline crawl, factory
         preflight, operator indexing rows, and documented backlinks. Search Console counts are not
-        invented. CRM intakes without their own origin share this factory crawl — they are not
-        separate SEO inventories yet.
+        invented. Client projects with a factory workspace appear as their own site (preview origin +
+        client baseline). Sitesinc and demo fixtures are never borrowed for a client inventory.
       </p>
       <label className="block max-w-lg text-xs text-slate-400">
         Site
