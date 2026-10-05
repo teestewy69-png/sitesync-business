@@ -64,6 +64,35 @@ export default async function ClientProjectDetailPage({
         <Pill tone={ownBaseline ? (limited ? "warn" : "ok") : "muted"}>
           baseline {ownBaseline ? (limited ? "limited" : `${pagesOk} pages`) : "none"}
         </Pill>
+        <Pill
+          tone={
+            workspace?.clientAutomation?.baseline?.status === "captured"
+              ? "ok"
+              : workspace?.clientAutomation?.baseline?.status === "pending" ||
+                  workspace?.clientAutomation?.baseline?.status === "stale"
+                ? "warn"
+                : "muted"
+          }
+        >
+          auto-baseline {workspace?.clientAutomation?.baseline?.status || "n/a"}
+          {workspace?.clientAutomation?.baseline?.stale ? " · stale" : ""}
+        </Pill>
+        <Pill tone={workspace?.clientAutomation?.drafts?.seeded ? "ok" : "muted"}>
+          drafts {workspace?.clientAutomation?.drafts?.seeded
+            ? `seeded (${workspace.clientAutomation.drafts.pageCount})`
+            : "not seeded"}
+        </Pill>
+        <Pill
+          tone={
+            workspace?.clientAutomation?.competitors?.status === "filled"
+              ? "ok"
+              : workspace?.clientAutomation?.competitors?.status === "needs_search_provider"
+                ? "warn"
+                : "muted"
+          }
+        >
+          competitors {workspace?.clientAutomation?.competitors?.status || "n/a"}
+        </Pill>
         <Link
           href={`/demo/client/${projectId}`}
           className="rounded-full border border-emerald-400/40 px-3 py-1 text-xs text-emerald-200 hover:bg-emerald-400/10"
@@ -84,7 +113,7 @@ export default async function ClientProjectDetailPage({
             <h2 className="text-lg font-semibold">Baseline / crawl</h2>
             <p className="mt-1 max-w-2xl text-sm text-slate-400">
               Crawls <code className="text-slate-300">{previewOrigin}</code> using this client&apos;s seeded
-              paths. Result is stored under siteId <code className="text-slate-300">{projectId}</code> — never
+              paths. Result is stored under siteId <code className="text-slate-300">{projectId}</code> - never
               borrowed from Sitesinc or demo fixtures.
             </p>
             {ownBaseline ? (
@@ -128,17 +157,85 @@ export default async function ClientProjectDetailPage({
         </div>
       </section>
 
+
+      <section className="mt-6 rounded-2xl border border-white/10 p-5">
+        <h2 className="text-lg font-semibold">Automation status</h2>
+        <p className="mt-1 max-w-3xl text-sm text-slate-400">
+          What the factory auto-wires vs what stays manual. Status is persisted on the client workspace - not inferred.
+        </p>
+        {workspace?.clientAutomation ? (
+          <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+            <div className="rounded-xl border border-white/10 px-4 py-3">
+              <dt className="text-xs uppercase tracking-wider text-slate-500">Baseline</dt>
+              <dd className="mt-1 text-slate-200">
+                status: <strong>{workspace.clientAutomation.baseline.status}</strong>
+                {workspace.clientAutomation.baseline.stale ? " (stale)" : ""}
+              </dd>
+              <dd className="mt-1 text-xs text-slate-400">
+                {workspace.clientAutomation.baseline.reason || "-"}
+              </dd>
+              <dd className="mt-1 text-xs text-slate-500">
+                capturedAt: {workspace.clientAutomation.baseline.capturedAt || "-"}
+                {" · "}
+                pages:{" "}
+                {workspace.clientAutomation.baseline.pagesOk ?? "-"}/
+                {workspace.clientAutomation.baseline.pagesTotal ?? "-"}
+                {" · "}
+                host: {workspace.clientAutomation.baseline.hostOrigin || "-"}
+              </dd>
+            </div>
+            <div className="rounded-xl border border-white/10 px-4 py-3">
+              <dt className="text-xs uppercase tracking-wider text-slate-500">Drafts seeded</dt>
+              <dd className="mt-1 text-slate-200">
+                {workspace.clientAutomation.drafts.seeded
+                  ? `yes · ${workspace.clientAutomation.drafts.pageCount} page(s)`
+                  : "no"}
+              </dd>
+              <dd className="mt-1 text-xs text-slate-400">
+                Templated draft bodies, labeled, noindex, ready_for_review. Not LLM copy.
+              </dd>
+              <dd className="mt-1 text-xs text-slate-500">
+                seededAt: {workspace.clientAutomation.drafts.seededAt || "-"}
+              </dd>
+            </div>
+            <div className="rounded-xl border border-white/10 px-4 py-3">
+              <dt className="text-xs uppercase tracking-wider text-slate-500">Analyze top 3 / competitors</dt>
+              <dd className="mt-1 text-slate-200">
+                {workspace.clientAutomation.competitors.status}
+              </dd>
+              <dd className="mt-1 text-xs text-slate-400">
+                {workspace.clientAutomation.competitors.detail}
+              </dd>
+            </div>
+            <div className="rounded-xl border border-white/10 px-4 py-3">
+              <dt className="text-xs uppercase tracking-wider text-slate-500">Stage auto-progression</dt>
+              <dd className="mt-1 text-slate-200">
+                research / blueprint / content_briefs / content_drafting / technical_seo auto when data exists.
+                human_approval + production_deployment stay manual.
+              </dd>
+              <dd className="mt-1 text-xs text-slate-500">
+                last applied: {workspace.clientAutomation.stagesAutoAppliedAt || "-"}
+              </dd>
+            </div>
+          </dl>
+        ) : (
+          <p className="mt-3 text-sm text-amber-100">
+            No automation block yet - init the client factory workspace first.
+          </p>
+        )}
+      </section>
+
       <h2 className="mt-8 text-lg font-semibold">Client config</h2>
       <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
         {[
           ["Business", config.businessName],
-          ["Email", config.email || project.email || "—"],
+          ["Email", config.email || project.email || "-"],
           ["Niche", config.niche],
           ["Type", config.businessType],
-          ["City", config.city || "—"],
-          ["State", config.state || "—"],
-          ["Phone", config.phone || "—"],
-          ["Primary goal", config.primaryGoal || "—"],
+          ["City", config.city || "-"],
+          ["State", config.state || "-"],
+          ["Phone", config.phone || "-"],
+          ["Primary goal", config.primaryGoal || "-"],
           ["Monitoring interest", project.monitoringInterest ? "yes" : "no"],
           ["CRM id", project.id],
           ["Factory workspace id", project.factoryWorkspaceId || project.id],
@@ -167,7 +264,7 @@ export default async function ClientProjectDetailPage({
               <div>
                 <p className="font-medium text-white">{page.title}</p>
                 <p className="text-slate-400">
-                  {page.path} — {page.purpose}
+                  {page.path} - {page.purpose}
                 </p>
                 {page.targetKeywords?.length ? (
                   <p className="text-xs text-slate-500">keywords: {page.targetKeywords.join(", ")}</p>
@@ -237,7 +334,7 @@ export default async function ClientProjectDetailPage({
                   competitorUrls:{" "}
                   {brief.competitorUrls.length
                     ? brief.competitorUrls.join(", ")
-                    : "none — attach via set-brief-competitors"}
+                    : "none - attach via set-brief-competitors"}
                 </span>
               </li>
             ))}
@@ -246,9 +343,10 @@ export default async function ClientProjectDetailPage({
       ) : null}
 
       <p className="mt-8 text-xs text-slate-500">
-        Wired: structured CRM fields, template page seed, design id, per-client workspace, preview route,
-        client-owned baseline/crawl into SEO Intelligence. Still manual: real competitor research, final
-        copy polish, photos, Netlify client deploy, Search Console for a live client domain.
+        Automated: workspace init, templated draft seed, stage auto-progress (except approval/deploy),
+        baseline capture/recapture when host known. Manual by design: human_approval, production_deployment,
+        final copy polish, photos, Netlify client publish. Blocked on external setup: analyze top 3 (no
+        SERP/search API key in this repo).
       </p>
     </FactoryShell>
   );

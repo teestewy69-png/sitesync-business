@@ -145,6 +145,12 @@ export async function POST(req: NextRequest) {
         projectId = linked.id;
       } else {
         const { intakeToProject } = await import("@/lib/factory/intake");
+        const hostOrigin =
+          process.env.DEPLOY_PRIME_URL ||
+          process.env.URL ||
+          process.env.NEXT_PUBLIC_SITE_URL ||
+          req.nextUrl?.origin ||
+          null;
         const project = await intakeToProject(
           "subscribe",
           "Website build request",
@@ -155,6 +161,7 @@ export async function POST(req: NextRequest) {
             email,
             goals: goals || undefined,
             details: details || undefined,
+            hostOrigin,
           }
         );
         projectId = project?.id || "";

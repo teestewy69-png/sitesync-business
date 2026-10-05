@@ -12,6 +12,13 @@ import {
 import { saveBaseline } from "./workspace";
 import { readClientWorkspace, updateClientWorkspace } from "./client-workspace";
 import { configFromProject } from "./client-config";
+import {
+  applyAutoStageProgression,
+  applyBaselineCaptureResult,
+  competitorAutomationStatus,
+  countDraftedPages,
+  defaultClientAutomation,
+} from "./client-automation";
 
 export type ClientBaselineResult = {
   snapshot: BaselineSnapshot;
@@ -62,7 +69,7 @@ export async function captureClientBaseline(opts: {
   const projectId = String(opts.projectId || "").trim();
   if (!projectId) throw new Error("projectId required.");
   if (!isClientBaselineTarget(projectId)) {
-    throw new Error("projectId is a static catalog site — use the standard baseline capture.");
+    throw new Error("projectId is a static catalog site - use the standard baseline capture.");
   }
 
   const { findProjectById } = await import("@/lib/store");
@@ -117,11 +124,33 @@ export async function captureClientBaseline(opts: {
             capturedAt: snapshot.capturedAt,
             evidence: [snapshot.id, `origin:${origin}`],
             notes: limited
-              ? `Baseline ${snapshot.id} stored but limited/empty (0 OK pages of ${pagesTotal}). Preview may be down or thin — do not invent inventory.`
+              ? `Baseline ${snapshot.id} stored but limited/empty (0 OK pages of ${pagesTotal}). Preview may be down or thin - do not invent inventory.`
               : `Client preview baseline ${snapshot.id}: ${pagesOk}/${pagesTotal} pages OK at ${origin}. Not a Sitesinc crawl.`,
           }
         : item
     );
+    const baselineAuto = applyBaselineCaptureResult(current.clientAutomation?.baseline, {
+      limited,
+      pagesOk,
+      pagesTotal,
+      baselineId: snapshot.id,
+      capturedAt: snapshot.capturedAt,
+      hostOrigin: opts.hostOrigin || hostOriginFrom(origin),
+    });
+    const automation = current.clientAutomation || defaultClientAutomation();
+    current.clientAutomation = {
+      ...automation,
+      baseline: baselineAuto,
+      competitors: competitorAutomationStatus(current.briefs),
+    };
+    current.stages = applyAutoStageProgression(current.stages, {
+      hasResearchNotes: true,
+      blueprintCount: current.blueprint.length,
+      briefCount: current.briefs.length,
+      draftedPageCount: countDraftedPages(current.pages),
+      baselineStatus: baselineAuto.status,
+    });
+    current.clientAutomation.stagesAutoAppliedAt = snapshot.capturedAt;
     current.visibleGaps = current.visibleGaps.map((gap) =>
       gap.id === "client-baseline"
         ? {

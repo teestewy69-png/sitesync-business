@@ -3,6 +3,7 @@ import { conversionEvent } from "./conversions";
 import { applyConfigToProject, buildClientConfig } from "./client-config";
 import type { IntakeConfigInput } from "./client-config";
 import { initClientWorkspace } from "./client-workspace";
+import { queueAutoClientBaseline } from "./client-automation";
 import type { IntakeProject } from "./types";
 import { updateExistingWorkspace } from "./workspace";
 
@@ -20,6 +21,8 @@ export async function recordIntakeProject(
     source: "inquiry" | "subscribe" | "factory_intake";
     label: string;
     leadId?: string;
+    /** Preview host for auto baseline (request origin). Never invent if missing. */
+    hostOrigin?: string | null;
   }
 ): Promise<IntakeProject> {
   if (input.leadId) {
@@ -55,7 +58,13 @@ export async function recordIntakeProject(
   const stored = await appendProject(applyConfigToProject(base, config));
 
   try {
-    await initClientWorkspace(stored.id, config);
+    const init = await initClientWorkspace(stored.id, config, {
+      hostOrigin: input.hostOrigin,
+    });
+    // Public intake must stay fast - baseline runs after response via after()/fire-and-forget.
+    if (init.created) {
+      queueAutoClientBaseline(stored.id, input.hostOrigin);
+    }
   } catch (err) {
     console.error("Client factory workspace init FAILED (CRM project is saved):", err);
   }

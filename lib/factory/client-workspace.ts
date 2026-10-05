@@ -1,10 +1,18 @@
-import {
+﻿import {
   StoreError,
   isStoreConflict,
   readDoc,
   writeDoc,
 } from "@/lib/persistence";
 import type { ClientBuildConfig } from "./client-config";
+import { draftFromClientBrief, wordCount as clientWordCount } from "./client-drafts";
+import {
+  applyAutoStageProgression,
+  competitorAutomationStatus,
+  countDraftedPages,
+  initialBaselineAutomation,
+  resolveAutomationHostOrigin,
+} from "./client-automation";
 import {
   createClientFactoryProject,
   seedClientBlueprint,
@@ -14,7 +22,7 @@ import {
   seedClientResearchNotes,
   seedClientStages,
 } from "./client-pipeline";
-import type { FactoryWorkspace, VisibleGap } from "./types";
+import type { ContentBrief, FactoryPage, FactoryWorkspace, VisibleGap } from "./types";
 
 const SAFE_PROJECT_ID = /^[a-z0-9_-]{1,80}$/i;
 const MAX_UPDATE_ATTEMPTS = 30;
@@ -37,7 +45,7 @@ function seedClientGaps(config: ClientBuildConfig): VisibleGap[] {
       owner: "operator",
       status: "open",
       detail:
-        "Analyze top 3: attach real public competitor URLs on each content brief (competitorUrls). Empty means not done - never invent domains.",
+        "Analyze top 3: no SERP/search API is configured in this repo - attach real public competitor URLs on each brief (competitorUrls) manually. Never invent domains.",
     },
     {
       id: "client-copy",
@@ -45,7 +53,7 @@ function seedClientGaps(config: ClientBuildConfig): VisibleGap[] {
       owner: "operator",
       status: "open",
       detail:
-        "Drafts are not auto-written by an LLM in this path. Approve briefs, then draft/approve pages with real client facts.",
+        "Templated draft bodies are auto-seeded on init (clearly labeled drafts, noindex). Not LLM research - operator must replace with real client facts before approve/publish.",
     },
     {
       id: "client-publish",
@@ -61,7 +69,7 @@ function seedClientGaps(config: ClientBuildConfig): VisibleGap[] {
       owner: "operator",
       status: "open",
       detail:
-        "No client-owned baseline yet. Capture via capture-client-baseline (or Capture on this page / SEO workspace). Never reuse Sitesinc or demo baselines.",
+        "Baseline auto-queues after factory init when a preview host is known; otherwise status is missing. Manual Capture still available. Never reuse Sitesinc or demo baselines.",
     },
     {
       id: "client-photos",
@@ -73,18 +81,70 @@ function seedClientGaps(config: ClientBuildConfig): VisibleGap[] {
   ];
 }
 
+/** Fill templated draft bodies for seeded pages (deterministic, labeled draft, noindex). */
+export function autoSeedClientDraftPages(
+  pages: FactoryPage[],
+  briefs: ContentBrief[],
+  config: ClientBuildConfig
+): { pages: FactoryPage[]; seededCount: number } {
+  const draftBanner =
+    "[FACTORY DRAFT - auto-seeded from intake config. Replace with real client facts before approve/publish. noindex.]";
+  let seededCount = 0;
+  const next = pages.map((page) => {
+    if (page.body && page.body.trim()) return page;
+    const brief =
+      briefs.find((item) => item.slug === page.slug) ||
+      ({
+        id: `brief-${page.slug}`,
+        slug: page.slug,
+        title: page.title,
+        status: "ready_for_review" as const,
+        searchIntent: page.title,
+        competitorUrls: [] as string[],
+        wordCountGuidance: { min: 400, max: 900, note: "Guidance only." },
+        headings: page.headings.length
+          ? page.headings
+          : [`What ${config.businessName} offers`, "Local context", "How to get started"],
+        recurringTopics: [config.businessName, config.niche].filter(Boolean),
+        gaps: [],
+        outline: [],
+        citations: ["Client intake config"],
+        notes: "Synthetic brief shell for home/auto-draft.",
+        approvedBy: "",
+        approvedAt: "",
+      } satisfies ContentBrief);
+    const draft = draftFromClientBrief(brief, config);
+    const body = `${draftBanner}\n\n${draft.body}`;
+    seededCount += 1;
+    return {
+      ...page,
+      title: draft.title,
+      metaDescription: draft.metaDescription,
+      headings: draft.headings,
+      body,
+      wordCount: clientWordCount(body),
+      status: "ready_for_review" as const,
+      briefId: brief.id,
+      noindex: true,
+    };
+  });
+  return { pages: next, seededCount };
+}
+
 export function seedClientWorkspace(
   projectId: string,
-  config: ClientBuildConfig
+  config: ClientBuildConfig,
+  opts?: { hostOrigin?: string | null }
 ): FactoryWorkspace {
   const startedAt = new Date().toISOString();
   const blueprint = seedClientBlueprint(config);
   const briefs = seedClientBriefs(config);
-  const stages = seedClientStages();
+  let stages = seedClientStages();
+  const researchNotes = seedClientResearchNotes(config);
   stages[0] = {
     ...stages[0],
     status: "in_progress",
-    notes: seedClientResearchNotes(config),
+    notes: researchNotes,
     artifacts: [`template:${config.templateId}`, `design:${config.designStyleId}`],
   };
   stages[1] = {
@@ -101,13 +161,26 @@ export function seedClientWorkspace(
     artifacts: briefs.map((brief) => brief.id),
   };
 
+  const basePages = seedClientPages(briefs, blueprint);
+  const { pages, seededCount } = autoSeedClientDraftPages(basePages, briefs, config);
+  const hostResolved = resolveAutomationHostOrigin(opts?.hostOrigin);
+  const baselineAuto = initialBaselineAutomation(hostResolved.hostOrigin, hostResolved.reason);
+
+  stages = applyAutoStageProgression(stages, {
+    hasResearchNotes: Boolean(researchNotes),
+    blueprintCount: blueprint.length,
+    briefCount: briefs.length,
+    draftedPageCount: countDraftedPages(pages),
+    baselineStatus: baselineAuto.status,
+  });
+
   return {
     project: { ...createClientFactoryProject(projectId, config), createdAt: startedAt },
     stages,
     clusters: seedClientClusters(config),
     blueprint,
     briefs,
-    pages: seedClientPages(briefs, blueprint),
+    pages,
     indexing: blueprint.map((page) => ({
       path: page.path,
       url: "",
@@ -192,6 +265,16 @@ export function seedClientWorkspace(
       phone: config.phone,
       primaryGoal: config.primaryGoal,
     },
+    clientAutomation: {
+      baseline: baselineAuto,
+      drafts: {
+        seeded: seededCount > 0,
+        seededAt: seededCount > 0 ? startedAt : undefined,
+        pageCount: seededCount,
+      },
+      competitors: competitorAutomationStatus(briefs),
+      stagesAutoAppliedAt: startedAt,
+    },
   };
 }
 
@@ -222,12 +305,13 @@ export async function readClientWorkspaceState(
  */
 export async function initClientWorkspace(
   projectId: string,
-  config: ClientBuildConfig
+  config: ClientBuildConfig,
+  opts?: { hostOrigin?: string | null }
 ): Promise<{ created: boolean; workspace: FactoryWorkspace }> {
   const key = clientWorkspaceKey(projectId);
   const existing = await readDoc<FactoryWorkspace>(key);
   if (existing) return { created: false, workspace: existing.value };
-  const workspace = seedClientWorkspace(projectId, config);
+  const workspace = seedClientWorkspace(projectId, config, opts);
   try {
     await writeDoc(key, workspace, { expectedVersion: null });
     return { created: true, workspace };

@@ -12,6 +12,15 @@ export async function POST(req: NextRequest) {
     ensureBlobsFromRequest(req);
     const body = (await req.json()) as Record<string, string>;
     const op = String(body.op || "");
+    if (!body.hostOrigin && !body.origin) {
+      const derived =
+        process.env.DEPLOY_PRIME_URL ||
+        process.env.URL ||
+        process.env.NEXT_PUBLIC_SITE_URL ||
+        req.nextUrl?.origin ||
+        "";
+      if (derived) body.hostOrigin = derived;
+    }
     const result = await applyFactoryAction(op, body);
     if (!result.ok) {
       return NextResponse.json(result, { status: 400 });

@@ -143,6 +143,12 @@ export async function POST(req: NextRequest) {
 
       try {
         const { intakeToProject } = await import("@/lib/factory/intake");
+        const hostOrigin =
+          process.env.DEPLOY_PRIME_URL ||
+          process.env.URL ||
+          process.env.NEXT_PUBLIC_SITE_URL ||
+          req.nextUrl?.origin ||
+          null;
         await intakeToProject("inquiry", `Shop inquiry: ${product.name}`, inquiry.id, undefined, {
           name,
           email,
@@ -150,6 +156,7 @@ export async function POST(req: NextRequest) {
           primaryGoal: `Inquiry about ${product.name}`,
           niche: "shop / product inquiry",
           businessType: "general",
+          hostOrigin,
         });
       } catch {
         /* factory tracking must not break inquiry */

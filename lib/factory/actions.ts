@@ -1,6 +1,11 @@
 import { newId } from "@/lib/store";
 import { applyConfigToProject, buildClientConfig, normalizeDesignStyleId } from "./client-config";
 import { initClientWorkspace, setClientBriefCompetitors, updateClientWorkspace, readClientWorkspace } from "./client-workspace";
+import {
+  backfillClientFactories,
+  markStaleAndQueueRecapture,
+  queueAutoClientBaseline,
+} from "./client-automation";
 import { recordIntakeProject } from "./record-intake";
 export { recordIntakeProject } from "./record-intake";
 import { runConversionChecks } from "./conversions";
@@ -55,7 +60,7 @@ function nowIso() {
 export async function applyFactoryAction(
   op: string,
   body: Record<string, string | string[] | undefined>
-): Promise<{ ok: boolean; error?: string; workspace?: FactoryWorkspace; created?: boolean }> {
+): Promise<{ ok: boolean; error?: string; workspace?: FactoryWorkspace; created?: boolean; backfill?: import("./client-automation").BackfillResult }> {
   const actor = String(body.approvedBy || "operator");
   const when = nowIso();
 
@@ -447,7 +452,7 @@ export async function applyFactoryAction(
     });
     await updateWorkspace((current) => {
       current.stages = markStage(current.stages, "backlink_authority", "in_progress", {
-        notes: `${DISCLAIMERS.backlinks} Tracker is empty on Day 0 — that is documented activity, not a missing field. Record a row only after a live relevant link exists.`,
+        notes: `${DISCLAIMERS.backlinks} Tracker is empty on Day 0 - that is documented activity, not a missing field. Record a row only after a live relevant link exists.`,
         artifacts: ["backlink-tracker:empty"],
       });
       current.visibleGaps = current.visibleGaps.map((gap) =>
@@ -571,7 +576,10 @@ export async function applyFactoryAction(
       factoryWorkspaceId: project.id,
       monitoringInterest: patched.monitoringInterest,
     });
-    const result = await initClientWorkspace(project.id, config);
+    const hostHint = String(body.hostOrigin || body.origin || "").trim() || null;
+    const result = await initClientWorkspace(project.id, config, { hostOrigin: hostHint });
+    // Auto baseline: never block the action response.
+    queueAutoClientBaseline(project.id, hostHint);
     return { ok: true, created: result.created, workspace: result.workspace };
   }
 
@@ -617,11 +625,17 @@ export async function applyFactoryAction(
     try {
       const existing = await readClientWorkspace(projectId);
       if (!existing) return { ok: true };
-      const workspace = await updateClientWorkspace(projectId, (current) => {
+      const hostHint = String(body.hostOrigin || body.origin || "").trim() || null;
+      await updateClientWorkspace(projectId, (current) => {
         if (current.clientContext) current.clientContext.designStyleId = normalized;
         return current;
       });
-      return { ok: true, workspace };
+      const workspace = await markStaleAndQueueRecapture(
+        projectId,
+        "Design binding changed - baseline marked stale for auto-recapture.",
+        hostHint
+      );
+      return { ok: true, workspace: workspace || undefined };
     } catch {
       return { ok: true };
     }
@@ -681,9 +695,27 @@ export async function applyFactoryAction(
       );
       return current;
     });
-    return { ok: true, workspace };
+    const hostHint = String(body.hostOrigin || body.origin || "").trim() || null;
+    const refreshed = await markStaleAndQueueRecapture(
+      projectId,
+      `Page draft updated (${slug}) - baseline marked stale for auto-recapture.`,
+      hostHint
+    );
+    return { ok: true, workspace: refreshed || workspace };
   }
 
+  if (op === "backfill-client-factories") {
+    const hostHint = String(body.hostOrigin || body.origin || "").trim() || null;
+    const rawIds = body.projectIds;
+    const projectIds = (Array.isArray(rawIds) ? rawIds : String(rawIds || "").split(/[\n,]/))
+      .map((id) => String(id).trim())
+      .filter(Boolean);
+    const result = await backfillClientFactories({
+      hostOrigin: hostHint,
+      projectIds: projectIds.length ? projectIds : undefined,
+    });
+    return { ok: true, created: result.initialized > 0, backfill: result };
+  }
 
   return { ok: false, error: `Unknown action: ${op}` };
 }

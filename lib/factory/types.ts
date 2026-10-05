@@ -1,4 +1,4 @@
-export const FACTORY_PROJECT_ID = "sitesinc-growth-case-study";
+﻿export const FACTORY_PROJECT_ID = "sitesinc-growth-case-study";
 
 export type StageStatus =
   | "not_started"
@@ -339,6 +339,45 @@ export type OperatorChecklist = {
   sections: ChecklistSection[];
 };
 
+
+export type ClientBaselineAutoStatus =
+  | "pending"
+  | "captured"
+  | "limited"
+  | "failed"
+  | "missing"
+  | "stale";
+
+export type ClientBaselineAutomation = {
+  status: ClientBaselineAutoStatus;
+  reason?: string;
+  capturedAt?: string;
+  pagesOk?: number;
+  pagesTotal?: number;
+  baselineId?: string;
+  stale?: boolean;
+  lastAttemptAt?: string;
+  hostOrigin?: string;
+};
+
+export type ClientDraftsAutomation = {
+  seeded: boolean;
+  seededAt?: string;
+  pageCount: number;
+};
+
+export type ClientCompetitorAutomation = {
+  status: "needs_search_provider" | "manual" | "filled";
+  detail: string;
+  provider?: string;
+};
+
+export type ClientAutomationState = {
+  baseline: ClientBaselineAutomation;
+  drafts: ClientDraftsAutomation;
+  competitors: ClientCompetitorAutomation;
+  stagesAutoAppliedAt?: string;
+};
 export type ClientWorkspaceContext = {
   clientProjectId: string;
   businessName: string;
@@ -389,4 +428,6 @@ export type FactoryWorkspace = {
   };
   /** Present on per-client workspaces; absent on Sitesinc growth case study. */
   clientContext?: ClientWorkspaceContext;
+  /** Automation status for operator UI (baseline/drafts/competitors/stages). */
+  clientAutomation?: ClientAutomationState;
 };

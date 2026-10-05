@@ -6,7 +6,9 @@ export async function intakeToProject(
   publicLabel: string,
   leadId?: string,
   monitoringInterest?: boolean,
-  extras?: Omit<IntakeConfigInput, "label" | "source" | "monitoringInterest">
+  extras?: Omit<IntakeConfigInput, "label" | "source" | "monitoringInterest"> & {
+    hostOrigin?: string | null;
+  }
 ) {
   try {
     return await recordIntakeProject({
