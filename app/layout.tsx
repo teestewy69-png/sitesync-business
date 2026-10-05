@@ -5,7 +5,11 @@ import Analytics from "@/components/Analytics";
 import AnnouncementTicker from "@/components/AnnouncementTicker";
 import StagingBanner from "@/components/StagingBanner";
 import { CartProvider } from "@/components/shop/CartProvider";
-import { isStagingEnv, publicAnalyticsMeasurementId } from "@/lib/site-env";
+import {
+  isStagingEnv,
+  publicAnalyticsHosts,
+  publicAnalyticsMeasurementId,
+} from "@/lib/site-env";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -19,6 +23,7 @@ const geistMono = Geist_Mono({
 });
 
 const GA_MEASUREMENT_ID = publicAnalyticsMeasurementId();
+const GA_HOSTS = publicAnalyticsHosts();
 const { seo } = content;
 
 export const metadata: Metadata = {
@@ -66,7 +71,7 @@ export default function RootLayout({
           <AnnouncementTicker />
           {children}
           <StagingBanner />
-          <Analytics measurementId={GA_MEASUREMENT_ID} />
+          <Analytics measurementId={GA_MEASUREMENT_ID} allowedHosts={GA_HOSTS} />
         </CartProvider>
       </body>
     </html>

@@ -52,6 +52,8 @@ export default function ProductTeaser() {
                 {cta && href ? (
                   <a
                     href={href}
+                    data-analytics-cta="product_teaser"
+                    data-analytics-location="product_teaser"
                     {...(external
                       ? { target: "_blank", rel: "noopener noreferrer" }
                       : {})}

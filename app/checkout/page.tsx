@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/components/shop/CartProvider";
-import { formatMoney } from "@/data/products";
+import { formatMoney, parsePrice } from "@/data/products";
+import { trackBeginCheckout } from "@/lib/analytics";
 
 type Status = "idle" | "loading" | "error";
 
@@ -29,6 +30,23 @@ export default function CheckoutPage() {
         .filter((row): row is NonNullable<typeof row> => Boolean(row)),
     [getLineProduct, lines]
   );
+
+  // begin_checkout once per visit, as soon as the cart has items.
+  const checkoutTracked = useRef(false);
+  useEffect(() => {
+    if (checkoutTracked.current || items.length === 0) return;
+    checkoutTracked.current = true;
+    trackBeginCheckout(
+      items.map(({ line, product }) => ({
+        item_id: product.slug,
+        item_name: product.name,
+        item_category: product.category,
+        price: parsePrice(product.price),
+        quantity: line.quantity,
+      })),
+      subtotal
+    );
+  }, [items, subtotal]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

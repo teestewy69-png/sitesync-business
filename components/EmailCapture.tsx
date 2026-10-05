@@ -3,6 +3,7 @@
 import { FormEvent, useRef, useState } from "react";
 import { CheckCircle2, Mail } from "lucide-react";
 import content from "@/content.json";
+import { trackLead } from "@/lib/analytics";
 
 type Status = "idle" | "loading" | "success" | "error";
 
@@ -59,6 +60,8 @@ export default function EmailCapture() {
           : "Request received. This is not a purchase. If we accept the project, you will get a $997.50 start invoice by email."
       );
       setStatus("success");
+      // Only after the lead was saved. No PII in params.
+      trackLead("website_build_request", { monitoring_opt_in: monitoring });
     } catch (err) {
       submitting.current = false;
       setStatus("error");

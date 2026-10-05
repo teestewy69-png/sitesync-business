@@ -55,8 +55,9 @@ Use the same values as `sitesyncllc`, plus the flag above:
    - Stored leads, inquiries, orders, and projects include `env: "staging"`
 
 3. **Analytics**
-   - Production `NEXT_PUBLIC_GA_MEASUREMENT_ID` is not loaded on staging
-   - Staging analytics load only when `NEXT_PUBLIC_GA_STAGING_MEASUREMENT_ID` is set
+   - Production `NEXT_PUBLIC_GA_MEASUREMENT_ID` (default `G-0XHXXSSB1N`) is not loaded on staging
+   - Staging analytics load only when `NEXT_PUBLIC_GA_STAGING_MEASUREMENT_ID` is set, and only on `test.sitesinc.co`
+   - See `docs/analytics.md`
 
 4. **Operator cue**
    - A small “Test site” badge in the bottom-right corner

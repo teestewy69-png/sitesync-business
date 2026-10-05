@@ -46,6 +46,8 @@ export default function Proof() {
         <div className="flex justify-start">
           <a
             href={`#${proof.cta.target}`}
+            data-analytics-cta={`proof_${proof.cta.target}`}
+            data-analytics-location="proof"
             className="inline-flex items-center justify-center rounded-xl bg-gradient-to-b from-brand-300 to-brand-600 px-5 py-2.5 text-sm font-semibold text-zinc-950 shadow-glow transition hover:from-brand-200 hover:to-brand-500"
           >
             {proof.cta.label}

@@ -2,8 +2,9 @@
 
 import { FormEvent, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Product } from "@/data/products";
+import { parsePrice, type Product } from "@/data/products";
 import { useCart } from "@/components/shop/CartProvider";
+import { trackAddToCart, trackLead, type AnalyticsItem } from "@/lib/analytics";
 
 type Status = "idle" | "loading" | "success" | "error";
 
@@ -33,14 +34,24 @@ export default function ProductActions({ product }: { product: Product }) {
     `I'd like pricing and availability for ${product.name}.`
   );
 
+  const analyticsItem: AnalyticsItem = {
+    item_id: product.slug,
+    item_name: product.name,
+    item_category: product.category,
+    price: parsePrice(product.price),
+    quantity: 1,
+  };
+
   function handleAdd() {
     addItem(product.slug);
+    trackAddToCart(analyticsItem);
     setAdded(true);
     window.setTimeout(() => setAdded(false), 1800);
   }
 
   function handleBuyNow() {
     addItem(product.slug);
+    trackAddToCart(analyticsItem);
     router.push("/checkout");
   }
 
@@ -81,6 +92,7 @@ export default function ProductActions({ product }: { product: Product }) {
         throw new Error(data?.error ?? "Could not send inquiry.");
       }
       setStatus("success");
+      trackLead("product_inquiry", { item_id: product.slug });
       // submitting stays true after success so the form cannot be sent twice.
     } catch (err) {
       submitting.current = false;

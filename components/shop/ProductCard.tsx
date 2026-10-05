@@ -1,17 +1,27 @@
 "use client";
 
 import Link from "next/link";
-import type { Product } from "@/data/products";
+import { parsePrice, type Product } from "@/data/products";
 import { useCart } from "@/components/shop/CartProvider";
 import ProductImage from "@/components/shop/ProductImage";
+import { trackAddToCart, trackSelectItem, type AnalyticsItem } from "@/lib/analytics";
 
 export default function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart();
+  const analyticsItem: AnalyticsItem = {
+    item_id: product.slug,
+    item_name: product.name,
+    item_category: product.category,
+    price: parsePrice(product.price),
+    quantity: 1,
+  };
+  const onSelect = () => trackSelectItem("shop", analyticsItem);
 
   return (
     <article className="relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur transition hover:border-brand-400/40">
       <Link
         href={`/shop/product/${product.slug}`}
+        onClick={onSelect}
         className="relative block aspect-[4/3] border-b border-white/10"
       >
         <ProductImage product={product} className="absolute inset-0 h-full w-full" />
@@ -29,6 +39,7 @@ export default function ProductCard({ product }: { product: Product }) {
         <h2 className="mt-1 text-lg font-semibold text-white">
           <Link
             href={`/shop/product/${product.slug}`}
+            onClick={onSelect}
             className="hover:text-brand-200"
           >
             {product.name}
@@ -58,6 +69,7 @@ export default function ProductCard({ product }: { product: Product }) {
         <div className="mt-4 flex flex-col gap-2 sm:flex-row">
           <Link
             href={`/shop/product/${product.slug}`}
+            onClick={onSelect}
             className="inline-flex flex-1 items-center justify-center rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-medium text-slate-100 transition hover:border-brand-400/50"
           >
             View
@@ -65,6 +77,7 @@ export default function ProductCard({ product }: { product: Product }) {
           {product.contactOnly ? (
             <Link
               href={`/shop/product/${product.slug}`}
+              onClick={onSelect}
               className="inline-flex flex-1 items-center justify-center rounded-xl bg-gradient-to-b from-brand-300 to-brand-600 px-4 py-2.5 text-sm font-semibold text-zinc-950 shadow-glow transition hover:from-brand-200 hover:to-brand-500"
             >
               Request a quote
@@ -72,7 +85,10 @@ export default function ProductCard({ product }: { product: Product }) {
           ) : (
             <button
               type="button"
-              onClick={() => addItem(product.slug)}
+              onClick={() => {
+                addItem(product.slug);
+                trackAddToCart(analyticsItem);
+              }}
               className="inline-flex flex-1 items-center justify-center rounded-xl bg-gradient-to-b from-brand-300 to-brand-600 px-4 py-2.5 text-sm font-semibold text-zinc-950 shadow-glow transition hover:from-brand-200 hover:to-brand-500"
             >
               Add to cart

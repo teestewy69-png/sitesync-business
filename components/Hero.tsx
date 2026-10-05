@@ -25,6 +25,8 @@ export default function Hero() {
         </a>
         <a
           href="#pricing"
+          data-analytics-cta="see_pricing"
+          data-analytics-location="hero_nav"
           className="rounded-lg bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 ring-1 ring-white/10 transition hover:bg-white/10"
         >
           See pricing
@@ -61,6 +63,8 @@ export default function Hero() {
           <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:gap-4">
             <a
               href={startHref}
+              data-analytics-cta="start_build"
+              data-analytics-location="hero"
               className="group inline-flex items-center justify-center rounded-full bg-gradient-to-b from-brand-300 to-brand-600 px-6 py-3 text-sm font-semibold text-zinc-950 shadow-lg shadow-brand-500/30 transition hover:from-brand-200 hover:to-brand-500"
             >
               {hero.primaryCta.label}
@@ -71,6 +75,8 @@ export default function Hero() {
             <HeroScrollButton
               target={hero.secondaryCta.target}
               label={hero.secondaryCta.label}
+              analyticsCta="see_designs"
+              analyticsLocation="hero"
               className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/5 px-6 py-3 text-sm font-medium text-slate-100 transition hover:border-brand-400/60 hover:bg-brand-400/5"
             />
           </div>
