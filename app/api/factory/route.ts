@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { applyFactoryAction } from "@/lib/factory/actions";
 import { factoryErrorResponse } from "@/lib/factory/api-errors";
+import { isDemoBaseline } from "@/lib/factory/baseline-pick";
 import { captureBaseline } from "@/lib/factory/crawl";
 import { PRODUCTION_ORIGIN } from "@/lib/factory/pipeline";
 import { ensureBlobsFromRequest } from "@/lib/persistence";
@@ -49,7 +50,8 @@ export async function POST(req: NextRequest) {
       });
       await saveBaseline(snapshot);
       await updateWorkspace((workspace) => {
-        workspace.latestBaselineId = snapshot.id;
+        // A /demo/ crawl is stored but never becomes the case-study Day 0.
+        if (!isDemoBaseline(snapshot)) workspace.latestBaselineId = snapshot.id;
         return workspace;
       });
       return NextResponse.json({ ok: true, ...(await getFactoryPayload()) });
@@ -59,7 +61,8 @@ export async function POST(req: NextRequest) {
       const snapshot = await captureBaseline({ origin: local, source: "local" });
       await saveBaseline(snapshot);
       await updateWorkspace((workspace) => {
-        workspace.latestBaselineId = snapshot.id;
+        // A /demo/ crawl is stored but never becomes the case-study Day 0.
+        if (!isDemoBaseline(snapshot)) workspace.latestBaselineId = snapshot.id;
         return workspace;
       });
       return NextResponse.json({ ok: true, ...(await getFactoryPayload()) });

@@ -28,6 +28,7 @@ import type {
   VisibleGap,
 } from "./types";
 import { FACTORY_PROJECT_ID } from "./types";
+import { isDemoBaseline, pickCaseStudyBaseline } from "./baseline-pick";
 
 /**
  * Durable keys (lib/persistence.ts): Netlify Blobs on Netlify (staging and production use
@@ -438,14 +439,18 @@ export async function listBaselines(): Promise<BaselineSnapshot[]> {
   return (await listBaselinesDetailed()).baselines;
 }
 
+/**
+ * The Sitesinc case-study (Day 0) baseline shared by /case-study, /app/case-study, /app/baseline and /app.
+ * Falls back to the newest *Sitesinc* baseline only, never to a demo (Smith / Kurtis) or localhost crawl.
+ */
 export async function latestBaseline(): Promise<BaselineSnapshot | null> {
   const workspace = await readWorkspace();
-  if (workspace.latestBaselineId) {
-    const named = await readBaseline(workspace.latestBaselineId);
-    if (named) return named;
-  }
-  const all = await listBaselines();
-  return all.length ? all[all.length - 1] : null;
+  return pickCaseStudyBaseline<BaselineSnapshot>({
+    latestBaselineId: workspace.latestBaselineId,
+    latestBaselineBySite: workspace.latestBaselineBySite,
+    read: readBaseline,
+    list: listBaselines,
+  });
 }
 
 export function newFactoryId(prefix: string): string {
@@ -473,7 +478,10 @@ export async function captureAndStoreBaseline(origin: string, siteId?: string): 
   return updateWorkspace((workspace) => {
     const id = snapshot.siteId || siteId || workspace.project.id;
     workspace.latestBaselineBySite = { ...(workspace.latestBaselineBySite || {}), [id]: snapshot.id };
-    if (id === FACTORY_PROJECT_ID || (origin.includes("sitesinc.co") && !origin.includes("/demo/"))) {
+    if (
+      !isDemoBaseline(snapshot) &&
+      (id === FACTORY_PROJECT_ID || (origin.includes("sitesinc.co") && !origin.includes("/demo/")))
+    ) {
       workspace.latestBaselineId = snapshot.id;
     }
     return workspace;

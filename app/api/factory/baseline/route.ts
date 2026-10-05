@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { factoryErrorResponse } from "@/lib/factory/api-errors";
+import { isDemoBaseline } from "@/lib/factory/baseline-pick";
 import { captureBaseline } from "@/lib/factory/crawl";
 import { catalogSite } from "@/lib/factory/seo-sites";
 import { FACTORY_PROJECT_ID } from "@/lib/factory/types";
@@ -27,7 +28,8 @@ export async function POST(req: NextRequest) {
     await updateWorkspace((workspace) => {
       const id = snapshot.siteId || site.id;
       workspace.latestBaselineBySite = { ...(workspace.latestBaselineBySite || {}), [id]: snapshot.id };
-      if (id === FACTORY_PROJECT_ID) workspace.latestBaselineId = snapshot.id;
+      // Never point the case study at a demo crawl (e.g. a /demo/ origin captured under the default site id).
+      if (id === FACTORY_PROJECT_ID && !isDemoBaseline(snapshot)) workspace.latestBaselineId = snapshot.id;
       return workspace;
     });
     return NextResponse.json({
