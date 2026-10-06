@@ -2,12 +2,14 @@ import { headers } from "next/headers";
 import ActionForm from "@/components/factory/ActionForm";
 import CityLaunchBay from "@/components/factory/CityLaunchBay";
 import DomainIQBay from "@/components/factory/DomainIQBay";
+import SiteFlowBay from "@/components/factory/SiteFlowBay";
 import CaptureButton from "@/components/factory/CaptureButton";
 import FactoryShell, { Pill } from "@/components/factory/Shell";
 import { PRODUCTION_ORIGIN } from "@/lib/factory/pipeline";
 import { latestBaseline, readWorkspace } from "@/lib/factory/workspace";
 import { summarizeCityLaunchBay } from "@/lib/factory/city-launch";
 import { summarizeDomainBay } from "@/lib/factory/domainiq";
+import { summarizeSiteFlow, type SiteFlowSummary } from "@/lib/siteflow/summary";
 import { ensureBlobsFromRequest, listProjects } from "@/lib/store";
 
 export default async function FactoryHome() {
@@ -22,6 +24,12 @@ export default async function FactoryHome() {
   }
   const domainBay = summarizeDomainBay(clientProjects);
   const cityBay = await summarizeCityLaunchBay(clientProjects);
+  let siteflow: SiteFlowSummary | null = null;
+  try {
+    siteflow = await summarizeSiteFlow();
+  } catch (err) {
+    console.warn("SiteFlow bay: summary unavailable.", err instanceof Error ? err.name : "unknown");
+  }
 
   return (
     <FactoryShell title="Sitesinc Growth Case Study">
@@ -71,6 +79,12 @@ export default async function FactoryHome() {
       <DomainIQBay summary={domainBay} />
 
       <CityLaunchBay summary={cityBay} />
+
+      {siteflow ? (
+        <SiteFlowBay summary={siteflow} origin={process.env.NEXT_PUBLIC_SITE_URL || PRODUCTION_ORIGIN} />
+      ) : (
+        <p className="mt-10 rounded-xl border border-amber-400/30 px-4 py-3 text-sm text-amber-200">SiteFlow bay unavailable (store error).</p>
+      )}
 
       <h2 className="mt-10 text-xl font-semibold">Pipeline</h2>
       <div className="mt-4 divide-y divide-white/10 rounded-2xl border border-white/10">

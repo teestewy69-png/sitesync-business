@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { FACTORY_COOKIE, isPublicFactoryPath, isValidSession } from "@/lib/factory/auth";
 import { CLIENT_DOMAIN_PREFIX, clientDomainRoute, isSitesincHost } from "@/lib/client-domain/host";
+import { shouldCaptureRef, stripRefParam } from "@/lib/siteflow/ref";
 
 function requestHost(req: NextRequest): string {
   return req.headers.get("host") || req.headers.get("x-forwarded-host") || req.nextUrl.host;
@@ -50,12 +51,26 @@ export async function middleware(req: NextRequest) {
   // Sitesinc hosts: the internal client-domain routes are never reachable directly.
   if (pathname === CLIENT_DOMAIN_PREFIX || pathname.startsWith(`${CLIENT_DOMAIN_PREFIX}/`)) return notFound();
 
+  // SiteFlow partner links (?ref=<code>): validate + set the referral cookie in a Node route, then land on the clean URL.
+  const ref = shouldCaptureRef(req.method, pathname, req.nextUrl.search);
+  if (ref) {
+    const clean = stripRefParam(pathname, req.nextUrl.search);
+    const target = req.nextUrl.clone();
+    if (ref === "invalid") {
+      target.search = clean.includes("?") ? clean.slice(clean.indexOf("?")) : "";
+    } else {
+      target.pathname = "/api/siteflow/ref";
+      target.search = `?${new URLSearchParams({ code: ref, next: clean }).toString()}`;
+    }
+    return NextResponse.redirect(target, 307);
+  }
+
   if (isFactoryPath(pathname)) return factoryAuth(req);
   return NextResponse.next();
 }
 
 export const config = {
   // Every path except Next's static/image assets: client domains need "/", "/locations", "/robots.txt"...
-  // On Sitesinc hosts only /app and /api/factory do anything (factory auth, unchanged).
+  // On Sitesinc hosts only /app and /api/factory (factory auth) and GET pages with ?ref= (SiteFlow referral capture) do anything.
   matcher: ["/((?!_next/static|_next/image).*)"],
 };

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useState } from "react";
 import type { ClientDomainCandidate } from "@/lib/domainiq/client";
 import type { DomainBaySummary } from "@/lib/factory/domainiq";
+import AffiliateDisclosure from "@/components/siteflow/AffiliateDisclosure";
+import { getProgram, outboundHref, REGISTRAR_SLUGS, SPONSORED_REL } from "@/lib/affiliates";
 
 type TryResult = { candidates: ClientDomainCandidate[]; meta?: { nicheKey: string | null } };
 
@@ -164,15 +166,31 @@ export default function DomainIQBay({ summary }: { summary: DomainBaySummary }) 
         {result ? (
           <ul className="mt-3 grid gap-1 text-sm sm:grid-cols-2">
             {result.candidates.map((c) => (
-              <li key={c.domain} className="flex items-center justify-between rounded-lg border border-white/10 px-3 py-1.5">
-                <span className="text-white">{c.domain}</span>
-                <span className="text-xs text-slate-400">
-                  {c.score.toFixed(2)} · {c.source} · {c.availability}
-                </span>
+              <li key={c.domain} className="rounded-lg border border-white/10 px-3 py-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-white">{c.domain}</span>
+                  <span className="text-xs text-slate-400">
+                    {c.score.toFixed(2)} · {c.source} · {c.availability}
+                  </span>
+                </div>
+                <div className="mt-0.5 flex flex-wrap gap-2 text-[11px]">
+                  {REGISTRAR_SLUGS.map((slug) => (
+                    <a
+                      key={slug}
+                      href={outboundHref("", slug, { domain: c.domain, src: "domainiq-bay" })}
+                      rel={SPONSORED_REL}
+                      target="_blank"
+                      className="text-brand-300 hover:underline"
+                    >
+                      {getProgram(slug)?.name || slug}
+                    </a>
+                  ))}
+                </div>
               </li>
             ))}
           </ul>
         ) : null}
+        {result?.candidates.length ? <AffiliateDisclosure className="mt-2" /> : null}
       </div>
     </section>
   );
