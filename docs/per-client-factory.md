@@ -28,6 +28,12 @@ This note describes what is **fully wired** vs **still manual** after the per-cl
 | Domain availability check (top 12 candidates) | **Automated** | Keyless public RDAP (Verisign .com/.net) + Cloudflare DNS NS, same sources as DomainIQ. `DOMAINIQ_AVAILABILITY=off` leaves them `unchecked` |
 | Domain pick | **Manual by design** | Operator picks on `/app/clients/<projectId>` (or types a client-owned domain - it gets DomainIQ-scored) |
 | Domain purchase | **Manual by design** | Tony signs off (`domainiq-approve-purchase` records who/when). Sitesinc never buys, reserves, or registers a domain |
+| City Launch: city picking (radius / top N in states / CSV paste) | **Automated** | Census dataset in-process (`lib/city-launch`), no key |
+| City Launch: LLM writing of up to 500 city pages per batch | **Automated** (needs an LLM key) | Queued → ticks via `after()`; concurrency + RPM limited, retries with backoff, resumable. Missing key = UI says so, nothing is written |
+| City Launch: uniqueness + quality gate | **Automated** | Runs after every batch / edit / regenerate; near-duplicates are blocked from approval |
+| City Launch: approve city drafts | **Manual by design** | Operator / Tony approves on `/app/clients/<projectId>` (name recorded) |
+| City Launch: approved pages on the client preview + sitemap | **Automated** | `/demo/client/<projectId>/locations/<citySlug>`, read from the store on request (no rebuild) |
+| City Launch: real-domain publish | **Manual by design** | Tony's sign-off (`signoff-production`, records only) + the manual `production_deployment` stage |
 | Netlify production publish for the client site | **Manual by design** | Preview ≠ live client domain |
 | Search Console / analytics for a **live** client domain | **Manual by design** | Not required for preview baselines |
 
@@ -111,6 +117,188 @@ generatedAt, availability run, selectedBy/At, purchaseApprovedBy/At, `purchase: 
 **Env:** none required. Optional `DOMAINIQ_AVAILABILITY=off` disables the outbound RDAP/DNS check (candidates then
 stay `unchecked`).
 
+## City Launch bay (animated city landing pages)
+
+Tony approved multi-city pages. They replace the old blanket "no city doorway clones" rule, **but only through a quality
+gate**: each city page must carry genuinely local, unique copy. A find-and-replace of the city name is blocked.
+
+**Where:** City Launch section on `/app/clients/<projectId>` (`components/factory/CityLaunchPanel.tsx`), plus a bay tile on
+`/app` (`components/factory/CityLaunchBay.tsx`). Pages are served at `/demo/client/<projectId>/locations/<citySlug>`.
+The index is at `/demo/client/<projectId>/locations`, and the client sitemap is at `/demo/client/<projectId>/sitemap.xml`.
+No WordPress anywhere.
+
+### City data (real, committed)
+
+`lib/city-launch/us-cities.generated.ts` holds 10,251 real U.S. places, each with state, 2024 population, lat/lng,
+primary county and Census GEOID. `scripts/city-launch/build-us-cities.mjs` generates it from two U.S. Census Bureau
+public-domain files:
+
+- the **2024 Gazetteer Places** file (internal-point coordinates)
+- **Vintage 2024 Population Estimates SUB-EST2024** (July 1, 2024 population, plus the primary county from the
+  county-part rows)
+
+Coverage is incorporated places in the 50 states + DC with population ≥ 1,000, plus Urban Honolulu. Consolidated
+cities get their common name (Nashville, Louisville, Indianapolis, Boise...). There are no synthetic "Zone N" rows.
+
+Regenerate with:
+`node scripts/city-launch/build-us-cities.mjs <dir with 2024_Gaz_place_national.txt + sub-est2024.csv>`.
+
+Known gap: unincorporated CDPs other than Honolulu (Highlands Ranch, The Woodlands, Metairie...) are missing, because
+CDP population needs a Census API key. CSV paste still accepts them. They are flagged `csv` and get no coordinates;
+nothing is invented.
+
+Picking methods (`POST /api/factory/city-launch {op:"pick"}`), each capped at 500:
+
+- `radius`: within X miles of the client's city (or any origin city), ordered by population
+- `top_states`: top N cities by population in one or more states
+- `csv`: the ScaleQuan template (`city,state,keyword,competitor_gaps,website_content`), the remix City Launch CSV, or
+  bare `City, ST` lines
+
+### What happens in a 500-city batch, end to end
+
+1. **Pick (manual input).** The operator picks cities and adjusts the ScaleQuan-style settings: keyword, title
+   template `{keyword} in {city}, {state}`, prompt template, competitor gaps, business context, target words
+   (300-1500), FAQ on/off, concurrency and requests/min.
+2. **Queue (automatic from here).** `queueCityLaunchBatch`:
+   - refuses if there is no LLM key or more than 500 cities
+   - re-resolves every city server-side against the dataset
+   - skips cities that are already approved, or already in another active batch
+   - writes `factory/clients/<projectId>/city-launch/batches/<batchId>` and the page registry
+     `.../city-launch/index`, then starts a tick with `after()`
+
+   These live in the same document store as the client workspace: Netlify Blobs on Netlify (revisioned keys),
+   `./data` locally.
+3. **Write.** Each tick (`runCityLaunchTick`):
+   - takes a lease and runs a worker pool (default concurrency 4) under a sliding-window rate limiter
+     (default 40 req/min)
+   - makes **one LLM call per city**, in JSON mode
+   - grounds the prompt in Census facts: population, county, the 6 nearest real cities with distance and compass
+     direction, and the distance from the client's base
+
+   The system prompt forbids invented business facts (licenses, years, reviews, prices, guarantees) and invented
+   local statistics.
+
+   Replies are validated: at least 3 sections, a meta description, enough words, the city named, and no
+   `{placeholders}`. Weak output counts as a failed attempt.
+
+   Failures retry with exponential backoff that honours `Retry-After` (default 3 attempts). A rejected key pauses
+   the batch with the reason shown in the UI.
+
+   Progress is flushed to the batch doc every ~2.5s. Each draft is stored at
+   `.../city-launch/drafts/<citySlug>`.
+4. **Continue / resume (automatic).**
+   - **Netlify:** a tick stops starting new calls once its budget is spent (`CITY_LAUNCH_TICK_BUDGET_MS`, 18s by
+     default, inside the ~26s function limit). It then chains the next tick with a self-request to
+     `/api/factory/city-launch/tick`, authenticated by the factory session.
+   - **Locally:** the tick loops in-process until the batch is done.
+   - **Recovery:** if a function dies, its lease expires. Items stuck in `generating` for more than 4 minutes are
+     re-queued. The operator panel polls and re-kicks a stalled batch, and *Resume* / *Retry failed* are buttons.
+   - About 500 cities at 40 req/min takes roughly 13-15 minutes. Raise `requestsPerMinute` and `concurrency` if the
+     provider allows it.
+5. **Gate (automatic).** When a batch finishes (and after every edit or regenerate), `runCityGate` scores every live
+   page (`lib/city-launch/gate.ts`, `similarity.ts`):
+   - **Near-duplicate check.** Place names are masked (own city/state/county plus every city name in the client's
+     launch), and digits are collapsed. Then 5-word shingles are compared pairwise across *all* of the client's
+     city pages. The score is the overlap coefficient |A∩B|/min(|A|,|B|), so a find-and-replace clone scores ~1.0.
+   - **Thresholds.** ≥ 0.35 → **block** (cannot be approved or published). ≥ 0.18 → **warn** (read both before
+     approving).
+   - **Other blocks:** < 300 words, city named fewer than 2 times, a leftover `{placeholder}`, or a missing meta
+     description.
+   - **Other warnings:** no local reference beyond the city name (county, a nearby city, or the base city).
+   - Approved pages are compared only with other approved pages, so a newer draft that copies an approved page is
+     the one that gets blocked.
+6. **Review (manual by design).** For each city the operator can **Review / Edit** (title, meta, H1, subhead, intro,
+   sections, highlights, FAQ, CTA), **Preview** the draft (`?preview=1`, signed-in operators only), **Regenerate**
+   (a fresh LLM draft), **Reject / Reopen**, or **Approve**. Bulk "Approve N gate-passing drafts" is available.
+   - Approval needs the approver's name, and the gate must not be `block`.
+   - Any edit resets approval.
+7. **On approval (automatic).** The page is immediately live on the client's **Sitesinc preview**: the server
+   component reads the store on each request, so there is no rebuild.
+   - The page appears in `/demo/client/<projectId>/locations`, in the client preview home "Service areas" list, in
+     nearby-city links on other approved pages, and in `/demo/client/<projectId>/sitemap.xml`.
+   - On the deployed Sitesinc Netlify site the same happens as soon as this code is deployed there, because
+     approved pages are read from Blobs.
+   - Preview pages are `noindex`. Their canonical is the preview URL until production sign-off, then the client's
+     domain.
+8. **Real domain (manual by design).** `signoff-production` records Tony's sign-off. It needs a selected domain and
+   at least one approved page, and it deploys nothing. After sign-off, `sitemap.xml?target=production` lists
+   client-domain URLs (it returns 409 before). The actual go-live remains the manual `production_deployment` stage.
+
+### The animated page template
+
+`components/city-launch/CityLanding.tsx`, `city-landing.module.css`, and `CityReveal.tsx` (a ~1 KB client
+IntersectionObserver).
+
+**Motion** is CSS only: drifting gradient orbs, a hero rise, an SVG service map that draws lines from the city to
+its real nearest neighbours (exact Census coordinates) with ripple rings, scroll reveal, and a CTA sheen. All of it
+sits inside `@media (prefers-reduced-motion: no-preference)`. With reduced motion, or no JS, everything renders
+static and visible. The H1 (the likely LCP element) is moved, never hidden. There are no images and no
+framer-motion.
+
+**Design:** colours and layout (center / split) follow the client's bound design style (`cityTheme`).
+
+**SEO and lead path:**
+
+- unique `<title>` / meta description from the draft
+- JSON-LD `LocalBusiness` subtype per niche (e.g. `Plumber`) with `areaServed` City + geo, plus BreadcrumbList and
+  FAQPage
+- internal links to the nearest approved cities and to "All locations"
+- CTA = `tel:` link (client phone) plus `/demo/client/<projectId>/contact?city=<slug>`, a sticky mobile call button
+
+Sitesinc's own pricing ticker is hidden on `/demo/client/*`.
+
+### LLM provider (names only)
+
+The first key present wins:
+
+1. `CITY_LAUNCH_LLM_API_KEY` (+ optional `CITY_LAUNCH_LLM_BASE_URL`, OpenAI-compatible, default OpenRouter, and
+   `CITY_LAUNCH_LLM_MODEL`)
+2. `OPENROUTER_API_KEY`
+3. `OPENAI_API_KEY`
+4. `ANTHROPIC_API_KEY`
+5. `GEMINI_API_KEY`
+6. `EMERGENT_LLM_KEY` (Emergent universal key, as used by ScaleQuan; `gpt-4o-mini`)
+
+The UI shows which env var name and model are in use, or a **missing key** state that disables queueing. Keys are
+never logged or returned.
+
+Tuning env vars: `CITY_LAUNCH_CONCURRENCY`, `CITY_LAUNCH_RPM`, `CITY_LAUNCH_MAX_ATTEMPTS`,
+`CITY_LAUNCH_LLM_TIMEOUT_MS`, `CITY_LAUNCH_TICK_BUDGET_MS`. Hosted self-chaining needs `FACTORY_ACCESS_TOKEN`.
+
+### API
+
+`GET /api/factory/city-launch?projectId=` returns provider status, page registry and active batch progress
+(`&slug=` returns one draft).
+
+`POST /api/factory/city-launch` with `{op, projectId}`:
+
+- `pick`, `queue`
+- `control` (`pause|resume|cancel|retry_failed`)
+- `edit`, `regenerate`
+- `approve` (`slugs[]`, `approvedBy`), `reject`, `reopen`
+- `gate`
+- `signoff-production`
+
+`POST /api/factory/city-launch/tick` continues a batch, and is used for chaining.
+
+### Ported from ScaleQuan Content Studio
+
+`POST /drafts/generate-batch` maps to `lib/city-launch/prompts.ts`:
+
+- same placeholders (`{city}`, `{state}`, `{keyword}`), default title/prompt templates, the 500 cap, and per-row
+  `keyword` / `competitor_gaps` / `website_content` from the CSV template
+- runs in TypeScript inside Sitesinc; the Python server is not called
+- ScaleQuan's non-AI heuristic fallback was deliberately **not** ported, because Sitesinc never fakes copy
+
+### Local test
+
+```
+SITESINC_STORE=local node scripts/city-launch/seed-local-client.mjs "Desert Flow Plumbing" plumbing Phoenix AZ "(602) 555-0142"
+# set one LLM key in the process env (never commit it), then
+SITESINC_STORE=local npx next dev   # open /app/clients/<id>
+node --test scripts/city-launch.test.mjs
+```
+
 ## Truthfulness rules
 
 - Do not claim auto-publish happened.
@@ -121,6 +309,10 @@ stay `unchecked`).
 - If host cannot be resolved, status is `missing` - never a faked crawl against production.
 - Domain availability is `unchecked` until a real RDAP/DNS answer exists; lookup failures are `error`, never `available`.
 - Never purchase/reserve a domain. `purchase_approved` only records Tony's sign-off; buying happens manually.
+- City Launch never writes copy without a real LLM reply (no template fallback). A missing key is shown as missing.
+- City pages are only publishable when approved by a named human **and** the gate is not `block`.
+- City Launch `signoff-production` records Tony's sign-off only. It never deploys and never claims a page is live on
+  the client's domain.
 
 ## Operator path (happy path)
 
@@ -130,3 +322,5 @@ stay `unchecked`).
 4. Manual Capture still available if auto status is `missing`/`failed`.
 5. Open SEO workspace (`?site=<projectId>`) for inventory/issues scoped to that site.
 6. DomainIQ section: pick a domain (status `selected`), get Tony's sign-off (`purchase_approved`), buy manually at a registrar.
+7. City Launch section: pick cities → queue (≤ 500) → watch progress → review / edit / regenerate → approve. Approved
+   pages appear on `/demo/client/<projectId>/locations`. Tony signs off production, then the manual production deploy.
