@@ -15,7 +15,7 @@ export default function TermsPage() {
           Terms of Service
         </h1>
         <p className="mt-3 text-base text-slate-400">
-          Effective date: August 13, 2026
+          Effective date: October 5, 2026
         </p>
 
         <div className="mt-8 space-y-8 text-base leading-7 text-slate-300">
@@ -71,28 +71,27 @@ export default function TermsPage() {
               <li>Choice among available design themes</li>
               <li>On-page SEO basics (titles, meta descriptions, structure)</li>
               <li>Lead capture / email signup setup where applicable</li>
-              <li>Stripe payment link or checkout placeholders as agreed</li>
               <li>Netlify hosting setup and domain connection assistance</li>
               <li>Full code handoff so you own the project files</li>
               <li>One round of revisions after the first draft</li>
             </ul>
             <p className="mt-2">
-              Exact deliverables depend on the package you purchase and any
-              written scope we confirm with you. Optional maintenance plans are
-              separate and not required for your site to remain live.
+              Exact deliverables depend on the written scope we confirm with you
+              before work starts. Optional monitoring ($129/month) is separate
+              and not required for your site to remain live.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold text-slate-100">
-              3. Pricing and Launch Offers
+              3. Pricing
             </h2>
             <p className="mt-2">
-              Prices shown on the website (including any limited launch or early
-              customer discounts) apply only while those offers are active and
-              while spots remain. We may change pricing or end offers at any
-              time. Once you complete payment for a listed offer, that purchase
-              price is locked for that order.
+              Website builds start at $1,995. The price for your project is
+              confirmed in writing before work starts. Optional monitoring is
+              $129/month. We may change published prices for future projects;
+              the price confirmed for your project does not change after you
+              accept it.
             </p>
           </section>
 
@@ -101,11 +100,17 @@ export default function TermsPage() {
               4. Payments
             </h2>
             <p className="mt-2">
-              Payments are processed by Stripe or another third-party payment
-              provider. By paying, you agree to that provider’s terms. We do not
-              store your full card details on our servers. Work on a paid build
-              typically begins after payment clears and we receive the
-              onboarding information we request.
+              Submitting a request on this website is not a purchase. If we
+              accept your project, website builds are paid in two parts: 50% to
+              start and 50% at launch. We email an invoice for the first 50%;
+              work begins after it is paid and we receive the onboarding
+              information we request. The remaining 50% is invoiced at launch.
+              Optional monitoring is billed monthly and can be canceled anytime.
+            </p>
+            <p className="mt-2">
+              Invoices are paid through a third-party payment provider. By
+              paying, you agree to that provider’s terms. We do not store your
+              full card details on our servers.
             </p>
           </section>
 
@@ -136,7 +141,7 @@ export default function TermsPage() {
             </h2>
             <p className="mt-2">
               Typical turnaround is about 5–7 business days after we receive
-              required content and cleared payment. Timelines are estimates, not
+              required content and the start payment. Timelines are estimates, not
               guarantees. Standard builds include one round of revisions after
               the first draft. Additional revision rounds or scope changes may
               require extra fees, which we will confirm before doing the work.
@@ -148,7 +153,7 @@ export default function TermsPage() {
               7. Ownership and License
             </h2>
             <p className="mt-2">
-              After full payment and delivery, you own the custom website code
+              After both payments and delivery, you own the custom website code
               and content we create specifically for your project, excluding
               third-party tools, libraries, fonts, stock assets, and our
               pre-existing templates, systems, or know-how. We retain the right
@@ -164,8 +169,9 @@ export default function TermsPage() {
               8. Refunds and Cancellations
             </h2>
             <p className="mt-2">
-              Because custom website work begins after payment and onboarding,
-              purchases are generally non-refundable once work has started. If
+              Because custom website work begins after the start payment and
+              onboarding, payments are generally non-refundable once work has
+              started. If
               we have not started work, contact us promptly at{" "}
               <a
                 href="mailto:save@sitesinc.co"
@@ -175,7 +181,7 @@ export default function TermsPage() {
               </a>{" "}
               and we will review cancellation requests in good faith. Chargebacks
               filed without first contacting us may delay resolution. Optional
-              monthly maintenance can be canceled going forward; fees already
+              monthly monitoring can be canceled going forward; fees already
               paid for a billing period are typically not prorated unless we
               agree otherwise.
             </p>
@@ -215,8 +221,9 @@ export default function TermsPage() {
               11. Third-Party Services
             </h2>
             <p className="mt-2">
-              Your project may rely on third parties such as Stripe, Netlify,
-              Google Analytics, domain registrars, and email providers. Those
+              Your project may rely on third parties such as Netlify, Google
+              Analytics, domain registrars, email providers, and payment
+              processors. Those
               services have their own terms and availability. We are not
               responsible for outages, policy changes, or fees charged by
               third parties outside our control.

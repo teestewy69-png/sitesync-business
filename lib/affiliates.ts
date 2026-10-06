@@ -105,6 +105,16 @@ export function destinationUrl(
   return { url, tracked: true };
 }
 
+/**
+ * Plain, untracked registrar search URL (never a /go link, never an affiliate template). Used by the internal
+ * DomainIQ bay while SiteFlow is paused (Path A).
+ */
+export function plainRegistrarUrl(slug: string, domain?: string): string {
+  const program = getProgram(slug);
+  if (!program) return "";
+  return destinationUrl(program, { domain }, {}).url;
+}
+
 /** Site-relative (or absolute, when origin given) /go link for a program. */
 export function outboundHref(origin: string, slug: string, opts: { domain?: string; src?: string } = {}): string {
   const params = new URLSearchParams();

@@ -18,8 +18,7 @@ export const PUBLIC_PATHS = [
   "/shop",
   "/shop/product/financial-consulting",
   "/shop/product/gold-filled-jewelry",
-  "/cart",
-  "/checkout",
+  // /cart and /checkout are not public paths: product checkout is paused with SiteFlow (Path A) and they 404.
   "/privacy",
   "/terms",
   "/thank-you",
@@ -163,7 +162,7 @@ export const CLUSTERS: TopicCluster[] = [
     topic: "affordable website packages",
     intent: "Compare a one-time build vs DIY builders and understand what’s included.",
     hubPath: "/packages",
-    supporting: ["/#pricing", "/shop"],
+    supporting: ["/#pricing", "/website-monitoring"],
     notes: "One pricing-depth page. Do not clone by city or ‘cheap websites in X’.",
   },
   {
@@ -309,7 +308,7 @@ export const SEED_BRIEFS: ContentBrief[] = [
       "Stack in one paragraph",
       "Included vs not included",
       "Timeline",
-      "CTA to pricing — no fake scarcity beyond the published first-10 offer",
+      "CTA to pricing — no fake scarcity, no discounts, no strike-through prices",
     ],
     citations: [
       "Live Sitesinc homepage offer and included list (content.json)",
@@ -332,7 +331,7 @@ export const SEED_BRIEFS: ContentBrief[] = [
     },
     headings: [
       "One-time build",
-      "Optional care plan",
+      "Optional monitoring",
       "What is not a package",
       "How payment works",
     ],

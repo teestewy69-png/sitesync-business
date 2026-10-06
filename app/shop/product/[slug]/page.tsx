@@ -2,30 +2,33 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ProductActions from "@/components/shop/ProductActions";
-import { getProduct, getPublicProducts } from "@/data/products";
+import { anythingPurchasable, canBuyOnline, visibleProduct, visibleProducts } from "@/lib/public-catalog";
 
 type Props = {
   params: Promise<{ slug: string }>;
 };
 
 export function generateStaticParams() {
-  return getPublicProducts().map((p) => ({ slug: p.slug }));
+  return visibleProducts().map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
-  const product = getProduct(slug);
-  if (!product) return { title: "Product | Sitesinc" };
+  const product = visibleProduct(slug);
+  if (!product) return { title: "Not found | Sitesinc", robots: { index: false, follow: false } };
   return {
-    title: `${product.name} | Sitesinc Shop`,
+    title: `${product.name} | Sitesinc`,
     description: product.description,
+    // Inquiry-only pages stay out of search while nothing is for sale (Path A); the form keeps working.
+    ...(anythingPurchasable() ? {} : { robots: { index: false, follow: true } }),
   };
 }
 
 export default async function ProductPage({ params }: Props) {
   const { slug } = await params;
-  const product = getProduct(slug);
+  const product = visibleProduct(slug);
   if (!product) notFound();
+  const buyable = canBuyOnline(product);
 
   return (
     <section className="mx-auto max-w-7xl px-6 py-10 sm:py-14">
@@ -33,7 +36,7 @@ export default async function ProductPage({ params }: Props) {
         href="/shop"
         className="mb-8 inline-flex text-xs font-medium text-brand-300 transition hover:text-brand-200 hover:underline"
       >
-        ← Back to shop
+        ← Back to inquiries
       </Link>
 
       <div className="grid gap-10 lg:grid-cols-[1fr_0.9fr] lg:items-start">
@@ -103,7 +106,7 @@ export default async function ProductPage({ params }: Props) {
             </ul>
           </div>
 
-          {product.contactOnly ? null : <ProductActions product={product} />}
+          {buyable ? <ProductActions product={product} /> : null}
         </div>
       </div>
     </section>

@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import AffiliateDisclosure from "@/components/siteflow/AffiliateDisclosure";
 import { AFFILIATE_PROGRAMS, outboundHref, SPONSORED_REL, toolsPageListed } from "@/lib/affiliates";
+import { siteflowEnabled } from "@/lib/siteflow/flag";
 
 export const dynamic = "force-dynamic";
 
 export function generateMetadata(): Metadata {
+  if (!siteflowEnabled()) return { robots: { index: false, follow: false } };
   return {
     title: "Tools we use | Sitesinc",
     description: "Domain registrars and tools Sitesinc works with.",
@@ -14,6 +17,8 @@ export function generateMetadata(): Metadata {
 }
 
 export default function ToolsPage() {
+  // Affiliate links are paused with SiteFlow (Path A): no /tools page at all.
+  if (!siteflowEnabled()) notFound();
   const registrars = AFFILIATE_PROGRAMS.filter((p) => p.category === "registrar");
   const tools = AFFILIATE_PROGRAMS.filter((p) => p.category === "tool");
   const group = (title: string, list: typeof AFFILIATE_PROGRAMS) =>

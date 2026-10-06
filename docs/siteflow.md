@@ -1,5 +1,34 @@
 # SiteFlow: Sitesinc monetization
 
+> **Status: PAUSED (phase 2). Decision: Path A, 2026-10-05.** The public offer is ONLY website builds starting at
+> $1,995 (50% to start, 50% at launch, invoiced by hand) and optional $129/month monitoring. SiteFlow (product
+> checkout, Stripe webhook, digital delivery, partner referrals, affiliate links) is switched off by
+> `SITEFLOW_ENABLED` (unset = off; only `true`/`1` turns it on). The code from commits adf321d, 135e5d3 and 519831d is
+> kept. City Launch and DomainIQ stay internal factory tools and are not offered publicly.
+>
+> With SiteFlow paused (`lib/siteflow/flag.ts`):
+> - Middleware returns 404 for `/cart`, `/checkout`, `/tools`, `/go/*`, `/api/checkout`, `/api/download/*`,
+>   `/api/stripe/webhook`, `/api/siteflow/*` and `/api/factory/siteflow*` on every host; each of those routes also
+>   checks the flag itself. `?ref=` does nothing (no redirect, no cookie).
+> - Only the two contact-only inquiry entries are public (`lib/public-catalog.ts`); nothing is purchasable, whatever
+>   `listed`/`priceCents` say. `/shop` is an inquiry-only page: unlinked, noindex, out of the sitemap, forms working.
+> - `/thank-you` only confirms build/monitoring requests; it ignores `?order=`/`session_id`.
+> - The `/app` SiteFlow bay shows "Paused (phase 2)". The DomainIQ bay links to plain registrar search URLs (no `/go`,
+>   no affiliate templates, no disclosure) and is internal only.
+> - `/api/health` reports `siteflow: { status: "paused" }` and `stripe: false`.
+>
+> Turning it back on needs Tony's sign-off, `SITEFLOW_ENABLED=true` in Netlify and a redeploy, and a fresh copy
+> review: the public copy no longer mentions products, checkout, referrals or affiliate links.
+>
+> ### Phase 2 roadmap (internal only, not on the public site)
+> Moved off the homepage "Beyond the build" teaser on 2026-10-05:
+> - Keep-it-earning kit: offer-page templates, update cadence, SEO refresh prompts (in progress, unpriced draft).
+> - Niche playbooks: barber, contractor, coach and food-truck packs (idea only).
+> - DomainIQ domain report and Local SEO audit report as paid products (drafts, unpriced).
+> - Website template pack (draft, unpriced).
+> - Monitoring via Stripe subscription (today it is invoiced by hand).
+> - Partner referrals and registrar affiliate links.
+
 SiteFlow is the money path for sitesinc.co: catalog, Stripe Checkout, verified webhook, paid order, automatic
 fulfillment, partner commissions, and outbound affiliate links. **Nothing here touches live Stripe until
 Tony sets live keys.** Everything works locally with a test key, or with no key at all using signed fake events.
@@ -9,7 +38,8 @@ Tony sets live keys.** Everything works locally with a test key, or with no key 
 1. **Catalog**: `data/products.ts` is the single source of truth. Each entry has a `kind` (digital,
    subscription, service, affiliate_out), `priceCents` (undefined until Tony sets it), `stripeLookupKey`,
    `deliverable` (file, generator or manual), and `listed`. A product is public only when it is listed, not
-   retired, and either contact-only or priced. Drafts and the retired Website Design bundle return 404.
+   retired, and either contact-only or priced. Drafts return 404. (The retired Website Design bundle was removed
+   from the catalog entirely on 2026-10-05.)
 2. **Checkout** (`/checkout` → `POST /api/checkout`): the server re-prices the cart from the catalog
    (`lib/catalog.ts quoteCart`), validates fulfillment inputs, records the order, and creates a Stripe Checkout
    Session (`lib/stripe-checkout.ts`). Line items use the synced Stripe price only when its amount, currency
@@ -59,6 +89,7 @@ Tony sets live keys.** Everything works locally with a test key, or with no key 
 
 | Variable | Purpose |
 | --- | --- |
+| `SITEFLOW_ENABLED` | Master switch. Unset (default) = paused; every other SiteFlow variable is ignored. `true` re-enables. |
 | `STRIPE_SECRET_KEY` | Test key (`sk_test_`/`rk_test_`) until go-live. The bay and `/api/health` show the mode. |
 | `STRIPE_WEBHOOK_SECRET` | Endpoint signing secret (`whsec_…`). Comma-separate two while rotating. Without it the webhook answers 503. |
 | `DOWNLOAD_SIGNING_SECRET` | 32+ random chars. Required on Netlify (local dev has a fallback). |
@@ -107,8 +138,8 @@ Local state lives in `data/siteflow/` and `data/private/` (gitignored). On Netli
 - Which affiliate programs to join, their tracking templates, and whether to list `/tools`.
 - Per-partner commission rate, how many subscription payments earn, the attribution window (30 days) and last-click attribution.
 - Refund policy and window (30 days). This also drives commission approval.
-- Already decided: the 4 placeholder affiliate bundles are deleted, the Website Design bundle is retired and hidden,
-  and Financial Consulting and Gold-Filled Jewelry stay contact-only.
+- Already decided: the 4 placeholder affiliate bundles are deleted, the Website Design bundle is removed,
+  Financial Consulting and Gold-Filled Jewelry stay contact-only, and SiteFlow is paused (Path A).
 
 ## Caveats
 

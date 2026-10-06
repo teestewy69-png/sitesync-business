@@ -13,8 +13,8 @@ export default function Process() {
           <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
             How it works.
             <span className="block text-lg font-normal text-slate-300 sm:text-xl">
-              From &ldquo;no real website&rdquo; to &ldquo;money-ready
-              site&rdquo; in under a week.
+              From &ldquo;no real website&rdquo; to a live, lead-ready site in
+              about a week once we have your content.
             </span>
           </h2>
           <p className="text-base text-slate-300">

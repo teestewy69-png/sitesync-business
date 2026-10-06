@@ -1,27 +1,39 @@
+import Link from "next/link";
 import ProductCard from "@/components/shop/ProductCard";
-import { getPublicProducts } from "@/data/products";
+import { anythingPurchasable, visibleProducts } from "@/lib/public-catalog";
 
-export const metadata = {
-  title: "Shop | Sitesinc",
-  description: "Contact-only offers and digital products from Sitesinc. Website builds are requested separately and are not sold here.",
-};
+export function generateMetadata() {
+  const commerce = anythingPurchasable();
+  return {
+    title: commerce ? "Shop | Sitesinc" : "Other inquiries | Sitesinc",
+    description: "Inquiry-only requests. Sitesinc's offer is website builds from $1,995 (50% to start, 50% at launch) and optional $129/month monitoring.",
+    // Path A: the public offer is the website build + optional monitoring. This inquiry page stays reachable
+    // (and its forms keep working) but is kept out of search and navigation while nothing here is for sale.
+    ...(commerce ? {} : { robots: { index: false, follow: true } }),
+  };
+}
 
 export default function ShopPage() {
-  const catalog = getPublicProducts();
+  const catalog = visibleProducts();
 
   return (
     <section className="mx-auto max-w-7xl px-6 py-16">
       <div className="mb-10 max-w-2xl space-y-3">
         <p className="text-xs font-semibold uppercase tracking-wider text-brand-400">
-          Storefront
+          By inquiry only
         </p>
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-          Featured Products
+          Other inquiries
         </h1>
         <p className="text-base text-slate-400">
-          Contact-only offers and digital products. Website builds are not sold
-          in this shop. Request a Sitesinc website from the homepage form — that
-          is a request, not a purchase.
+          Nothing on this page can be bought online. Send a note and we&apos;ll
+          reply by email with details. Looking for a website? Sitesinc builds
+          start at $1,995 (50% to start, 50% at launch), with optional
+          monitoring at $129/month. Request one from the{" "}
+          <Link href="/#pricing" className="text-brand-300 hover:underline">
+            homepage
+          </Link>
+          .
         </p>
       </div>
 

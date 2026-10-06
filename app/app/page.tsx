@@ -9,6 +9,7 @@ import { PRODUCTION_ORIGIN } from "@/lib/factory/pipeline";
 import { latestBaseline, readWorkspace } from "@/lib/factory/workspace";
 import { summarizeCityLaunchBay } from "@/lib/factory/city-launch";
 import { summarizeDomainBay } from "@/lib/factory/domainiq";
+import { SITEFLOW_PAUSED_LABEL, siteflowEnabled } from "@/lib/siteflow/flag";
 import { summarizeSiteFlow, type SiteFlowSummary } from "@/lib/siteflow/summary";
 import { ensureBlobsFromRequest, listProjects } from "@/lib/store";
 
@@ -24,11 +25,14 @@ export default async function FactoryHome() {
   }
   const domainBay = summarizeDomainBay(clientProjects);
   const cityBay = await summarizeCityLaunchBay(clientProjects);
+  const siteflowOn = siteflowEnabled();
   let siteflow: SiteFlowSummary | null = null;
-  try {
-    siteflow = await summarizeSiteFlow();
-  } catch (err) {
-    console.warn("SiteFlow bay: summary unavailable.", err instanceof Error ? err.name : "unknown");
+  if (siteflowOn) {
+    try {
+      siteflow = await summarizeSiteFlow();
+    } catch (err) {
+      console.warn("SiteFlow bay: summary unavailable.", err instanceof Error ? err.name : "unknown");
+    }
   }
 
   return (
@@ -76,11 +80,29 @@ export default async function FactoryHome() {
         />
       </div>
 
-      <DomainIQBay summary={domainBay} />
+      <DomainIQBay summary={domainBay} siteflowEnabled={siteflowOn} />
 
       <CityLaunchBay summary={cityBay} />
 
-      {siteflow ? (
+      {!siteflowOn ? (
+        <section className="mt-10 rounded-2xl border border-white/10 bg-white/5 p-5" id="siteflow-bay">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Factory bay</p>
+              <h2 className="mt-1 text-xl font-semibold">SiteFlow</h2>
+              <p className="mt-1 max-w-3xl text-sm text-slate-400">
+                Paused for phase 2 (Path A). The public offer is only the website build (from $1,995, 50% to start, 50%
+                at launch) and optional $129/mo monitoring, invoiced by hand. Product checkout, the Stripe webhook, digital
+                delivery and download links, partner referrals (?ref=), /go affiliate links and /tools are switched off and
+                answer 404. The code is kept; turning it back on is Tony&apos;s call (SITEFLOW_ENABLED=true, then redeploy).
+              </p>
+            </div>
+            <span className="rounded-full bg-amber-500/15 px-2.5 py-0.5 text-xs font-semibold text-amber-200">
+              {SITEFLOW_PAUSED_LABEL}
+            </span>
+          </div>
+        </section>
+      ) : siteflow ? (
         <SiteFlowBay summary={siteflow} origin={process.env.NEXT_PUBLIC_SITE_URL || PRODUCTION_ORIGIN} />
       ) : (
         <p className="mt-10 rounded-xl border border-amber-400/30 px-4 py-3 text-sm text-amber-200">SiteFlow bay unavailable (store error).</p>

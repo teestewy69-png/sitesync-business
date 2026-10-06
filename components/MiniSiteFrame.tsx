@@ -355,7 +355,7 @@ function PhotoFocus({
       <RoofPanel
         accent={accent}
         label="Live at sitesinc.co"
-        caption="Dark, glossy, money-ready pages — this is the real site."
+        caption="Dark, glossy, lead-ready pages — this is the real site."
         tall
         gradient="linear-gradient(180deg, #3d3428 0%, #1a1612 55%, #0c0b09 100%)"
       />

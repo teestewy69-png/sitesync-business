@@ -5,11 +5,18 @@ import { useState } from "react";
 import type { ClientDomainCandidate } from "@/lib/domainiq/client";
 import type { DomainBaySummary } from "@/lib/factory/domainiq";
 import AffiliateDisclosure from "@/components/siteflow/AffiliateDisclosure";
-import { getProgram, outboundHref, REGISTRAR_SLUGS, SPONSORED_REL } from "@/lib/affiliates";
+import { getProgram, outboundHref, plainRegistrarUrl, REGISTRAR_SLUGS, SPONSORED_REL } from "@/lib/affiliates";
 
 type TryResult = { candidates: ClientDomainCandidate[]; meta?: { nicheKey: string | null } };
 
-export default function DomainIQBay({ summary }: { summary: DomainBaySummary }) {
+export default function DomainIQBay({
+  summary,
+  siteflowEnabled = false,
+}: {
+  summary: DomainBaySummary;
+  /** SiteFlow paused (Path A, default): registrar links are plain, untracked, internal-only search URLs. */
+  siteflowEnabled?: boolean;
+}) {
   const [form, setForm] = useState({ businessName: "", niche: "plumbing", city: "", state: "" });
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
@@ -177,8 +184,12 @@ export default function DomainIQBay({ summary }: { summary: DomainBaySummary }) 
                   {REGISTRAR_SLUGS.map((slug) => (
                     <a
                       key={slug}
-                      href={outboundHref("", slug, { domain: c.domain, src: "domainiq-bay" })}
-                      rel={SPONSORED_REL}
+                      href={
+                        siteflowEnabled
+                          ? outboundHref("", slug, { domain: c.domain, src: "domainiq-bay" })
+                          : plainRegistrarUrl(slug, c.domain)
+                      }
+                      rel={siteflowEnabled ? SPONSORED_REL : "noopener noreferrer"}
                       target="_blank"
                       className="text-brand-300 hover:underline"
                     >
@@ -190,7 +201,15 @@ export default function DomainIQBay({ summary }: { summary: DomainBaySummary }) 
             ))}
           </ul>
         ) : null}
-        {result?.candidates.length ? <AffiliateDisclosure className="mt-2" /> : null}
+        {result?.candidates.length ? (
+          siteflowEnabled ? (
+            <AffiliateDisclosure className="mt-2" />
+          ) : (
+            <p className="mt-2 text-xs text-slate-500">
+              Internal only: plain registrar search links (no affiliate tracking). Domain purchase stays manual.
+            </p>
+          )
+        ) : null}
       </div>
     </section>
   );

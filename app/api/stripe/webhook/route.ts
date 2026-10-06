@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { siteflowEnabled, siteflowPausedResponse } from "@/lib/siteflow/flag";
 import { getNotifyEmail, sendMail } from "@/lib/mail";
 import { ensureBlobsFromRequest } from "@/lib/persistence";
 import { runAfterResponse } from "@/lib/siteflow/after";
@@ -17,6 +18,8 @@ export const maxDuration = 60;
  * 200 processed / duplicate / ignored. Responses never echo payloads or secrets.
  */
 export async function POST(req: NextRequest) {
+  // SiteFlow is paused (Path A) unless SITEFLOW_ENABLED is set; middleware also 404s this path.
+  if (!siteflowEnabled()) return siteflowPausedResponse();
   ensureBlobsFromRequest(req);
   const secrets = webhookSecrets();
   if (!secrets.length) {

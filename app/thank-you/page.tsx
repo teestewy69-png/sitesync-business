@@ -1,6 +1,7 @@
 import Link from "next/link";
 import content from "@/content.json";
 import { runAfterResponse } from "@/lib/siteflow/after";
+import { siteflowEnabled } from "@/lib/siteflow/flag";
 import { downloadUrl, fulfillOrder } from "@/lib/siteflow/fulfillment";
 import { isPaidState, markOrderPaidFromSession } from "@/lib/siteflow/orders";
 import { isStripeConfigured, retrieveCheckoutSession } from "@/lib/stripe-checkout";
@@ -180,8 +181,11 @@ export default async function ThankYouPage({
 }) {
   const params = await searchParams;
   const email = content.footer.email;
-  const orderId = first(params.order).slice(0, 80);
-  const sessionId = first(params.session_id).slice(0, 200);
+  // Order/payment states belong to SiteFlow product checkout. While it is paused (Path A) this page only
+  // confirms build/monitoring requests and never talks about payments, orders or deliveries.
+  const commerce = siteflowEnabled();
+  const orderId = commerce ? first(params.order).slice(0, 80) : "";
+  const sessionId = commerce ? first(params.session_id).slice(0, 200) : "";
   const view = orderId ? await orderView(orderId, sessionId) : null;
   const copy = view || REQUEST_COPY[resolveRequest(first(params.product))];
 

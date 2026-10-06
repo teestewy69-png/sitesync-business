@@ -55,8 +55,8 @@ export default function PrivacyPage() {
                 <span className="font-medium text-slate-100">
                   Payment-related information
                 </span>{" "}
-                when you purchase services or digital products. Payments are
-                processed through third-party providers such as Stripe. We do
+                when you pay a Sitesinc invoice. Payments are processed by
+                third-party payment providers. We do
                 not store your full payment card details on our servers.
               </li>
               <li>
@@ -134,7 +134,7 @@ export default function PrivacyPage() {
               our business, including:
             </p>
             <ul className="mt-3 list-disc space-y-2 pl-6">
-              <li>Stripe for payment processing</li>
+              <li>A third-party payment processor for invoice payments</li>
               <li>Google Analytics for traffic and usage reporting</li>
               <li>Netlify for website hosting and deployment</li>
               <li>Email and form tools for communications and lead capture</li>

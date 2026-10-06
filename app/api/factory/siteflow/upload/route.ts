@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { siteflowEnabled, siteflowPausedResponse } from "@/lib/siteflow/flag";
 import { getCatalogEntry } from "@/data/products";
 import { factoryErrorResponse } from "@/lib/factory/api-errors";
 import { ensureBlobsFromRequest } from "@/lib/persistence";
@@ -11,6 +12,8 @@ const MAX_BYTES = 50 * 1024 * 1024;
 
 /** Upload the static deliverable for a catalog entry (multipart: slug, file) into the private store. */
 export async function POST(req: NextRequest) {
+  // SiteFlow is paused (Path A) unless SITEFLOW_ENABLED is set; middleware also 404s this path.
+  if (!siteflowEnabled()) return siteflowPausedResponse();
   try {
     ensureBlobsFromRequest(req);
     const form = await req.formData();

@@ -37,8 +37,8 @@ const STEPS: {
   },
   {
     id: 4,
-    label: "Wire money pieces",
-    detail: "Reviews, tap-to-call, Stripe-ready checkout",
+    label: "Wire lead pieces",
+    detail: "Reviews, tap-to-call, quote request form",
     durationMs: 1500,
   },
   {
@@ -321,9 +321,9 @@ export default function BuildDemo() {
                       </blockquote>
                       <div className="flex flex-col justify-center gap-1.5 rounded-lg border border-sky-400/30 bg-sky-400/10 px-3 py-2.5 text-sm text-sky-100 sm:w-40">
                         <span className="font-semibold text-sky-200">
-                          Money-ready
+                          Lead-ready
                         </span>
-                        <span>Lead form · Stripe slot</span>
+                        <span>Quote form · reviews</span>
                         <span>Tap-to-call CTA</span>
                       </div>
                     </div>

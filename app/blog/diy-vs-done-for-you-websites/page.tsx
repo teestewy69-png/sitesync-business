@@ -192,7 +192,7 @@ export default function DiyVsDoneForYouWebsites() {
                     Built on modern tech (Next.js, Tailwind, Netlify)
                   </li>
                   <li>
-                    SEO basics, funnels, and monetization planned in
+                    SEO basics and lead capture built in
                   </li>
                   <li>
                     Launched in 5–7 business days once we have your info
@@ -241,8 +241,8 @@ export default function DiyVsDoneForYouWebsites() {
             </ul>
             <p className="mt-2">
               We build your site with the same stack we use for our own: Next.js
-              + Tailwind, hosted on Netlify, with Stripe, GA4, and on-page SEO
-              basics ready to go.
+              + Tailwind, hosted on Netlify, with GA4, a lead form, and on-page
+              SEO basics ready to go.
             </p>
           </section>
 

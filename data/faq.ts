@@ -47,7 +47,7 @@ export const faqItems: FaqItem[] = [
   {
     question: "What\u2019s included in a website build starting at $1,995?",
     answer:
-      "Your one-time fee includes: a custom site built on one of 8 ultra-modern dark designs, full Next.js + Tailwind development, on-page SEO basics, funnel setup (lead capture and email signup), Stripe integration, monetization placeholders (digital products and affiliate areas), Netlify hosting setup, domain connection, a 5\u20137 business day turnaround after receiving your content, and one round of revisions.",
+      "The build (starting at $1,995, paid 50% to start and 50% at launch) includes: a custom site built on one of 8 ultra-modern dark designs, full Next.js + Tailwind development, on-page SEO basics, lead capture (contact form and email signup), Netlify hosting setup, domain connection, a 5\u20137 business day turnaround after receiving your content, and one round of revisions. Optional monitoring is a separate $129/month.",
   },
   {
     question: "What do you need from me to start?",

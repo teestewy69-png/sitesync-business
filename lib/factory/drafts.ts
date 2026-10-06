@@ -28,11 +28,11 @@ That also means we are not a “change this block yourself every Tuesday” tool
 
 ## What we actually build
 
-Website builds start at $1,995. Pay 50% to start and 50% at launch. The package includes a complete custom site, a choice of eight design directions, on-page SEO setup, a lead form, Stripe when you need checkout, hosting setup, one round of revisions, and a 5–7 business day turnaround after we have your content. Those numbers must match the homepage. We will not invent a different price here.
+Website builds start at $1,995. Pay 50% to start and 50% at launch. The package includes a complete custom site, a choice of eight design directions, on-page SEO setup, a lead form, hosting setup, domain connection, one round of revisions, and a 5–7 business day turnaround after we have your content. Those numbers must match the homepage. We will not invent a different price here.
 
 ## What we need from you
 
-Business name, what you sell, photos you want used, logo and colors if you have them, and the main goal (calls, bookings, or sales). We cannot start the clock until that package and payment are in.
+Business name, what you sell, photos you want used, logo and colors if you have them, and the main goal (calls, bookings, or sales). We cannot start the clock until that content and the 50% start payment are in.
 
 ## When this is the wrong fit
 
@@ -46,7 +46,7 @@ See current pricing on the homepage or the packages page. No ranking promises �
       "Sitesinc website packages: builds starting at $1,995, 50% to start and 50% at launch, optional $129/mo monitoring. No required subscription.",
     headings: [
       "One-time build",
-      "Optional care plan",
+      "Optional monitoring",
       "What is not a package",
       "How payment works",
     ],
@@ -56,7 +56,7 @@ See current pricing on the homepage or the packages page. No ranking promises �
 
 Website builds start at $1,995. Pay 50% ($997.50) to start and 50% at launch. There is no long-term contract.
 
-Included: custom Next.js + Tailwind site, eight design options, dark glossy UI, on-page SEO basics, lead capture, monetization placeholders, Stripe if you sell, code handoff, Netlify hosting setup, one revision round, 5–7 business days after content.
+Included: custom Next.js + Tailwind site, eight design options, dark glossy UI, on-page SEO basics, lead capture, domain connection, code handoff, Netlify hosting setup, one revision round, 5–7 business days after content.
 
 ## Optional monitoring
 
@@ -160,7 +160,7 @@ Technical updates and security basics, uptime/monitoring and basic fixes, and tw
 
 ## What you can skip
 
-You can host the handed-off repo yourself and never pay the care plan. The build is complete without it. If you want us to keep a key, buy the plan. If you want to cancel later, you still have the code.
+You can host the handed-off repo yourself and never pay the care plan. The build is complete without it. If you want us to keep watching it, ask for the $129/mo monitoring plan. If you want to cancel later, you still have the code.
 
 This page will not scare you into a subscription. The homepage already says the care plan is optional. We repeat that here so a search for website monitoring does not hide the opt-out.`,
   },

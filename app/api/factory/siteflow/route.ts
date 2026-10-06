@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { siteflowEnabled, siteflowPausedResponse } from "@/lib/siteflow/flag";
 import { factoryErrorResponse } from "@/lib/factory/api-errors";
 import { ensureBlobsFromRequest } from "@/lib/persistence";
 import { runAfterResponse } from "@/lib/siteflow/after";
@@ -27,6 +28,8 @@ function origin(req: NextRequest): string {
 
 /** Factory-only (middleware enforces the factory session on /api/factory/*). */
 export async function GET(req: NextRequest) {
+  // SiteFlow is paused (Path A) unless SITEFLOW_ENABLED is set; middleware also 404s this path.
+  if (!siteflowEnabled()) return siteflowPausedResponse();
   try {
     ensureBlobsFromRequest(req);
     return NextResponse.json({ ok: true, summary: await summarizeSiteFlow() });
@@ -36,6 +39,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  // SiteFlow is paused (Path A) unless SITEFLOW_ENABLED is set; middleware also 404s this path.
+  if (!siteflowEnabled()) return siteflowPausedResponse();
   try {
     ensureBlobsFromRequest(req);
     const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;

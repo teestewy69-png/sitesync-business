@@ -1,19 +1,22 @@
 import { NextResponse } from "next/server";
-import { getPublicProducts, isPurchasable } from "@/data/products";
+import { canBuyOnline, visibleProducts } from "@/lib/public-catalog";
 
 export const runtime = "nodejs";
 
-/** Public catalog: listed entries only. Drafts, unlisted and retired entries never appear here. */
+/**
+ * Public catalog: listed entries only. Drafts, unlisted and retired entries never appear here, and while SiteFlow
+ * is paused (Path A) only the contact-only inquiry entries are returned and nothing is purchasable.
+ */
 export async function GET() {
   return NextResponse.json({
     ok: true,
-    products: getPublicProducts().map((product) => ({
+    products: visibleProducts().map((product) => ({
       slug: product.slug,
       name: product.name,
       category: product.category,
       kind: product.kind,
       price: product.price ?? null,
-      purchasable: isPurchasable(product),
+      purchasable: canBuyOnline(product),
       contactOnly: Boolean(product.contactOnly),
       description: product.description,
       image: product.image,

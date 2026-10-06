@@ -18,7 +18,7 @@ export const processSteps: ProcessStep[] = [
   {
     step: "03",
     title: "We build, optimize & connect everything",
-    text: "We design and develop your site on Next.js + Tailwind, set up SEO basics, funnels, Stripe payments, and monetization placeholders, then connect your domain and Netlify hosting.",
+    text: "We design and develop your site on Next.js + Tailwind, set up SEO basics and lead capture (contact form and email signup), then connect your domain and Netlify hosting.",
   },
   {
     step: "04",

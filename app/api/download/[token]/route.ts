@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { siteflowEnabled, siteflowPausedResponse } from "@/lib/siteflow/flag";
 import { ensureBlobsFromRequest } from "@/lib/persistence";
 import { readPrivateFile } from "@/lib/siteflow/private-files";
 import { downloadSigningSecret, verifyDownloadToken } from "@/lib/siteflow/tokens";
@@ -16,6 +17,8 @@ function deny(status: number, message: string) {
 
 /** Signed, expiring download. Re-checks the order is still paid (refunded orders lose access). */
 export async function GET(req: NextRequest, ctx: { params: Promise<{ token: string }> }) {
+  // SiteFlow is paused (Path A) unless SITEFLOW_ENABLED is set; middleware also 404s this path.
+  if (!siteflowEnabled()) return siteflowPausedResponse();
   ensureBlobsFromRequest(req);
   const { token } = await ctx.params;
   const check = verifyDownloadToken(decodeURIComponent(token || ""), downloadSigningSecret());

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { siteflowEnabled, siteflowPausedResponse } from "@/lib/siteflow/flag";
 import { factoryErrorResponse } from "@/lib/factory/api-errors";
 import { ensureBlobsFromRequest } from "@/lib/persistence";
 import { payoutCsv, payoutRows } from "@/lib/siteflow/commission-math";
@@ -9,6 +10,8 @@ export const dynamic = "force-dynamic";
 
 /** GET ?month=2026-10 → payout CSV (approved, unpaid commissions by partner). Payouts themselves are manual. */
 export async function GET(req: NextRequest) {
+  // SiteFlow is paused (Path A) unless SITEFLOW_ENABLED is set; middleware also 404s this path.
+  if (!siteflowEnabled()) return siteflowPausedResponse();
   try {
     ensureBlobsFromRequest(req);
     const month = req.nextUrl.searchParams.get("month") || new Date().toISOString().slice(0, 7);

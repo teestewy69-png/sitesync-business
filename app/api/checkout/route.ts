@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { siteflowEnabled, siteflowPausedResponse } from "@/lib/siteflow/flag";
 import { quoteCart } from "@/lib/catalog";
 import { getNotifyEmail, isMailConfigured, sendMail } from "@/lib/mail";
 import { ensureBlobsFromRequest } from "@/lib/persistence";
@@ -28,6 +29,8 @@ function thankYou(orderId: string): string {
 }
 
 export async function POST(req: NextRequest) {
+  // SiteFlow is paused (Path A) unless SITEFLOW_ENABLED is set; middleware also 404s this path.
+  if (!siteflowEnabled()) return siteflowPausedResponse();
   try {
     ensureBlobsFromRequest(req);
     if (!rateLimit(`checkout:${clientKey(req)}`, 10, 60_000).ok) {

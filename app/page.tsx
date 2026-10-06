@@ -6,7 +6,6 @@ import About from "@/components/About";
 import ContentEngine from "@/components/ContentEngine";
 import Proof from "@/components/Proof";
 import FAQ from "@/components/FAQ";
-import ProductTeaser from "@/components/ProductTeaser";
 import EmailCapture from "@/components/EmailCapture";
 import Footer from "@/components/Footer";
 import SeoJsonLd from "@/components/SeoJsonLd";
@@ -51,7 +50,6 @@ export default function Home() {
       <ContentEngine />
       <Proof />
       <FAQ />
-      <ProductTeaser />
       <EmailCapture />
       <Footer />
     </>

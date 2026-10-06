@@ -3,6 +3,7 @@ import { notFound, unstable_rethrow } from "next/navigation";
 import { PAGE_DRAFTS } from "@/lib/factory/drafts";
 import { readPublicWorkspace } from "@/lib/factory/workspace";
 import type { FactoryPage } from "@/lib/factory/types";
+import { findRetiredOfferClaim } from "@/lib/offer-copy";
 
 // Public readers degrade: if the store fails or the workspace is corrupt they log and return null
 // (-> notFound / noindex metadata) instead of a 500. /app pages stay strict.
@@ -13,6 +14,16 @@ export async function getPublishedPage(slug: string): Promise<FactoryPage | null
   if (!page) return null;
   if (page.status !== "published" || page.noindex) return null;
   if (!page.body.trim()) return null;
+  // Path A guard: a page published before the offer cleanup may still carry retired claims (Stripe checkout,
+  // monetization placeholders, digital products...). Serve the current reviewed draft for that slug instead,
+  // or nothing if there is no draft. Re-publishing from /app replaces the stored copy for good.
+  const stale = findRetiredOfferClaim(`${page.title}\n${page.metaDescription}\n${page.body}`);
+  if (stale) {
+    const draft = PAGE_DRAFTS[slug];
+    if (!draft) return null;
+    console.warn(`Published page ${slug} carries retired offer copy; serving the current draft.`);
+    return { ...page, ...draft };
+  }
   return page;
 }
 

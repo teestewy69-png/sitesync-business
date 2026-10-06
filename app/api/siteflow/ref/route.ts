@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { siteflowEnabled, siteflowPausedResponse } from "@/lib/siteflow/flag";
 import { ensureBlobsFromRequest } from "@/lib/persistence";
 import { normalizeRefCode, REF_COOKIE, refWindowDays, safeNextPath } from "@/lib/siteflow/ref";
 import { activePartner } from "@/lib/siteflow/state";
@@ -12,6 +13,8 @@ export const dynamic = "force-dynamic";
  * anything else is dropped. Either way the visitor lands on the clean URL (same-site paths only).
  */
 export async function GET(req: NextRequest) {
+  // SiteFlow is paused (Path A) unless SITEFLOW_ENABLED is set; middleware also 404s this path.
+  if (!siteflowEnabled()) return siteflowPausedResponse();
   ensureBlobsFromRequest(req);
   const next = safeNextPath(req.nextUrl.searchParams.get("next"));
   const res = NextResponse.redirect(new URL(next, req.nextUrl.origin), { status: 307 });

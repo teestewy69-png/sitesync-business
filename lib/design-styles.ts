@@ -51,7 +51,7 @@ export const SITESINC_SITE: MiniSiteContent = {
   business: "Sitesinc",
   tagline:
     "Ultra-modern websites that finally make your small business look big. Live now at sitesinc.co.",
-  cta: "Reserve My Build",
+  cta: "Request My Build",
   phone: "save@sitesinc.co",
   footerNote: "save@sitesinc.co · Live at sitesinc.co · You own the code",
   services: [
@@ -66,12 +66,12 @@ export const SITESINC_SITE: MiniSiteContent = {
       blurb: "SSL, global CDN, and your domain connected — this site is the proof.",
     },
     {
-      name: "SEO, funnels & Stripe",
+      name: "SEO & lead capture",
       price: "Included",
-      blurb: "On-page SEO, lead capture, and checkout ready from day one.",
+      blurb: "On-page SEO basics and a lead form that reaches you, from day one.",
     },
     {
-      name: "Optional maintenance",
+      name: "Optional monitoring",
       price: "$129/mo",
       blurb: "Optional monitoring. Cancel anytime. The site works without it.",
     },
@@ -80,7 +80,7 @@ export const SITESINC_SITE: MiniSiteContent = {
     {
       name: "sitesinc.co",
       quote:
-        "This live site is the product — Next.js, Tailwind, Stripe, and Netlify hosting included.",
+        "This live site is the product — Next.js, Tailwind, and Netlify hosting included.",
     },
     {
       name: "Payment",
@@ -90,13 +90,13 @@ export const SITESINC_SITE: MiniSiteContent = {
     {
       name: "Turnaround",
       quote:
-        "5–7 business days from content received to a hosted, money-ready site.",
+        "5–7 business days from content received to a hosted, lead-ready site.",
     },
   ],
   trustSignals: [
     "You own the code",
     "5–7 day turnaround",
-    "Stripe-ready",
+    "SEO basics built in",
     "Hosting included",
   ],
 };

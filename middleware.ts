@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { FACTORY_COOKIE, isPublicFactoryPath, isValidSession } from "@/lib/factory/auth";
 import { CLIENT_DOMAIN_PREFIX, clientDomainRoute, isSitesincHost } from "@/lib/client-domain/host";
+import { isSiteflowPath, siteflowEnabled } from "@/lib/siteflow/flag";
 import { shouldCaptureRef, stripRefParam } from "@/lib/siteflow/ref";
 
 function requestHost(req: NextRequest): string {
@@ -36,6 +37,11 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   // Netlify platform paths (functions such as city-launch-background) are never routed or rewritten here.
   if (pathname.startsWith("/.netlify/")) return NextResponse.next();
+  const siteflowOn = siteflowEnabled(process.env);
+
+  // SiteFlow is paused (Path A) unless SITEFLOW_ENABLED is set: its routes do not exist on any host.
+  if (!siteflowOn && isSiteflowPath(pathname)) return notFound();
+
   const host = requestHost(req);
 
   // Client real domains (see lib/client-domain/host.ts). Sitesinc, staging, Netlify preview and local hosts skip this.
@@ -52,7 +58,8 @@ export async function middleware(req: NextRequest) {
   if (pathname === CLIENT_DOMAIN_PREFIX || pathname.startsWith(`${CLIENT_DOMAIN_PREFIX}/`)) return notFound();
 
   // SiteFlow partner links (?ref=<code>): validate + set the referral cookie in a Node route, then land on the clean URL.
-  const ref = shouldCaptureRef(req.method, pathname, req.nextUrl.search);
+  // While SiteFlow is paused, ?ref= does nothing: no redirect, no cookie.
+  const ref = siteflowOn ? shouldCaptureRef(req.method, pathname, req.nextUrl.search) : "";
   if (ref) {
     const clean = stripRefParam(pathname, req.nextUrl.search);
     const target = req.nextUrl.clone();
@@ -71,6 +78,7 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   // Every path except Next's static/image assets: client domains need "/", "/locations", "/robots.txt"...
-  // On Sitesinc hosts only /app and /api/factory (factory auth) and GET pages with ?ref= (SiteFlow referral capture) do anything.
+  // On Sitesinc hosts only /app and /api/factory (factory auth), paused SiteFlow routes (404) and, when SiteFlow is
+  // enabled, GET pages with ?ref= (referral capture) do anything.
   matcher: ["/((?!_next/static|_next/image).*)"],
 };

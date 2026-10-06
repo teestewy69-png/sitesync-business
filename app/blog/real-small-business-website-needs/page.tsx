@@ -185,8 +185,8 @@ export default function RealSmallBusinessWebsiteNeeds() {
               >
                 Click here to see how Sitesinc can build it for you.
               </Link>{" "}
-              We&apos;ll handle the structure, design, SEO basics, and
-              monetization setup so you can focus on running your business.
+              We&apos;ll handle the structure, design, SEO basics, and lead
+              capture so you can focus on running your business.
             </p>
           </section>
         </div>

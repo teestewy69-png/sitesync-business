@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { siteflowEnabled, siteflowPausedResponse } from "@/lib/siteflow/flag";
 import { destinationUrl, getProgram, normalizeDomain } from "@/lib/affiliates";
 import { ensureBlobsFromRequest } from "@/lib/persistence";
 import { clientKey, rateLimit } from "@/lib/rate-limit";
@@ -10,6 +11,8 @@ export const dynamic = "force-dynamic";
 
 /** Outbound partner redirect: log the click (no IP, no full referrer), then 302 to the destination. */
 export async function GET(req: NextRequest, ctx: { params: Promise<{ slug: string }> }) {
+  // SiteFlow is paused (Path A) unless SITEFLOW_ENABLED is set; middleware also 404s this path.
+  if (!siteflowEnabled()) return siteflowPausedResponse();
   ensureBlobsFromRequest(req);
   const { slug } = await ctx.params;
   const program = getProgram(String(slug || "").toLowerCase());

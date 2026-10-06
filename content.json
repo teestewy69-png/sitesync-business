@@ -14,7 +14,7 @@
     "image": "https://sitesinc.co/logo.png",
     "og": {
       "title": "Sitesinc Website Factory – Ultra-Modern Small Business Websites",
-      "description": "Done-for-you, money-ready websites from Sitesinc. Builds starting at $1,995. $997.50 to start, $997.50 at launch. Optional monitoring $129/month. Cancel anytime. No long-term contract."
+      "description": "Done-for-you websites from Sitesinc. Builds starting at $1,995. $997.50 to start, $997.50 at launch. Optional monitoring $129/month. Cancel anytime. No long-term contract."
     },
     "twitter": {
       "card": "summary_large_image",
@@ -25,11 +25,10 @@
   "hero": {
     "overline": "Done-for-you small business websites",
     "headline": "Ultra-modern websites that finally make your small business look big.",
-    "subheadline": "Sitesinc Website Factory builds dark, glossy, high-converting sites for the “little guy” who never got their website quite right. One-time build, SEO-optimized, monetization-ready, and fully yours.",
+    "subheadline": "Sitesinc Website Factory builds dark, glossy, high-converting sites for the “little guy” who never got their website quite right. One-time build, SEO-ready, built to turn visitors into calls and leads, and fully yours.",
     "offer": {
       "title": "Website builds starting at $1,995.",
-      "subtitle": "Pay 50% to start, 50% at launch. Optional monitoring $129/month. No long-term contract.",
-      "totalSpots": 0
+      "subtitle": "Pay 50% to start, 50% at launch. Optional monitoring $129/month. No long-term contract."
     },
     "primaryCta": { "label": "Start a website build", "target": "checklist" },
     "secondaryCta": { "label": "See 8 Designs", "target": "designs" },
@@ -68,8 +67,7 @@
       "Dark, glossy, animated interface with professional UX",
       "On-page SEO setup (titles, meta descriptions, basic keyword structure)",
       "Basic funnel setup (lead capture form + email signup flow)",
-      "Monetization placeholders (digital products and affiliate links)",
-      "Stripe integration for one-time payments or product sales",
+      "Domain connection",
       "Full code handoff + Netlify hosting setup",
       "1 round of revisions after the first draft",
       "5-7 business day turnaround once content is received"
@@ -120,7 +118,7 @@
     "title": "Built for the “little guy” who's tired of feeling left behind online.",
     "paragraphs": [
       "Sitesinc exists for small and local businesses who know they need a real website—but never had the time, budget, or tech help to get it done right. We don't sell drag-and-drop templates or half-finished sites. We build dark, glossy, ultra-modern websites that look like they belong to a big brand, but are tailored to the shop around the corner.",
-      "Whether you're a barber, cleaner, contractor, food truck, lash tech, coach, or solo pro, we handle the hard stuff: design, development, SEO, funnels, Stripe, and hosting. You pay 50% to start and 50% at launch, we build it, connect your domain, and hand you the full code so you truly own your online home."
+      "Whether you're a barber, cleaner, contractor, food truck, lash tech, coach, or solo pro, we handle the hard stuff: design, development, SEO, lead capture, and hosting. You pay 50% to start and 50% at launch, we build it, connect your domain, and hand you the full code so you truly own your online home."
     ]
   },
   "cta": {
@@ -132,7 +130,7 @@
   "proof": {
     "overline": "Proof",
     "title": "Real businesses. Real results.",
-    "subtitle": "Don’t take our word for it—watch a sample client site get built the same way yours will: content in, money-ready site out.",
+    "subtitle": "Don’t take our word for it—watch a sample client site get built the same way yours will: content in, lead-ready site out.",
     "outcomes": [
       {
         "stat": "5–7 days",
@@ -145,9 +143,9 @@
         "detail": "Full Next.js handoff. No platform lock-in. Any developer can pick it up later."
       },
       {
-        "stat": "Money-ready",
+        "stat": "Lead-ready",
         "label": "Built to convert",
-        "detail": "Clear CTA, lead capture, Stripe when you need it, and SEO basics from day one."
+        "detail": "Clear CTA, lead capture, tap-to-call, and SEO basics from day one."
       }
     ],
     "sample": {
@@ -158,31 +156,6 @@
       "note": "Demo of our per-client workflow using the same stack and content.json system we ship to paying customers."
     },
     "cta": { "label": "See pricing & start a build", "target": "pricing" }
-  },
-  "productTeaser": {
-    "overline": "Beyond the build",
-    "title": "Tools that keep your site earning after launch.",
-    "subtitle": "A website isn’t a one-and-done poster. We’re packaging the same checklists and money pieces we use on client builds so you can keep improving without hiring a full team.",
-    "items": [
-      {
-        "status": "Available now",
-        "name": "Website checklist",
-        "detail": "Design, copy, SEO basics, and the money-making pieces most small sites forget. Free—enter your email below.",
-        "cta": { "label": "Get the free checklist", "target": "checklist" }
-      },
-      {
-        "status": "In progress",
-        "name": "Keep-it-earning kit",
-        "detail": "Offer-page templates, update cadence, and simple SEO refresh prompts so your site stays sharp after launch. We're still putting it together, so it isn't for sale yet.",
-        "cta": null
-      },
-      {
-        "status": "On the roadmap",
-        "name": "Niche playbooks",
-        "detail": "Barber, contractor, coach, and food-truck packs—headlines, service blocks, and CTAs tuned to how those businesses actually get booked.",
-        "cta": null
-      }
-    ]
   },
   "emailCapture": {
     "overline": "Free download",
@@ -198,7 +171,7 @@
   "footer": {
     "legalName": "Sitesinc",
     "email": "save@sitesinc.co",
-    "trustTitle": "Secure payments & transparent pricing.",
+    "trustTitle": "Transparent pricing, invoiced in two parts.",
     "trustLine": "Starting at $1,995 • 50% to start, 50% at launch • No long-term contract • Optional $129/mo monitoring • You own your site code.",
     "scrollLinks": [
       { "label": "Pricing", "target": "pricing" },

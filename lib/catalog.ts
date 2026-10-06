@@ -4,6 +4,7 @@ import {
   type FulfillmentInput,
   type Product,
 } from "@/data/products";
+import { siteflowEnabled } from "@/lib/siteflow/flag";
 import type { OrderItem } from "@/lib/store";
 import { asQuantity } from "@/lib/validate";
 
@@ -57,6 +58,10 @@ export function validateFulfillmentInputs(product: Product, raw: unknown): Recor
 }
 
 export function quoteCart(lines: CartLineInput[]): QuotedCart {
+  // Product checkout is paused with SiteFlow (Path A): nothing can be quoted for payment.
+  if (!siteflowEnabled()) {
+    throw new Error("Online checkout is not available. Email save@sitesinc.co.");
+  }
   if (!Array.isArray(lines) || lines.length === 0) {
     throw new Error("Your cart is empty.");
   }

@@ -10,6 +10,11 @@
  *  - `deliverable` says what the buyer receives: a private Blobs file key, a generator id, or nothing
  *    (manual service). No strike-through "regular" prices: show only the real price.
  *
+ * Path A (2026-10-05): SiteFlow is paused (lib/siteflow/flag.ts, SITEFLOW_ENABLED off by default). While paused
+ * only the contact-only entries are public (lib/public-catalog.ts) and nothing is purchasable, whatever
+ * `listed`/`priceCents` say here. The drafts below are kept for phase 2 and never shown to visitors.
+ * The retired "Website Design Digital Product Bundle" and its images were removed entirely.
+ *
  * This file has no imports on purpose: the Stripe sync script loads it directly with Node.
  */
 
@@ -92,7 +97,7 @@ export const catalog: CatalogEntry[] = [
     image: "/products/gold-filled-jewelry.jpg",
   },
 
-  // --- Planned SiteFlow products: unlisted drafts until Tony sets prices and lists them ----------
+  // --- Planned SiteFlow products (phase 2, paused): unlisted drafts, never public while paused -----
   {
     slug: "keep-it-earning-kit",
     name: "Keep-it-earning kit",
@@ -107,7 +112,7 @@ export const catalog: CatalogEntry[] = [
     },
     description:
       "Offer-page templates, an update cadence, and SEO refresh prompts from Sitesinc client builds.",
-    image: "/products/website-design-bundle.jpg",
+    image: "/logo.png",
   },
   {
     slug: "website-monitoring",
@@ -128,7 +133,7 @@ export const catalog: CatalogEntry[] = [
     ],
     description:
       "Optional monitoring: uptime checks, basic technical updates, and two to three small text or image changes a month. Cancel anytime.",
-    image: "/products/website-design-bundle.jpg",
+    image: "/logo.png",
   },
   {
     slug: "domainiq-domain-report",
@@ -146,7 +151,7 @@ export const catalog: CatalogEntry[] = [
     ],
     description:
       "Scored domain-name ideas for your business and city from the DomainIQ engine, with an availability check where the registry allows it.",
-    image: "/products/website-design-bundle.jpg",
+    image: "/logo.png",
   },
   {
     slug: "local-seo-audit-report",
@@ -161,7 +166,7 @@ export const catalog: CatalogEntry[] = [
     ],
     description:
       "An on-page crawl of up to 15 pages of your site: titles, descriptions, headings, canonicals, image alt text, and contact paths, with plain-language fixes.",
-    image: "/products/website-design-bundle.jpg",
+    image: "/logo.png",
   },
   {
     slug: "website-template-pack",
@@ -176,19 +181,7 @@ export const catalog: CatalogEntry[] = [
       filename: "sitesinc-website-template-pack.zip",
     },
     description: "Small-business website page templates from the Sitesinc factory.",
-    image: "/products/website-design-bundle.jpg",
-  },
-
-  // --- Retired: kept for order history only -------------------------------------------------------
-  {
-    slug: "website-design-digital-bundle",
-    name: "Website Design Digital Product Bundle",
-    category: "Digital Products",
-    kind: "digital",
-    listed: false,
-    retired: true,
-    description: "Retired. This old website-design bundle is not a public Sitesinc offer.",
-    image: "/products/website-design-bundle.jpg",
+    image: "/logo.png",
   },
 ];
 
