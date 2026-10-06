@@ -176,7 +176,8 @@ Picking methods (`POST /api/factory/city-launch {op:"pick"}`), each capped at 50
      direction, and the distance from the client's base
 
    The system prompt forbids invented business facts (licenses, years, reviews, prices, guarantees) and invented
-   local statistics.
+   local statistics. It also requires a structured `serviceArea` paragraph that names the county and 2+ real nearest
+   cities, and it caps region-wide filler.
 
    Replies are validated: at least 3 sections, a meta description, enough words, the city named, and no
    `{placeholders}`. Weak output counts as a failed attempt.
@@ -204,7 +205,15 @@ Picking methods (`POST /api/factory/city-launch {op:"pick"}`), each capped at 50
      approving).
    - **Other blocks:** < 300 words, city named fewer than 2 times, a leftover `{placeholder}`, or a missing meta
      description.
-   - **Other warnings:** no local reference beyond the city name (county, a nearby city, or the base city).
+   - **Invented business claims:** "licensed / insured / bonded", "certified", guarantees or warranties, years in
+     business, awards, ratings or reviews, free estimates, 24/7 or same-day, prices or discounts, family-owned.
+     A claim made in the business's own voice ("we", "our", the business name) blocks the page unless the business
+     context the operator gave supports it. While writing, the job first makes **one automatic repair call** that
+     rewrites only those sentences (rate-limited, and skipped if the tick has no time left). Anything still left is
+     blocked for a human edit. In the real test, gpt-4o-mini added "all our plumbers are licensed and insured" to
+     3 of 5 pages even though the prompt forbids it, which is why this check exists.
+   - **Other warnings:** fewer than 2 local references (county, nearby cities, base city), or "our city / our
+     community" wording on a city that is not the business's base.
    - Approved pages are compared only with other approved pages, so a newer draft that copies an approved page is
      the one that gets blocked.
 6. **Review (manual by design).** For each city the operator can **Review / Edit** (title, meta, H1, subhead, intro,
