@@ -1,5 +1,5 @@
 import path from "node:path";
-import { unstable_rethrow } from "next/navigation";
+import { rethrowNextControlFlow } from "@/lib/next-runtime";
 import {
   StoreError,
   isStoreConflict,
@@ -250,7 +250,7 @@ export async function readPublicWorkspace(): Promise<FactoryWorkspace | null> {
   try {
     return await readWorkspace();
   } catch (err) {
-    unstable_rethrow(err);
+    await rethrowNextControlFlow(err);
     const kind = err instanceof StoreError ? err.kind : "unknown";
     console.error(`Public page: factory workspace unavailable (${kind}); serving fallback.`);
     return null;
@@ -267,7 +267,7 @@ export async function readPublicCaseStudy(): Promise<{
     const baseline = await latestBaseline();
     return { workspace, baseline };
   } catch (err) {
-    unstable_rethrow(err);
+    await rethrowNextControlFlow(err);
     const kind = err instanceof StoreError ? err.kind : "unknown";
     console.error(`Public /case-study: factory state unavailable (${kind}); serving fallback.`);
     return null;

@@ -2,8 +2,7 @@ import { createHash } from "node:crypto";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { connectLambda, getStore, type Store } from "@netlify/blobs";
-import { headers } from "next/headers";
-import { unstable_rethrow } from "next/navigation";
+import { rethrowNextControlFlow } from "@/lib/next-runtime";
 import { RevConflictError, readRevisioned, writeRevisioned, type RevStore } from "@/lib/revisioned-docs";
 import { isStagingEnv } from "@/lib/site-env";
 
@@ -89,9 +88,11 @@ export async function ensureBlobsContext(): Promise<void> {
   if (storeBackend() !== "netlify-blobs") return;
   if (blobsContextPresent()) return;
   try {
+    // Lazy: this module is shared with the background function, where `next/*` cannot be imported.
+    const { headers } = await import("next/headers");
     ensureBlobsFromRequest({ headers: await headers() });
   } catch (err) {
-    unstable_rethrow(err);
+    await rethrowNextControlFlow(err);
     // Not inside a request (e.g. a script): nothing to connect.
   }
 }

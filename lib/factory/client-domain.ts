@@ -8,8 +8,6 @@
  * Lookup: the host index written at sign-off (factory/client-domains/<host>), then a cached scan of projects as a
  * fallback (covers sign-offs recorded before the index existed). Results are re-verified on every request.
  */
-import { headers } from "next/headers";
-import { notFound, permanentRedirect } from "next/navigation";
 import { domainHosts, normalizeDomain, normalizeHost, sameClientDomain } from "@/lib/client-domain/host";
 import type { CityLaunchIndex } from "@/lib/city-launch/job";
 import { readDoc, writeDoc } from "@/lib/persistence";
@@ -82,13 +80,15 @@ export type ClientSite = ResolvedClientDomain & { origin: string };
  * the host must resolve, and www <-> apex requests are 308-redirected to the canonical domain.
  */
 export async function requireClientSite(hostParam: string, path: string): Promise<ClientSite> {
+  // Lazy next/* imports: city-launch (shared with the background function) imports this module.
+  const [{ headers }, { notFound, permanentRedirect }] = await Promise.all([import("next/headers"), import("next/navigation")]);
   const h = await headers();
   const actual = normalizeHost(h.get("host") || h.get("x-forwarded-host"));
   const routed = normalizeHost(decodeURIComponent(hostParam));
-  if (!actual || actual !== routed) notFound();
+  if (!actual || actual !== routed) return notFound();
   const site = await resolveClientDomain(routed);
-  if (!site) notFound();
-  if (routed !== site.domain) permanentRedirect(`https://${site.domain}${path}`);
+  if (!site) return notFound();
+  if (routed !== site.domain) return permanentRedirect(`https://${site.domain}${path}`);
   return { ...site, origin: `https://${site.domain}` };
 }
 

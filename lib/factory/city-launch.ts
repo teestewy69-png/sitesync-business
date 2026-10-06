@@ -67,6 +67,7 @@ import {
   type CityPromptBusiness,
 } from "@/lib/city-launch/prompts";
 import { FACTORY_COOKIE, factoryToken, sessionValue } from "./auth";
+import { backgroundEnabled, backgroundLooksStuck, backgroundPending, triggerBackground } from "./city-launch-background";
 import { configFromProject } from "./client-config";
 import { scheduleAfterResponse } from "./client-automation";
 
@@ -650,7 +651,7 @@ export type TickResult = {
   drafted: number;
   failed: number;
   remaining: number;
-  continued: "chained" | "local-loop" | "none" | "needs-poll";
+  continued: "background" | "chained" | "local-loop" | "none" | "needs-poll";
   detail?: string;
 };
 
@@ -942,8 +943,52 @@ function trustedSelfOrigin(hint?: string | null): string | null {
   return envs[0] || null;
 }
 
+export async function markCityBackgroundStarted(projectId: string, batchId: string): Promise<void> {
+  await updateDoc<CityLaunchBatch>(cityBatchKey(projectId, batchId), () => null, (b) => {
+    b.background = { ...(b.background || {}), startedAt: nowIso() };
+  });
+}
+
+/**
+ * Hand the batch to the Netlify Background Function. false = use the chained / in-process tick instead:
+ * disabled, no trusted origin or token, the function did not answer 202, or an earlier hand-off was never picked up.
+ */
+async function handOffToBackground(projectId: string, batchId: string, hint?: string | null): Promise<boolean> {
+  if (!backgroundEnabled(process.env, isNetlifyHost())) return false;
+  // Under `netlify dev` the Next server sees its own framework port; functions are only served by the
+  // Netlify dev proxy (process.env.URL). On a real deploy the request origin is the site itself.
+  const origin = process.env.NETLIFY_DEV === "true" ? trustedSelfOrigin(process.env.URL || null) : trustedSelfOrigin(hint);
+  const token = factoryToken();
+  if (!origin || !token) return false;
+  const key = cityBatchKey(projectId, batchId);
+  const current = (await readDoc<CityLaunchBatch>(key).catch(() => null))?.value;
+  if (current && backgroundLooksStuck(current.background)) {
+    await updateDoc<CityLaunchBatch>(key, () => null, (b) => {
+      if (b.background?.fallbackAt && b.background.fallbackAt >= (b.background.requestedAt || "")) return;
+      b.background = { ...(b.background || {}), fallbackAt: nowIso() };
+      b.log = [...b.log, `${nowIso()} background function did not start within 90s; using chained ticks`].slice(-40);
+    }).catch(() => null);
+    return false;
+  }
+  // Already handed off moments ago and not picked up yet: wait for it rather than re-triggering.
+  if (current && backgroundPending(current.background)) return true;
+  // Record the request before triggering so the function's startedAt always lands after it.
+  const previous = current?.background?.requestedAt;
+  const requestedAt = nowIso();
+  await updateDoc<CityLaunchBatch>(key, () => null, (b) => {
+    b.background = { ...(b.background || {}), requestedAt };
+  }).catch(() => null);
+  const ok = await triggerBackground(origin, `${FACTORY_COOKIE}=${await sessionValue(token)}`, { projectId, batchId });
+  if (!ok) {
+    await updateDoc<CityLaunchBatch>(key, () => null, (b) => {
+      if (b.background?.requestedAt === requestedAt) b.background = { ...b.background, requestedAt: previous };
+    }).catch(() => null);
+  }
+  return ok;
+}
+
 async function continueTick(projectId: string, batchId: string, hint?: string | null): Promise<TickResult["continued"]> {
-  if (!tickBudgetMs()) {
+  if (!tickBudgetMs() && !backgroundEnabled(process.env, isNetlifyHost())) {
     // Unlimited local tick stopped only because retries are scheduled later: loop in-process.
     queueCityLaunchTick(projectId, batchId, hint, 1500);
     return "local-loop";
@@ -951,8 +996,10 @@ async function continueTick(projectId: string, batchId: string, hint?: string | 
   const origin = trustedSelfOrigin(hint);
   const token = factoryToken();
   if (!origin || !token) return "needs-poll";
+  const cookie = `${FACTORY_COOKIE}=${await sessionValue(token)}`;
+  // 1) Netlify Background Function (15 min per invocation). 2) Fallback: chained synchronous tick route.
+  if (await handOffToBackground(projectId, batchId, hint)) return "background";
   try {
-    const cookie = `${FACTORY_COOKIE}=${await sessionValue(token)}`;
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 8000);
     const res = await fetch(`${origin}/api/factory/city-launch/tick`, {
@@ -968,10 +1015,18 @@ async function continueTick(projectId: string, batchId: string, hint?: string | 
   }
 }
 
-/** Run a tick after the HTTP response (Next after()); falls back to fire-and-forget outside a request. */
+/**
+ * Start (or resume) a batch after the HTTP response (Next after()); fire-and-forget outside a request.
+ * On Netlify the writing loop is handed to the background function first; if it does not accept (not deployed,
+ * disabled, error), the tick runs right here in the request's after() window and chains as before.
+ */
 export function queueCityLaunchTick(projectId: string, batchId: string, hostOrigin?: string | null, delayMs = 0): void {
   scheduleAfterResponse(`city-launch:${projectId}:${batchId}`, async () => {
     if (delayMs) await new Promise((r) => setTimeout(r, delayMs));
+    if (await handOffToBackground(projectId, batchId, hostOrigin)) {
+      console.log(`[city-launch] ${batchId}: handed to the background function`);
+      return;
+    }
     const result = await runCityLaunchTick(projectId, batchId, { hostOrigin });
     if (!result.ok) console.warn(`[city-launch] tick ${batchId}: ${result.detail}`);
   });

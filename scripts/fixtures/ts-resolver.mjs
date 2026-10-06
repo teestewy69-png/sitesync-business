@@ -19,7 +19,7 @@ export async function resolve(specifier, context, nextResolve) {
   if (specifier.startsWith("@/")) base = path.join(ROOT, specifier.slice(2));
   else if ((specifier.startsWith("./") || specifier.startsWith("../")) && context.parentURL?.startsWith("file:")) {
     const parent = fileURLToPath(context.parentURL);
-    if (/\.(ts|tsx)$/.test(parent) && !/\.[cm]?[jt]sx?$|\.json$/.test(specifier)) base = path.resolve(path.dirname(parent), specifier);
+    if (/\.(ts|tsx|mts)$/.test(parent) && !/\.[cm]?[jt]sx?$|\.json$/.test(specifier)) base = path.resolve(path.dirname(parent), specifier);
   }
   // Next's subpath entry points ("next/server", "next/headers") are CommonJS files without an exports map.
   if (/^next\/[a-z-]+$/.test(specifier)) return nextResolve(`${specifier}.js`, context);

@@ -58,6 +58,8 @@ export type CityLaunchBatch = {
   provider: { envKey: string; label: string; model: string } | null;
   lease?: { owner: string; until: string } | null;
   ticks: number;
+  /** Netlify Background Function hand-offs: requested by the app, started by the function. */
+  background?: { requestedAt?: string; startedAt?: string; fallbackAt?: string };
   lastTickAt?: string;
   lastProgressAt?: string;
   finishedAt?: string;

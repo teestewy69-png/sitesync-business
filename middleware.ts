@@ -33,6 +33,8 @@ function isFactoryPath(pathname: string) {
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  // Netlify platform paths (functions such as city-launch-background) are never routed or rewritten here.
+  if (pathname.startsWith("/.netlify/")) return NextResponse.next();
   const host = requestHost(req);
 
   // Client real domains (see lib/client-domain/host.ts). Sitesinc, staging, Netlify preview and local hosts skip this.
