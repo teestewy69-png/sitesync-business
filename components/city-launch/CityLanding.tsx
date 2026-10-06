@@ -1,8 +1,8 @@
 import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 import { getUsCityIndex } from "@/lib/city-launch";
-import type { CityLandingData } from "@/lib/factory/city-launch-public";
-import { cityTheme, previewBase } from "@/lib/factory/city-launch-public";
+import type { CityLandingData, ClientSiteLinks } from "@/lib/factory/city-launch-public";
+import { cityTheme } from "@/lib/factory/city-launch-public";
 import CityReveal from "./CityReveal";
 import s from "./city-landing.module.css";
 
@@ -116,12 +116,11 @@ function ServiceMap({ data }: { data: CityLandingData }) {
   );
 }
 
-export default function CityLanding({ data, origin }: { data: CityLandingData; origin: string }) {
-  const { ctx, draft, style, nearbyLive, isDraftPreview, project } = data;
+export default function CityLanding({ data, links }: { data: CityLandingData; links: ClientSiteLinks }) {
+  const { ctx, draft, style, nearbyLive, isDraftPreview } = data;
   const theme = cityTheme(style);
   const c = draft.content;
-  const base = previewBase(project.id);
-  const contactHref = `${ctx.contactPath}?city=${encodeURIComponent(draft.slug)}`;
+  const contactHref = links.contact ? `${links.contact}?city=${encodeURIComponent(draft.slug)}` : links.email ? `mailto:${links.email}` : "";
   const tel = ctx.business.phone ? telHref(ctx.business.phone) : "";
   const rootId = `cl-${draft.slug}`;
   const vars = {
@@ -149,9 +148,11 @@ export default function CityLanding({ data, origin }: { data: CityLandingData; o
           Call {ctx.business.phone}
         </a>
       ) : null}
-      <Link className={tel ? `${s.btnGhost} ${extra || ""}` : `${s.btn} ${extra || ""}`} href={contactHref} data-lead="contact" data-city={draft.slug}>
-        {tel ? "Request service online" : `Contact ${ctx.business.businessName}`}
-      </Link>
+      {contactHref ? (
+        <a className={tel ? `${s.btnGhost} ${extra || ""}` : `${s.btn} ${extra || ""}`} href={contactHref} data-lead="contact" data-city={draft.slug}>
+          {tel ? (links.contact ? "Request service online" : "Email us") : `Contact ${ctx.business.businessName}`}
+        </a>
+      ) : null}
     </>
   );
   const h1 = c.h1 || c.title;
@@ -160,21 +161,23 @@ export default function CityLanding({ data, origin }: { data: CityLandingData; o
   return (
     <div id={rootId} className={`${s.root} ${theme.variant === "split" ? s.split : s.center}`} style={vars}>
       <CityReveal rootId={rootId} />
-      <p className={s.banner}>
-        {isDraftPreview
-          ? `Operator draft preview · ${draft.status} · not visible to the public · noindex`
-          : `Client preview on Sitesinc · ${ctx.business.businessName} · noindex until published to the client's domain`}
-      </p>
+      {links.mode === "preview" || isDraftPreview ? (
+        <p className={s.banner}>
+          {isDraftPreview
+            ? `Operator draft preview · ${draft.status} · not visible to the public · noindex`
+            : `Client preview on Sitesinc · ${ctx.business.businessName} · noindex until published to the client's domain`}
+        </p>
+      ) : null}
       <div className={s.wrap}>
         <header className={s.header}>
-          <Link href={base} className={s.brand}>
+          <Link href={links.home} className={s.brand}>
             <span className={s.logo}>{ctx.business.businessName.slice(0, 1).toUpperCase()}</span>
             {ctx.business.businessName}
           </Link>
           <nav className={s.nav} aria-label="Site">
-            <Link href={base}>Home</Link>
-            <Link href={`${base}/locations`}>Locations</Link>
-            <Link href={ctx.contactPath}>Contact</Link>
+            <Link href={links.home}>Home</Link>
+            <Link href={links.locations}>Locations</Link>
+            {links.contact ? <Link href={links.contact}>Contact</Link> : null}
             {tel ? (
               <a className={`${s.btn} ${s.btnSmall}`} href={tel} data-lead="call" data-city={draft.slug}>
                 Call now
@@ -310,12 +313,12 @@ export default function CityLanding({ data, origin }: { data: CityLandingData; o
             ) : null}
             <div className={`${s.nearby} ${s.reveal}`} data-reveal="">
               {nearbyLive.map((n) => (
-                <Link key={n.slug} href={`${base}/locations/${n.slug}`}>
+                <Link key={n.slug} href={links.city(n.slug)}>
                   {n.name}, {n.state}
                   {n.distanceMiles ? <small>{Math.round(n.distanceMiles)} mi</small> : null}
                 </Link>
               ))}
-              <Link href={`${base}/locations`}>All locations →</Link>
+              <Link href={links.locations}>All locations →</Link>
             </div>
           </div>
         </section>
@@ -339,8 +342,13 @@ export default function CityLanding({ data, origin }: { data: CityLandingData; o
             {ctx.business.phone ? ` · ${ctx.business.phone}` : ""}
           </p>
           <p>
-            <Link href={`${base}/locations`}>Locations</Link> · <Link href={ctx.contactPath}>Contact</Link> ·{" "}
-            <a href={`${origin}${base}/sitemap.xml`}>Sitemap</a>
+            <Link href={links.locations}>Locations</Link> ·{" "}
+            {links.contact ? (
+              <>
+                <Link href={links.contact}>Contact</Link> ·{" "}
+              </>
+            ) : null}
+            <a href={links.sitemap}>Sitemap</a>
           </p>
           <p>City facts: U.S. Census Bureau (Vintage 2024 population estimates, 2024 Gazetteer).</p>
         </div>

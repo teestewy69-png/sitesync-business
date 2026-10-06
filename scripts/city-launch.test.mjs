@@ -276,6 +276,21 @@ test("honesty: live-run regressions (no false positives on honest sentences, ran
   assert.equal(honesty.findHonestyIssues({ ...mesa, text: "The city is known for its beautiful parks." })[0]?.label, "rankings / reputation");
 });
 
+test("honesty: growth pace and state rank are checked against Census numbers", () => {
+  const chandler = { cityName: "Chandler", cityState: "AZ", stateName: "Arizona", county: "Maricopa County", baseCity: "Phoenix", baseState: "AZ" };
+  assert.deepEqual(honesty.findHonestyIssues({ ...chandler, popChangePct: 1.9, text: "Chandler's population continues to grow." }), []);
+  assert.equal(honesty.findHonestyIssues({ ...chandler, popChangePct: 1.9, text: "Chandler's rapid growth means more homes need service." })[0]?.label, "rapid population growth", "+1.9% in four years is not rapid");
+  assert.deepEqual(honesty.findHonestyIssues({ ...chandler, popChangePct: 12, text: "Chandler's rapid growth means more homes need service." }), []);
+  const mesa = { ...chandler, cityName: "Mesa" };
+  assert.deepEqual(honesty.findHonestyIssues({ ...mesa, stateRank: 3, text: "Mesa is the third-largest city in Arizona." }), []);
+  assert.deepEqual(honesty.findHonestyIssues({ ...mesa, stateRank: 3, text: "Mesa is one of the largest cities in Arizona." }), []);
+  assert.equal(honesty.findHonestyIssues({ ...mesa, stateRank: 3, text: "Mesa is the second-largest city in Arizona." })[0]?.label, "rankings / reputation");
+  assert.equal(honesty.findHonestyIssues({ ...mesa, text: "Mesa is the third-largest city in Arizona." })[0]?.label, "rankings / reputation", "no rank given -> unverified");
+  assert.equal(honesty.findHonestyIssues({ ...mesa, stateRank: 3, text: "Maricopa County is known for its vibrant communities." })[0]?.label, "rankings / reputation");
+  const user = prompts.userPrompt(settings, { name: "Mesa", state: "AZ", stateName: "Arizona", population: 517151, stateRank: 3 }, { businessName: "X", niche: "plumbing" }, [], null);
+  assert.match(user, /Population rank among Arizona places \(Census 2024\): 3rd largest/);
+});
+
 test("honesty: distances and directions must match the Census coordinates", () => {
   const at = (slug) => { const c = index.bySlug.get(slug); return { name: c.name, lat: c.lat, lng: c.lng }; };
   const glendale = { city: at("glendale-az"), places: [at("phoenix-az"), at("tolleson-az"), at("youngtown-az")] };

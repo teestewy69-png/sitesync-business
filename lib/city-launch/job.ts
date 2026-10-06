@@ -86,6 +86,8 @@ export type CityDraft = {
     population: number;
     /** Census April 2020 estimates base (dataset cities). */
     pop2020?: number;
+    /** Population rank among the state's Census places (1 = largest). */
+    stateRank?: number;
     lat: number | null;
     lng: number | null;
     source: "dataset" | "csv";
@@ -135,9 +137,11 @@ export type CityLaunchIndex = {
   pages: Record<string, CityIndexEntry>;
   gateRunAt?: string;
   production?: {
-    status: "not_requested" | "signed_off";
+    status: "not_requested" | "signed_off" | "revoked";
     signedOffBy?: string;
     signedOffAt?: string;
+    revokedBy?: string;
+    revokedAt?: string;
     domain?: string;
     pageCount?: number;
     note?: string;

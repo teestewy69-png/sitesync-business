@@ -5,6 +5,7 @@ import { configFromProject } from "@/lib/factory/client-config";
 import { ensureBlobsFromRequest } from "@/lib/persistence";
 import { findProjectById } from "@/lib/store";
 import { requestOrigin } from "@/lib/factory/request-origin";
+import { clientSitemapUrls, loadPublishedPages } from "@/lib/factory/client-domain";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -16,7 +17,7 @@ function esc(s: string) {
 /**
  * Client sitemap: home, seeded template pages, locations index, every APPROVED city page.
  *   default            -> preview URLs on this host (/demo/client/<id>/...)
- *   ?target=production -> the client's real domain, only after Tony's City Launch production sign-off
+ *   ?target=production -> the client's real domain (only what it serves), only after Tony's City Launch production sign-off
  */
 export async function GET(req: NextRequest, { params }: { params: Promise<{ projectId: string }> }) {
   ensureBlobsFromRequest(req);
@@ -33,13 +34,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ proj
     if (index?.production?.status !== "signed_off" || !index.production.domain) {
       return new Response("Production sitemap is available after the City Launch production sign-off (and a selected domain).", { status: 409 });
     }
-    const root = `https://${index.production.domain}`;
-    urls = [
-      { loc: `${root}/` },
-      ...seeded.map((p) => ({ loc: `${root}${p.path}` })),
-      { loc: `${root}/locations/` },
-      ...cities.map((c) => ({ loc: `${root}/locations/${c.slug}/`, lastmod: c.approvedAt || c.updatedAt })),
-    ];
+    // Exactly what the client domain serves (app/client-domain/[host]/sitemap.xml uses the same builder).
+    urls = clientSitemapUrls(`https://${index.production.domain}`, await loadPublishedPages(projectId), cities);
   } else {
     const root = `${await requestOrigin()}/demo/client/${projectId}`;
     urls = [

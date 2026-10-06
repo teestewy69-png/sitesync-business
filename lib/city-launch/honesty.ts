@@ -33,6 +33,8 @@ export type HonestyInput = {
   support?: string;
   /** Census population change 2020->2024 in percent (undefined when unknown). */
   popChangePct?: number;
+  /** Population rank of the city among its state's Census places (1 = largest). */
+  stateRank?: number;
   geo?: HonestyGeo;
 };
 
@@ -55,15 +57,42 @@ export const BUSINESS_CLAIMS: Array<{ label: string; re: RegExp; support: RegExp
 ];
 
 /** Local "facts" that need a source. `support` = what in the operator's verified notes backs it. */
-export const LOCAL_FACT_CLAIMS: Array<{ label: string; re: RegExp; support: RegExp; growth?: "up" | "down" }> = [
+type LocalFactClaim = {
+  label: string;
+  re: RegExp;
+  /** Operator verified notes that back the claim. */
+  support: RegExp;
+  /** Census-backed check for this exact sentence (growth vs popChangePct, "Nth-largest" vs stateRank). */
+  backed?: (sentence: string, input: HonestyInput) => boolean;
+};
+
+const ORDINALS: Record<string, number> = { second: 2, third: 3, fourth: 4, fifth: 5, sixth: 6, seventh: 7, eighth: 8, ninth: 9, tenth: 10 };
+
+/** "largest city in Arizona" -> 1, "third-largest" / "3rd largest" -> 3, "one of the largest" -> rank <= 10. */
+function rankBacked(sentence: string, input: HonestyInput): boolean {
+  const rank = input.stateRank;
+  if (!rank) return false;
+  const m = /\b(one of the\s+)?(?:(\d+)(?:st|nd|rd|th)|(second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth))?[- ]?(largest|biggest|most populous)\b/i.exec(sentence);
+  if (!m) return false;
+  if (/\b(fastest|safest|best|oldest|newest|known for|famous|renowned)\b/i.test(sentence)) return false;
+  if (m[1]) return rank <= 10;
+  const stated = m[2] ? Number(m[2]) : m[3] ? ORDINALS[m[3].toLowerCase()] : 1;
+  return stated === rank;
+}
+
+const growthAtLeast = (pct: number) => (_s: string, input: HonestyInput) => typeof input.popChangePct === "number" && input.popChangePct >= pct;
+
+export const LOCAL_FACT_CLAIMS: LocalFactClaim[] = [
   { label: "water hardness / quality", re: /\bhard water\b|\bwater hardness\b|\bmineral(s|-rich| content| deposits)?\b|\bcalcium\b|\bwater quality\b/i, support: /hard water|hardness|mineral|calcium|water quality|grains per gallon|gpg/i },
   { label: "climate / weather", re: /\bmonsoon|\bclimate\b(?! control)|\bdesert (heat|sun|conditions|environment)\b|\b(extreme|intense|scorching|summer) (heat|temperatures)\b|\bhot summers?\b|\bmild winters?\b|\bhumid(ity)?\b|\bdrought\b|\brain(fall|y season|storms?)\b|\b\d+\s?(°|degrees)\b|\bfreez(e|es|ing)\b|\bfrozen pipes?\b|\bsnow\b|\bstorms?\b|\bseasons?\b/i, support: /monsoon|climate|heat|summer|winter|humid|drought|rain|freez|snow|storm|season|temperature/i },
   { label: "soil / geology / hazards", re: /\bcaliche\b|\bclay soil\b|\bexpansive soil\b|\bsoil\b|\bgeology\b|\bbedrock\b|\bflood(s|ing|plain)?\b|\bearthquakes?\b|\bhurricanes?\b|\btornado(es)?\b|\bwildfires?\b|\bsinkholes?\b|\btree roots\b/i, support: /caliche|soil|geolog|bedrock|flood|earthquake|hurricane|tornado|wildfire|sinkhole|roots/i },
   { label: "housing age / stock", re: /\bolder homes?\b|\bhistoric (homes?|neighborhoods?|districts?)\b|\baging (homes?|infrastructure|pipes|plumbing)\b|\bbuilt (in|during) the (19|20)\d0s\b|\bnew(er)? (homes?|developments?|construction|builds?|subdivisions?)\b|\bhousing (stock|mix|options|landscape|market)\b/i, support: /older homes|historic|aging|built in|new (homes|construction|developments)|housing/i },
   { label: "regulations / utilities", re: /\bordinances?\b|\bcodes? require\b|\bpermit(s|ting)? (are )?required\b|\bwater restrictions?\b|\brebates?\b/i, support: /ordinance|code|permit|utility|water department|water district|restriction|rebate/i },
-  { label: "population growth", re: /\b(rapid|rapidly|fast|steady|steadily|continued|booming|explosive)\s+(growth|growing)\b|\bgrowing (population|community|city)\b|\bpopulation (growth|boom)\b|\bfast-growing\b|\bcontinues to grow\b|\bexpanding (population|community)\b/i, support: /growth|growing/i, growth: "up" },
-  { label: "rankings / reputation", re: /\b(one of the\s+)?(fastest|largest|biggest|oldest|newest|safest|best|most (popular|desirable|affluent))[- ](growing\s+)?(cities|towns|suburbs|communities|places|areas)\b|\bfastest[- ]growing\b|\b(known|famous|renowned|celebrated|recognized) for\b/i, support: /fastest|largest|biggest|oldest|safest|best|known for|famous|renowned|celebrated|recognized/i },
-  { label: "population decline", re: /\b(declining|shrinking) (population|city)\b|\bpopulation (decline|loss)\b/i, support: /declin|shrink/i, growth: "down" },
+  // Census 2020->2024: "growing" needs >= +1%; "rapid / booming" needs >= +8% (about 2% a year).
+  { label: "rapid population growth", re: /\b(rapid|rapidly|fast|booming|explosive|dramatic)\s+(growth|growing|expansion)\b|\bfast-growing\b|\bpopulation boom\b|\bgrowing rapidly\b|\bgrown rapidly\b/i, support: /rapid|fast-growing|booming/i, backed: growthAtLeast(8) },
+  { label: "population growth", re: /\b(steady|steadily|continued)\s+(growth|growing)\b|\bgrowing (population|community|city)\b|\bpopulation growth\b|\bcontinues to grow\b|\bexpanding (population|community)\b/i, support: /growth|growing/i, backed: growthAtLeast(1) },
+  { label: "rankings / reputation", re: /\b(fastest|largest|biggest|oldest|newest|safest|best|most (popular|desirable|affluent|populous))[- ](growing\s+)?(city|cities|town|towns|suburbs?|communit(y|ies)|places?|areas?)\b|\bfastest[- ]growing\b|\b(known|famous|renowned|celebrated|recognized) for\b/i, support: /fastest|largest|biggest|oldest|safest|best|known for|famous|renowned|celebrated|recognized/i, backed: rankBacked },
+  { label: "population decline", re: /\b(declining|shrinking) (population|city)\b|\bpopulation (decline|loss)\b/i, support: /declin|shrink/i, backed: (_s, input) => typeof input.popChangePct === "number" && input.popChangePct <= -1 },
 ];
 
 function sentencesOf(text: string): string[] {
@@ -148,11 +177,8 @@ export function findHonestyIssues(input: HonestyInput): HonestyIssue[] {
   const placeTerms = [input.cityName, input.county?.replace(/\s+(County|Parish|Borough)$/i, ""), input.stateName].filter(Boolean).map((t) => esc(t!));
   const tie = new RegExp(`\\b(${[...placeTerms, "area", "local", "locally", "region", "regional", "here", "residents", "community", "neighborhoods?", "homeowners in", "city", "town"].join("|")})\\b`, "i");
   for (const claim of LOCAL_FACT_CLAIMS) {
-    if (claim.growth === "up" && typeof input.popChangePct === "number" && input.popChangePct >= 1) continue;
-    if (claim.growth === "down" && typeof input.popChangePct === "number" && input.popChangePct <= -1) continue;
-    if (!claim.growth && claim.support.test(support)) continue;
-    if (claim.growth && claim.support.test(support)) continue;
-    const hit = asserting.find((s) => claim.re.test(s) && tie.test(s));
+    if (claim.support.test(support)) continue;
+    const hit = asserting.find((s) => claim.re.test(s) && tie.test(s) && !(claim.backed && claim.backed(s, input)));
     if (hit) issues.push({ kind: "unverified_local", label: claim.label, sentence: hit });
   }
   // 4. distances / directions between known places must match the Census coordinates

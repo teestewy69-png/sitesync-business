@@ -46,6 +46,8 @@ export type CityPromptCity = {
   population?: number;
   /** Census April 2020 estimates base. */
   pop2020?: number;
+  /** Population rank among the state's Census places (1 = largest). */
+  stateRank?: number;
   keyword?: string;
   notes?: string;
 };
@@ -121,7 +123,7 @@ export function systemPrompt(settings: CityPromptSettings, city: CityPromptCity)
     "- Pick section headings and an angle that fit THIS city. Do not use a generic skeleton like 'Why choose us' / 'Our services' / 'Contact us'.",
     "- Never write a page that would still make sense after swapping the city name for another city.",
     `- Name the county and at least two of the listed nearest cities (with their real direction) in the body, e.g. in a service-area section, and use the distance from the business base when given.`,
-    "- LOCAL FACTS ONLY: do not state climate or weather, water hardness or quality, soil or geology, natural hazards, housing age or housing mix, population growth, local regulations, permits or utilities as facts about this place unless they appear in LOCAL FACTS or VERIFIED LOCAL NOTES. General service advice that is true anywhere is fine, but do not tie it to this city as a local fact.",
+    "- LOCAL FACTS ONLY: do not state climate or weather, water hardness or quality, soil or geology, natural hazards, housing age or housing mix, population growth or its pace, rankings ('third-largest', 'fastest-growing'), reputation ('known for...') or local regulations, permits or utilities as facts about this place unless they appear in LOCAL FACTS or VERIFIED LOCAL NOTES. Describe growth only with the Census change given (e.g. 'grew about 2% since 2020'); a few percent is not 'rapid'. General service advice that is true anywhere is fine, but do not tie it to this city as a local fact.",
     "- Do not invent neighborhoods, landmarks, statistics or ordinances.",
     "",
     "HONESTY RULES (about the business):",
@@ -130,6 +132,12 @@ export function systemPrompt(settings: CityPromptSettings, city: CityPromptCity)
     "- Describe the service area honestly: the business serves this city from its base location unless the context says otherwise.",
     "- Follow the VOICE block in the user message exactly: the business's location is its base city, nothing else.",
   ].join("\n");
+}
+
+function ordinal(n: number): string {
+  const v = n % 100;
+  const suffix = v >= 11 && v <= 13 ? "th" : ["th", "st", "nd", "rd"][n % 10] || "th";
+  return `${n}${suffix}`;
 }
 
 function fmtChange(now: number, base: number): string {
@@ -178,6 +186,7 @@ export function userPrompt(
     city.pop2020 && city.population
       ? `Population change since April 2020 (Census estimates base ${fmtPop(city.pop2020)}): ${fmtChange(city.population, city.pop2020)}`
       : "",
+    city.stateRank && city.stateRank <= 50 ? `Population rank among ${city.stateName} places (Census 2024): ${ordinal(city.stateRank)} largest` : "",
     base
       ? fromBase && fromBase.distanceMiles > 0.5
         ? `Business base: ${base}; ${city.name} is about ${Math.round(fromBase.distanceMiles)} miles ${fromBase.direction} of it`

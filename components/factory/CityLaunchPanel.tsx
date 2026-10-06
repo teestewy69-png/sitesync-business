@@ -312,6 +312,7 @@ export default function CityLaunchPanel({
   const reopen = (slug: string) => run(`reopen-${slug}`, async () => { await api({ op: "reopen", projectId, slug, approvedBy: approver }); await refresh(); });
   const regate = () => run("gate", async () => { const d = (await api({ op: "gate", projectId })) as { gate: { checked: number; blocked: number; warned: number } }; setNotice(`Gate: ${d.gate.checked} checked, ${d.gate.blocked} blocked, ${d.gate.warned} warned.`); await refresh(); });
   const signoff = () => run("signoff", async () => { await api({ op: "signoff-production", projectId, approvedBy: signoffBy }); await refresh(); });
+  const revoke = () => run("revoke", async () => { await api({ op: "revoke-production", projectId, approvedBy: signoffBy }); await refresh(); });
 
   const counts = summary.counts;
   const bc = batch?.counts;
@@ -612,8 +613,10 @@ export default function CityLaunchPanel({
             <a className="text-brand-300 hover:underline" href={`/demo/client/${projectId}/sitemap.xml`} target="_blank" rel="noreferrer">sitemap.xml</a>. On the Sitesinc Netlify site this is live the moment a page is approved (no rebuild; read from Blobs). Preview stays noindex.
           </li>
           <li>
-            <strong className="text-slate-200">Client&apos;s real domain (manual):</strong> needs a selected domain ({defaults.selectedDomain || "none yet"}), Tony&apos;s sign-off below, then the manual
-            {" "}<code>production_deployment</code> step. Signing off records approval only - nothing is deployed from here.
+            <strong className="text-slate-200">Client&apos;s real domain (sign-off + Netlify domain alias):</strong> needs a selected domain ({defaults.selectedDomain || "none yet"}) and Tony&apos;s sign-off below.
+            Once the domain is added as a domain alias on the Sitesinc Netlify site and its DNS points there (manual, see docs/per-client-factory.md), the site serves
+            home, approved pages, /locations, every approved city page, sitemap.xml and robots.txt on that domain, indexable, with canonicals on the client&apos;s domain.
+            Nothing is deployed or changed on Netlify from here. Revoking takes the domain offline (404) immediately.
           </li>
         </ul>
         <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
@@ -622,14 +625,21 @@ export default function CityLaunchPanel({
               Signed off by {production.signedOffBy} · {production.pageCount} pages · {production.domain} · {production.signedOffAt?.slice(0, 16)}
             </span>
           ) : (
-            <span className="rounded-full bg-white/10 px-2 py-0.5 text-slate-300">Production sign-off: not requested</span>
+            <span className="rounded-full bg-white/10 px-2 py-0.5 text-slate-300">
+              Production sign-off: {production?.status === "revoked" ? `revoked by ${production.revokedBy || "?"} · ${production.revokedAt?.slice(0, 16) || ""}` : "not requested"}
+            </span>
           )}
           <input value={signoffBy} onChange={(e) => setSignoffBy(e.target.value)} className={`${input} w-28`} />
           <button type="button" className={ghost} onClick={signoff} disabled={!counts.approved || !defaults.selectedDomain || Boolean(busy)}>
             Record Tony&apos;s production sign-off ({counts.approved} pages)
           </button>
           {production?.status === "signed_off" ? (
-            <a className="text-brand-300 hover:underline" href={`/demo/client/${projectId}/sitemap.xml?target=production`} target="_blank" rel="noreferrer">production sitemap</a>
+            <>
+              <a className="text-brand-300 hover:underline" href={`/demo/client/${projectId}/sitemap.xml?target=production`} target="_blank" rel="noreferrer">production sitemap</a>
+              <button type="button" className={ghost} onClick={revoke} disabled={Boolean(busy)}>
+                Revoke (take {production.domain} offline)
+              </button>
+            </>
           ) : null}
         </div>
       </div>

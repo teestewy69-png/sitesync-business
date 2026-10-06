@@ -451,6 +451,14 @@ function pop2020For(item: BatchItem): number | undefined {
   return getUsCityIndex().bySlug.get(item.slug)?.pop2020 || undefined;
 }
 
+function stateRankFor(item: BatchItem): number | undefined {
+  if (item.source !== "dataset") return undefined;
+  const index = getUsCityIndex();
+  const city = index.bySlug.get(item.slug);
+  const rank = city ? (index.byState.get(city.state) || []).indexOf(city) + 1 : 0;
+  return rank > 0 ? rank : undefined;
+}
+
 /**
  * What the operator vouched for: business/website context, CSV notes and verified local notes. Competitor gaps are
  * topics to cover, not facts about this business, so they never back a claim.
@@ -483,6 +491,7 @@ function promptCity(item: BatchItem) {
     county: item.county,
     population: item.population,
     pop2020: pop2020For(item),
+    stateRank: stateRankFor(item),
     keyword: item.keyword,
     notes: item.notes,
   };
@@ -539,8 +548,8 @@ export async function writeCityContent(
     throw err;
   }
   // Automatic honesty repair: models (gpt-4o-mini especially) still assert "licensed and insured", "24/7",
-  // "we are just 24 miles from...", "hard water in <city>". One follow-up call asks for exactly those sentences to
-  // be rewritten (same rules as the gate, see honesty.ts). Anything left is blocked by the gate for a human edit.
+  // "we are just 24 miles from...", "hard water in <city>". Up to CITY_LAUNCH_REPAIR_ROUNDS (default 2) follow-up calls ask for
+  // exactly those sentences to be rewritten (same rules as the gate, see honesty.ts). Anything left is blocked by the gate for a human edit.
   const honestyInput = {
     cityName: item.name,
     cityState: item.state,
@@ -551,29 +560,35 @@ export async function writeCityContent(
     businessName: ctx.business.businessName,
     support: supportText(item, settings),
     popChangePct: popChangePct({ city: { population: item.population, pop2020: city.pop2020 } as CityDraft["city"] }),
+    stateRank: city.stateRank,
     geo: cityHonestyGeo(item, nearby.map((n) => n.slug), base),
   };
-  const issues = findHonestyIssues({ ...honestyInput, text: contentText(content) });
+  let issues = findHonestyIssues({ ...honestyInput, text: contentText(content) });
   let repaired: HonestyIssue[] | undefined;
-  if (issues.length && (!opts.beforeExtraCall || (await opts.beforeExtraCall()))) {
+  let lastReply = reply.content;
+  const rounds = envInt("CITY_LAUNCH_REPAIR_ROUNDS", 2);
+  const baseLabel = [ctx.business.baseCity, ctx.business.baseState].filter(Boolean).join(", ");
+  for (let round = 0; round < rounds && issues.length; round += 1) {
+    if (opts.beforeExtraCall && !(await opts.beforeExtraCall())) break;
     try {
-      const baseLabel = [ctx.business.baseCity, ctx.business.baseState].filter(Boolean).join(", ");
       const fix = await chatCompletion(
         resolved,
         [
           ...messages,
-          { role: "assistant" as const, content: reply.content },
+          { role: "assistant" as const, content: lastReply },
           { role: "user" as const, content: repairInstructions(issues, item.name, baseLabel) },
         ],
         { timeoutMs: envInt("CITY_LAUNCH_LLM_TIMEOUT_MS", 90_000), temperature: 0.2, maxTokens: Math.min(4000, Math.round(settings.targetWordCount * 2.6) + 600), jsonMode: true }
       );
       const fixed = parseCityPageReply(fix.content, settings, city);
-      if (findHonestyIssues({ ...honestyInput, text: contentText(fixed) }).length < issues.length) {
-        content = fixed;
-        repaired = issues;
-      }
+      const left = findHonestyIssues({ ...honestyInput, text: contentText(fixed) });
+      if (left.length >= issues.length) break;
+      repaired = [...(repaired || []), ...issues.filter((i) => !left.some((l) => l.label === i.label && l.sentence === i.sentence))];
+      content = fixed;
+      lastReply = fix.content;
+      issues = left;
     } catch {
-      // keep the original draft; the gate will block it for a human edit
+      break; // keep the best draft so far; the gate blocks what is left for a human edit
     }
   }
   if (ctx.business.businessName && content.title.length + ctx.business.businessName.length + 3 <= 65) {
@@ -608,6 +623,7 @@ function draftFrom(
       county: item.county,
       population: item.population,
       pop2020: pop2020For(item),
+      stateRank: stateRankFor(item),
       lat: item.lat,
       lng: item.lng,
       source: item.source,
@@ -994,6 +1010,15 @@ export async function runCityGate(projectId: string): Promise<{ checked: number;
     .filter((p) => p.status === "draft" || p.status === "approved")
     .map((p) => p.slug);
   const drafts = await readDrafts(projectId, liveSlugs);
+  // Drafts written before the Census rank / 2020 base existed: fill them in so true statements are not blocked.
+  const cityIdx = getUsCityIndex();
+  for (const d of drafts) {
+    if (d.city.source !== "dataset") continue;
+    const c = cityIdx.bySlug.get(d.slug);
+    if (!c) continue;
+    if (!d.city.pop2020) d.city.pop2020 = c.pop2020 || undefined;
+    if (!d.city.stateRank) d.city.stateRank = (cityIdx.byState.get(c.state) || []).indexOf(c) + 1 || undefined;
+  }
   const approved = drafts.filter((d) => d.status === "approved");
   const now = nowIso();
   const approvedGate = evaluateGate(approved, { ...gateOpts, now });
@@ -1241,7 +1266,9 @@ export async function controlCityBatch(
 
 /**
  * Record Tony's sign-off to put the approved city pages on the client's real domain.
- * This does NOT deploy anything: production stays the manual `production_deployment` step.
+ * From then on, requests whose Host is that domain (apex or www) are served by middleware.ts ->
+ * app/client-domain/[host]/... — but only once the domain is attached to the Netlify site as a domain alias and its
+ * DNS points there, which stays a manual step (docs/per-client-factory.md). Nothing is deployed from here.
  */
 export async function signOffCityProduction(projectId: string, approvedBy: string) {
   const who = approvedBy.trim();
@@ -1249,6 +1276,9 @@ export async function signOffCityProduction(projectId: string, approvedBy: strin
   const project = await findProjectById(projectId);
   if (!project) return { ok: false as const, error: "Client project not found." };
   if (!project.selectedDomain) return { ok: false as const, error: "Pick the client's domain first (DomainIQ section)." };
+  const { normalizeDomain } = await import("@/lib/client-domain/host");
+  const domain = normalizeDomain(project.selectedDomain);
+  if (!domain) return { ok: false as const, error: `Selected domain "${project.selectedDomain}" is not a valid public hostname.` };
   const index = await readCityIndex(projectId);
   const approved = Object.values(index?.pages || {}).filter((p) => p.status === "approved" && p.gate?.status !== "block");
   if (!approved.length) return { ok: false as const, error: "No approved city pages to sign off." };
@@ -1257,10 +1287,24 @@ export async function signOffCityProduction(projectId: string, approvedBy: strin
       status: "signed_off",
       signedOffBy: who,
       signedOffAt: nowIso(),
-      domain: project.selectedDomain,
+      domain,
       pageCount: approved.length,
-      note: "Sign-off recorded. Production deploy to the client's domain is the manual production_deployment step - nothing was deployed.",
+      note: `Sign-off recorded. ${domain} serves the approved pages once it is a domain alias on the Netlify site with DNS pointing there (manual step) - nothing was deployed or changed on Netlify.`,
     };
+  });
+  const { recordClientDomain } = await import("./client-domain");
+  await recordClientDomain(projectId, domain);
+  return { ok: true as const, production: updated.production };
+}
+
+/** Take the client's real domain offline again (its pages 404 there at once). Preview is unaffected. */
+export async function revokeCityProduction(projectId: string, revokedBy: string) {
+  const who = revokedBy.trim();
+  if (!who) return { ok: false as const, error: "approvedBy required (who revokes)." };
+  const index = await readCityIndex(projectId);
+  if (index?.production?.status !== "signed_off") return { ok: false as const, error: "No production sign-off to revoke." };
+  const updated = await updateIndex(projectId, (idx) => {
+    idx.production = { ...idx.production!, status: "revoked", revokedBy: who, revokedAt: nowIso(), note: "Revoked: the client domain no longer serves these pages." };
   });
   return { ok: true as const, production: updated.production };
 }

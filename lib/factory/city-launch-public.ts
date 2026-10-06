@@ -189,3 +189,46 @@ export function cityTheme(style: DesignStyle): CityTheme {
 export function previewBase(projectId: string) {
   return `/demo/client/${projectId}`;
 }
+
+/**
+ * Where links on a client page point. Preview = /demo/client/<id>/... on a Sitesinc host (noindex, banner);
+ * production = the client's own domain after sign-off (indexable, no Sitesinc chrome, root-relative links).
+ */
+export type ClientSiteLinks = {
+  mode: "preview" | "production";
+  /** Absolute origin used for canonical / JSON-LD / sitemap links. */
+  origin: string;
+  home: string;
+  locations: string;
+  city: (slug: string) => string;
+  /** null = no publishable contact page; the CTA falls back to phone / email. */
+  contact: string | null;
+  email?: string;
+  sitemap: string;
+};
+
+export function previewLinks(projectId: string, ctx: CityLaunchClientContext, origin: string): ClientSiteLinks {
+  const base = previewBase(projectId);
+  return {
+    mode: "preview",
+    origin,
+    home: base,
+    locations: `${base}/locations`,
+    city: (slug) => `${base}/locations/${slug}`,
+    contact: ctx.contactPath,
+    sitemap: `${origin}${base}/sitemap.xml`,
+  };
+}
+
+export function productionLinks(domain: string, opts: { contactPath: string | null; email?: string }): ClientSiteLinks {
+  return {
+    mode: "production",
+    origin: `https://${domain}`,
+    home: "/",
+    locations: "/locations",
+    city: (slug) => `/locations/${slug}`,
+    contact: opts.contactPath,
+    email: opts.email,
+    sitemap: "/sitemap.xml",
+  };
+}

@@ -125,6 +125,7 @@ export function evaluateGate(drafts: CityDraft[], opts: GateOptions = {}): Map<s
       businessName: opts.businessName,
       support: d.businessContext ?? opts.businessContext ?? "",
       popChangePct: popChangePct(d),
+      stateRank: d.city.stateRank,
       geo: opts.geoFor?.(d),
     });
     if (honesty.length) {

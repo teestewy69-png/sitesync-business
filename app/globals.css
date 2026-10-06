@@ -111,3 +111,8 @@ body {
   background: rgb(212 164 74 / 0.4);
   color: white;
 }
+
+/* Client real domains (app/client-domain/*): never show Sitesinc's own pricing ticker. */
+body:has([data-client-site]) .announcement-ticker {
+  display: none;
+}

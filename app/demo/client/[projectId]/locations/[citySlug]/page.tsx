@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import CityLanding from "@/components/city-launch/CityLanding";
-import { cityPageJsonLd, loadCityLanding, previewBase } from "@/lib/factory/city-launch-public";
+import { cityPageJsonLd, loadCityLanding, previewBase, previewLinks } from "@/lib/factory/city-launch-public";
 import { requestOrigin } from "@/lib/factory/request-origin";
 
 export const dynamic = "force-dynamic";
@@ -22,7 +22,7 @@ export async function generateMetadata({
   if (!data) return { title: "Not found", robots: { index: false, follow: false } };
   const origin = await requestOrigin();
   const previewUrl = `${origin}${previewBase(projectId)}/locations/${citySlug}`;
-  const canonical = data.productionDomain ? `https://${data.productionDomain}/locations/${citySlug}/` : previewUrl;
+  const canonical = data.productionDomain ? `https://${data.productionDomain}/locations/${citySlug}` : previewUrl;
   return {
     title: { absolute: data.draft.content.title },
     description: data.draft.content.metaDescription,
@@ -55,7 +55,7 @@ export default async function CityLandingPage({
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
-      <CityLanding data={data} origin={origin} />
+      <CityLanding data={data} links={previewLinks(projectId, data.ctx, origin)} />
     </>
   );
 }

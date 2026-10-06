@@ -12,6 +12,7 @@ import {
   runCityGate,
   saveCityDraftEdit,
   setCityDraftStatus,
+  revokeCityProduction,
   signOffCityProduction,
   type CityPickRequest,
   type DraftEdit,
@@ -54,7 +55,8 @@ export async function GET(req: NextRequest) {
  *   approve     { slugs[], approvedBy, allowWarn? }                human approval (gate must not block)
  *   reject      { slug, reason? } / reopen { slug }
  *   gate        {}                                                 recompute uniqueness/quality gate
- *   signoff-production { approvedBy }                              Tony's real-domain sign-off (records only)
+ *   signoff-production { approvedBy }                              Tony's real-domain sign-off (domain serves after Netlify alias + DNS)
+ *   revoke-production  { approvedBy }                              take the client domain offline again
  */
 export async function POST(req: NextRequest) {
   try {
@@ -97,6 +99,8 @@ export async function POST(req: NextRequest) {
         return reply({ ok: true, gate: await runCityGate(projectId) });
       case "signoff-production":
         return reply(await signOffCityProduction(projectId, String(body.approvedBy || "")));
+      case "revoke-production":
+        return reply(await revokeCityProduction(projectId, String(body.approvedBy || "")));
       default:
         return reply({ ok: false, error: `Unknown op "${op}".` });
     }

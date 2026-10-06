@@ -111,6 +111,7 @@ for (const d of drafts) {
     text: contentText(d.content), cityName: d.city.name, cityState: d.city.state, stateName: d.city.stateName, county: d.city.county,
     baseCity: project.city, baseState: project.state, businessName: project.businessName, support: d.businessContext || "",
     popChangePct: popChangePct(d),
+    stateRank: d.city.stateRank,
     geo: cl.cityHonestyGeo(d.city, (d.nearby || []).map((n) => n.slug), cl.cityLaunchContext(project).baseCity),
   });
   const loc = issues.filter((i) => i.kind === "location_claim").length;
