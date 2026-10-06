@@ -37,7 +37,7 @@ export const PRODUCTION_SURFACES = [
     label: "Industry pages",
     paths: ["/for-local-service-businesses"],
     slugs: ["for-local-service-businesses"],
-    note: "One industry explainer. No city doorway clones.",
+    note: "One industry explainer. City pages only via the City Launch quality gate (unique local content; near-duplicates blocked).",
   },
   {
     id: "process_faq",

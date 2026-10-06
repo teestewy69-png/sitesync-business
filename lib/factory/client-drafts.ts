@@ -32,7 +32,7 @@ export function draftFromClientBrief(
     "",
     `## ${headings[1] || "Local context"}`,
     "",
-    `Service area: ${loc}. Do not expand this into thin city doorway pages.`,
+    `Service area: ${loc}. Multi-city pages go through City Launch (unique local copy per city; near-duplicates are blocked by the quality gate).`,
     "",
     `## ${headings[2] || "How to get started"}`,
     "",

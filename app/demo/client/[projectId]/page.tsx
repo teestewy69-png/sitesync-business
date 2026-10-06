@@ -5,6 +5,8 @@ import MiniSiteFrame from "@/components/MiniSiteFrame";
 import { DESIGN_STYLES, buildPreviewContent, type DesignStyleId } from "@/lib/design-styles";
 import { configFromProject } from "@/lib/factory/client-config";
 import { readClientWorkspace } from "@/lib/factory/client-workspace";
+import { readCityIndex } from "@/lib/factory/city-launch";
+import { approvedEntries } from "@/lib/factory/city-launch-public";
 import { findProjectById } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
@@ -51,6 +53,7 @@ export default async function ClientDeliverableHome({
     .join(" · ");
 
   const workspace = await readClientWorkspace(projectId);
+  const cityPages = approvedEntries(await readCityIndex(projectId).catch(() => null));
   const pages = project.seededPages?.length
     ? project.seededPages
     : config.seededPages;
@@ -82,10 +85,36 @@ export default async function ClientDeliverableHome({
               {page.slug === "home" ? "Home" : page.title.split("·")[0].trim()}
             </Link>
           ))}
+          {cityPages.length ? (
+            <Link href={`/demo/client/${projectId}/locations`} className="hover:text-white">
+              Locations
+            </Link>
+          ) : null}
         </nav>
       </header>
       <main className="mx-auto max-w-5xl space-y-8 px-6 pb-16">
         <MiniSiteFrame style={style} content={content} />
+        {cityPages.length ? (
+          <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm text-zinc-300">
+            <h2 className="text-base font-semibold text-white">
+              Service areas ({cityPages.length} approved city page{cityPages.length === 1 ? "" : "s"})
+            </h2>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {cityPages.slice(0, 60).map((page) => (
+                <Link
+                  key={page.slug}
+                  href={`/demo/client/${projectId}/locations/${page.slug}`}
+                  className="rounded-full border border-white/10 px-3 py-1 text-xs text-emerald-300 hover:border-emerald-300/50"
+                >
+                  {page.name}, {page.state}
+                </Link>
+              ))}
+              <Link href={`/demo/client/${projectId}/locations`} className="px-3 py-1 text-xs text-zinc-400 hover:text-white">
+                All locations →
+              </Link>
+            </div>
+          </section>
+        ) : null}
         <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm text-zinc-300">
           <h2 className="text-base font-semibold text-white">Planned pages (from template)</h2>
           <ul className="mt-3 space-y-2">

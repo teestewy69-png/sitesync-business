@@ -2,6 +2,7 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import CaptureButton from "@/components/factory/CaptureButton";
+import CityLaunchPanel from "@/components/factory/CityLaunchPanel";
 import DomainIQPanel from "@/components/factory/DomainIQPanel";
 import FactoryShell, { Pill } from "@/components/factory/Shell";
 import { configFromProject } from "@/lib/factory/client-config";
@@ -12,6 +13,8 @@ import { DESIGN_STYLES } from "@/lib/design-styles";
 import { findProjectById } from "@/lib/store";
 import { readBaseline } from "@/lib/factory/workspace";
 import { clientDomainSeedFromProject } from "@/lib/factory/domainiq";
+import { cityLaunchContext, cityLaunchSummary } from "@/lib/factory/city-launch";
+import { defaultWebsiteContent } from "@/lib/city-launch/prompts";
 
 export const dynamic = "force-dynamic";
 
@@ -47,6 +50,8 @@ export default async function ClientProjectDetailPage({
     : 0;
   const pagesTotal = ownBaseline?.pageInventory.length || 0;
   const limited = ownBaseline ? pagesOk === 0 : false;
+  const cityCtx = cityLaunchContext(project);
+  const citySummary = await cityLaunchSummary(projectId);
 
   return (
     <FactoryShell title={`Client project · ${config.businessName}`}>
@@ -178,6 +183,20 @@ export default async function ClientProjectDetailPage({
         domainStatus={project.domainStatus}
         state={project.domainIQ}
         seedPreview={clientDomainSeedFromProject(project)}
+      />
+
+      <CityLaunchPanel
+        projectId={projectId}
+        initial={citySummary}
+        defaults={{
+          businessName: cityCtx.business.businessName,
+          niche: cityCtx.business.niche,
+          baseCity: cityCtx.baseCity?.name || cityCtx.business.baseCity || "",
+          baseState: cityCtx.baseCity?.state || cityCtx.business.baseState || "",
+          baseInDataset: Boolean(cityCtx.baseCity),
+          websiteContent: defaultWebsiteContent(cityCtx.business),
+          selectedDomain: project.selectedDomain,
+        }}
       />
 
       <section className="mt-6 rounded-2xl border border-white/10 p-5">
@@ -366,7 +385,9 @@ export default async function ClientProjectDetailPage({
 
       <p className="mt-8 text-xs text-slate-500">
         Automated: workspace init, templated draft seed, stage auto-progress (except approval/deploy),
-        baseline capture/recapture when host known, DomainIQ domain candidates + keyless availability check.
+        baseline capture/recapture when host known, DomainIQ domain candidates + keyless availability check,
+        City Launch writing jobs (LLM, retries, resume), uniqueness gate, preview publish of approved city pages.
+        Manual by design: approving City Launch drafts, Tony&apos;s real-domain sign-off.
         Manual by design: domain pick + Tony&apos;s purchase sign-off (Sitesinc never buys a domain). Manual by design: human_approval, production_deployment,
         final copy polish, photos, Netlify client publish. Blocked on external setup: analyze top 3 (no
         SERP/search API key in this repo).

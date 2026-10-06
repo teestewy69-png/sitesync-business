@@ -480,7 +480,9 @@ function ResearchPanel({ workspace }: { workspace: FactoryWorkspace }) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-slate-400">
-        Clusters are useful pages, not doorway spam. City/industry duplicates are explicitly out of scope.
+        Clusters are useful pages, not doorway spam. Multi-city pages are allowed only through the City Launch quality
+        gate: each city page needs genuinely local content, and near-duplicates (a find-and-replace of the city name)
+        are blocked from approval and publishing.
       </p>
       <div className="grid gap-4 lg:grid-cols-2">
         {workspace.clusters.map((cluster) => (

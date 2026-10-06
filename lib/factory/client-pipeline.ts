@@ -69,7 +69,7 @@ export function seedClientClusters(config: ClientBuildConfig): TopicCluster[] {
       intent: "Compare service options and from-prices.",
       hubPath: "/services",
       supporting: ["/", "/contact"],
-      notes: "One services page — not city doorway clones.",
+      notes: "One services page. City pages come from City Launch (quality-gated, unique per city).",
     },
     {
       id: "trust",
@@ -156,7 +156,7 @@ export function seedClientBriefs(config: ClientBuildConfig): ContentBrief[] {
         ],
         outline: [
           `Open with ${config.businessName} and the ${niche} offer`,
-          `Local context for ${loc} without doorway spam`,
+          `Local context for ${loc} (city pages via City Launch quality gate)`,
           "CTA: call / form / book",
         ],
         citations: [
