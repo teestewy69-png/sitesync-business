@@ -34,6 +34,8 @@ export type CityPageContent = {
   faq: CityPageFaq[];
   ctaHeadline: string;
   ctaText: string;
+  /** 2-3 sentences placing the city: county, 2+ nearest cities with direction, distance from the business base. */
+  serviceArea?: string;
 };
 
 export type CityPromptCity = {
@@ -101,6 +103,7 @@ export function systemPrompt(settings: CityPromptSettings, city: CityPromptCity)
   return [
     "You are an expert local-SEO content writer. Return ONLY JSON (no prose, no code fences) with this shape:",
     '{"metaDescription": string (120-155 chars), "h1": string, "heroSubhead": string (1 sentence),',
+    ' "serviceArea": string (2-3 sentences: name the county, at least two of the nearest cities with their direction, and the distance from the business base if given),',
     ' "intro": string (2-3 sentences), "sections": [{"heading": string, "body": string}] (4-6 items),',
     ' "localHighlights": [string] (3-5 short, city-specific points), ' +
       (settings.includeFaq ? '"faq": [{"question": string, "answer": string}] (4-5 items), ' : '"faq": [], ') +
@@ -229,6 +232,7 @@ export function contentText(content: CityPageContent): string {
     ...content.sections.flatMap((s) => [s.heading, s.body]),
     ...content.localHighlights,
     ...content.faq.flatMap((f) => [f.question, f.answer]),
+    content.serviceArea || "",
     content.ctaHeadline,
     content.ctaText,
   ].join("\n\n");
@@ -269,6 +273,7 @@ export function parseCityPageReply(
     faq: settings.includeFaq ? faq : [],
     ctaHeadline: str(data.ctaHeadline, 160),
     ctaText: str(data.ctaText, 600),
+    serviceArea: str(data.serviceArea ?? data.service_area, 900),
   };
   if (!content.h1) content.h1 = content.title;
   if (content.metaDescription.length > 160) content.metaDescription = `${content.metaDescription.slice(0, 157).replace(/\s+\S*$/, "")}...`;

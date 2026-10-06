@@ -259,6 +259,7 @@ export default function CityLaunchPanel({
         faq: faqToText(c.faq),
         ctaHeadline: c.ctaHeadline,
         ctaText: c.ctaText,
+        serviceArea: c.serviceArea || "",
       });
     });
   }
@@ -278,6 +279,7 @@ export default function CityLaunchPanel({
           intro: edit.intro,
           ctaHeadline: edit.ctaHeadline,
           ctaText: edit.ctaText,
+          serviceArea: edit.serviceArea,
           sections: textToSections(edit.sections || ""),
           localHighlights: linesToList(edit.localHighlights || ""),
           faq: textToFaq(edit.faq || ""),
@@ -577,6 +579,7 @@ export default function CityLaunchPanel({
                                 <input value={edit[k] || ""} onChange={(e) => setEdit({ ...edit, [k]: e.target.value })} className={`${input} mt-1 w-full`} />
                               </label>
                             ))}
+                            <label className="text-xs text-slate-400 md:col-span-2">service area (county + nearby cities)<textarea value={edit.serviceArea || ""} onChange={(e) => setEdit({ ...edit, serviceArea: e.target.value })} rows={2} className={`${input} mt-1 w-full`} /></label>
                             <label className="text-xs text-slate-400 md:col-span-2">intro<textarea value={edit.intro || ""} onChange={(e) => setEdit({ ...edit, intro: e.target.value })} rows={3} className={`${input} mt-1 w-full`} /></label>
                             <label className="text-xs text-slate-400 md:col-span-2">sections (## Heading, then body)<textarea value={edit.sections || ""} onChange={(e) => setEdit({ ...edit, sections: e.target.value })} rows={14} className={`${input} mt-1 w-full font-mono`} /></label>
                             <label className="text-xs text-slate-400">local highlights (one per line)<textarea value={edit.localHighlights || ""} onChange={(e) => setEdit({ ...edit, localHighlights: e.target.value })} rows={5} className={`${input} mt-1 w-full`} /></label>

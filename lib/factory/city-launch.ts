@@ -920,7 +920,7 @@ export async function runCityGate(projectId: string): Promise<{ checked: number;
 
 /* ---------------------------- review actions ---------------------------- */
 
-export type DraftEdit = Partial<Pick<CityPageContent, "title" | "metaDescription" | "h1" | "heroSubhead" | "intro" | "ctaHeadline" | "ctaText">> & {
+export type DraftEdit = Partial<Pick<CityPageContent, "title" | "metaDescription" | "h1" | "heroSubhead" | "intro" | "ctaHeadline" | "ctaText" | "serviceArea">> & {
   sections?: CityPageContent["sections"];
   localHighlights?: string[];
   faq?: CityPageContent["faq"];
@@ -940,6 +940,7 @@ export async function saveCityDraftEdit(projectId: string, slug: string, edit: D
       intro: s(edit.intro, 2000) ?? c.intro,
       ctaHeadline: s(edit.ctaHeadline, 160) ?? c.ctaHeadline,
       ctaText: s(edit.ctaText, 600) ?? c.ctaText,
+      serviceArea: s(edit.serviceArea, 900) ?? c.serviceArea,
       sections: Array.isArray(edit.sections) ? edit.sections.filter((x) => x.heading && x.body).slice(0, 10) : c.sections,
       localHighlights: Array.isArray(edit.localHighlights) ? edit.localHighlights.filter(Boolean).slice(0, 8) : c.localHighlights,
       faq: Array.isArray(edit.faq) ? edit.faq.filter((x) => x.question && x.answer).slice(0, 8) : c.faq,

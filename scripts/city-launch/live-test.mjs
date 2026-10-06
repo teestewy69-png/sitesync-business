@@ -106,7 +106,7 @@ if (drafts.length >= 2) {
 
 console.log("\nEXCERPTS");
 for (const d of drafts.slice(0, 2)) {
-  console.log(`## ${d.content.title}\nH1: ${d.content.h1}\nintro: ${d.content.intro.slice(0, 420)}\nsection 1 "${d.content.sections[0]?.heading}": ${d.content.sections[0]?.body.slice(0, 300)}\nlocal highlights: ${d.content.localHighlights.slice(0, 2).join(" | ")}\n`);
+  console.log(`## ${d.content.title}\nH1: ${d.content.h1}\nintro: ${d.content.intro.slice(0, 420)}\nsection 1 "${d.content.sections[0]?.heading}": ${d.content.sections[0]?.body.slice(0, 300)}\nservice area: ${d.content.serviceArea || "-"}\nlocal highlights: ${d.content.localHighlights.slice(0, 2).join(" | ")}\n`);
 }
 const reportPath = path.join(workdir, "city-launch-live-report.json");
 writeFileSync(reportPath, JSON.stringify({ provider: { envKey: provider.envKey, model: provider.model }, projectId: project.id, batchId, status: batch.status, pairs, drafts, gate: Object.fromEntries(drafts.map((d) => [d.slug, index.pages[d.slug]?.gate])) }, null, 2));

@@ -303,6 +303,11 @@ export default function CityLanding({ data, origin }: { data: CityLandingData; o
             <h2 id="cl-nearby" className={`${s.h2} ${s.reveal}`} data-reveal="">
               Also serving near {draft.city.name}
             </h2>
+            {c.serviceArea ? (
+              <p className={`${s.lead} ${s.reveal}`} data-reveal="">
+                {c.serviceArea}
+              </p>
+            ) : null}
             <div className={`${s.nearby} ${s.reveal}`} data-reveal="">
               {nearbyLive.map((n) => (
                 <Link key={n.slug} href={`${base}/locations/${n.slug}`}>
