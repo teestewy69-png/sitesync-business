@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useCart } from "@/components/shop/CartProvider";
-import { formatMoney, parsePrice } from "@/data/products";
-import { trackBeginCheckout } from "@/lib/analytics";
+import { useCart } from "@/components/siteflow/CartProvider";
+import { formatMoney } from "@/data/products";
 
 type Status = "idle" | "loading" | "error";
 
@@ -44,22 +43,6 @@ export default function CheckoutPage() {
   const needsAddress = items.some(({ product }) => product.requiresShipping);
   const inputProducts = items.filter(({ product }) => product.fulfillmentInputs?.length);
 
-  // begin_checkout once per visit, as soon as the cart has items.
-  const checkoutTracked = useRef(false);
-  useEffect(() => {
-    if (checkoutTracked.current || items.length === 0) return;
-    checkoutTracked.current = true;
-    trackBeginCheckout(
-      items.map(({ line, product }) => ({
-        item_id: product.slug,
-        item_name: product.name,
-        item_category: product.category,
-        price: parsePrice(product.price),
-        quantity: line.quantity,
-      })),
-      subtotal
-    );
-  }, [items, subtotal]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -109,13 +92,13 @@ export default function CheckoutPage() {
           Checkout
         </h1>
         <p className="mt-3 text-base text-slate-300">
-          Nothing to check out yet. Add a product from the shop first.
+          Nothing to check out yet.
         </p>
         <Link
-          href="/shop"
+          href="/"
           className="mt-8 inline-flex items-center justify-center rounded-full bg-gradient-to-b from-brand-300 to-brand-600 px-6 py-3 text-sm font-semibold text-zinc-950 shadow-glow transition hover:from-brand-200 hover:to-brand-500"
         >
-          Browse the shop
+          Back to Sitesinc
         </Link>
       </section>
     );

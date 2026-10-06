@@ -29,6 +29,12 @@ async function factoryAuth(req: NextRequest) {
   return NextResponse.redirect(login);
 }
 
+/** The public shop was removed on 2026-10-05 (Sitesinc sells website builds only): old /shop URLs 301 to the homepage. */
+export function isRemovedShopPath(pathname: string): boolean {
+  const p = pathname.toLowerCase();
+  return p === "/shop" || p.startsWith("/shop/");
+}
+
 function isFactoryPath(pathname: string) {
   return pathname === "/app" || pathname.startsWith("/app/") || pathname.startsWith("/api/factory/");
 }
@@ -57,6 +63,14 @@ export async function middleware(req: NextRequest) {
   // Sitesinc hosts: the internal client-domain routes are never reachable directly.
   if (pathname === CLIENT_DOMAIN_PREFIX || pathname.startsWith(`${CLIENT_DOMAIN_PREFIX}/`)) return notFound();
 
+  // Removed shop: /shop and /shop/* (old product pages, "Other inquiries") permanently redirect to the homepage.
+  if (isRemovedShopPath(pathname)) {
+    const home = req.nextUrl.clone();
+    home.pathname = "/";
+    home.search = "";
+    return NextResponse.redirect(home, 301);
+  }
+
   // SiteFlow partner links (?ref=<code>): validate + set the referral cookie in a Node route, then land on the clean URL.
   // While SiteFlow is paused, ?ref= does nothing: no redirect, no cookie.
   const ref = siteflowOn ? shouldCaptureRef(req.method, pathname, req.nextUrl.search) : "";
@@ -78,7 +92,7 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   // Every path except Next's static/image assets: client domains need "/", "/locations", "/robots.txt"...
-  // On Sitesinc hosts only /app and /api/factory (factory auth), paused SiteFlow routes (404) and, when SiteFlow is
-  // enabled, GET pages with ?ref= (referral capture) do anything.
+  // On Sitesinc hosts only /app and /api/factory (factory auth), paused SiteFlow routes (404), the removed /shop
+  // (301 to /) and, when SiteFlow is enabled, GET pages with ?ref= (referral capture) do anything.
   matcher: ["/((?!_next/static|_next/image).*)"],
 };

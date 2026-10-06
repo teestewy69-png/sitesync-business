@@ -6,7 +6,7 @@ import {
   DESIGN_STYLES,
   buildPreviewContent,
 } from "@/lib/design-styles";
-import { trackSelectItem } from "@/lib/analytics";
+import { trackSelectContent } from "@/lib/analytics";
 
 export default function PickYourDesign() {
   const [businessName, setBusinessName] = useState("");
@@ -76,10 +76,7 @@ export default function PickYourDesign() {
                 type="button"
                 onClick={() => {
                   setActiveIndex(index);
-                  trackSelectItem("design_styles", {
-                    item_id: design.id,
-                    item_name: design.name,
-                  });
+                  trackSelectContent("design_style", design.id);
                 }}
                 className={`rounded-full border px-4 py-2 text-xs font-medium transition ${
                   isActive

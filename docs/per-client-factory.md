@@ -6,7 +6,7 @@ This note describes what is **fully wired** vs **still manual** after the per-cl
 
 - **Sitesinc growth case study** stays on `FACTORY_PROJECT_ID` (`sitesinc-growth-case-study`) and `factory/workspace`.
 - **Each CRM client project** gets structured config fields on `ClientProject` plus its own workspace at `factory/clients/<projectId>/workspace`.
-- Intake (`/api/subscribe`, `/api/inquiry` → `intakeToProject` → `recordIntakeProject`) no longer treats every lead as a mirror *into* the Sitesinc SEO factory as the build target. `factoryProjectId` on the intake mirror row is the **client project id**.
+- Intake (`/api/subscribe` → `intakeToProject` → `recordIntakeProject`) no longer treats every lead as a mirror *into* the Sitesinc SEO factory as the build target. `factoryProjectId` on the intake mirror row is the **client project id**.
 - **Baselines are site-scoped.** A client baseline uses `siteId = projectId`, crawls `/demo/client/<projectId>`, and is stored on that client's workspace (`latestBaselineId`). Day 0 / case-study pickers never fall across to demos or client previews (see `baseline-pick.ts`).
 
 ## Automated / Manual by design / Blocked on external setup

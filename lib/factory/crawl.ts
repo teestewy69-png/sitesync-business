@@ -216,7 +216,6 @@ async function probeLink(href: string): Promise<{ status: number | null; error: 
 async function intakeHealth(origin: string): Promise<BaselineSnapshot["intakeFormHealth"]> {
   const notes: string[] = [];
   let checklist: ConversionSeverity = "warning";
-  let inquiry: ConversionSeverity = "warning";
 
   const badSubscribe = await fetch(`${origin}/api/subscribe`, {
     method: "POST",
@@ -231,18 +230,7 @@ async function intakeHealth(origin: string): Promise<BaselineSnapshot["intakeFor
     notes.push("Checklist endpoint did not reject invalid email (expected 400).");
   }
 
-  const badInquiry = await fetch(`${origin}/api/inquiry`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ slug: "", name: "", email: "", message: "" }),
-  }).catch(() => null);
-  if (badInquiry?.status === 400) {
-    inquiry = "ok";
-    notes.push("Inquiry endpoint rejects empty payloads.");
-  } else {
-    inquiry = "launch_blocking";
-    notes.push("Inquiry endpoint did not reject an empty payload (expected 400).");
-  }
+  // The product inquiry endpoint (/api/inquiry) was removed with the shop on 2026-10-05: nothing to probe.
 
   const crmWritable = await storeWritable();
   const factoryStore = await docStoreHealth();
@@ -259,11 +247,10 @@ async function intakeHealth(origin: string): Promise<BaselineSnapshot["intakeFor
   }
 
   const launchBlocking =
-    checklist === "launch_blocking" || inquiry === "launch_blocking" || !writable;
+    checklist === "launch_blocking" || !writable;
 
   return {
     checklistEndpoint: checklist,
-    inquiryEndpoint: inquiry,
     storeWritable: writable,
     smtpConfigured: smtp,
     notes,
@@ -417,7 +404,6 @@ export async function captureBaseline(opts?: {
     intakeFormHealth: demo || opts?.skipIntake
       ? {
           checklistEndpoint: "ok" as const,
-          inquiryEndpoint: "ok" as const,
           storeWritable: true,
           smtpConfigured: isMailConfigured(),
           notes: [

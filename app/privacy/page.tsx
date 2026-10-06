@@ -80,9 +80,9 @@ export default function PrivacyPage() {
                 Provide and deliver our website design and development services
               </li>
               <li>
-                Communicate with you about your inquiry, purchase, or project
+                Communicate with you about your website build request or project
               </li>
-              <li>Process payments and send order-related confirmations</li>
+              <li>Process invoice payments and send project-related confirmations</li>
               <li>Improve our website, services, and user experience</li>
               <li>
                 Send updates, resources, or marketing emails if you opt in

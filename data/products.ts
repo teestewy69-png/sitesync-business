@@ -1,8 +1,8 @@
 /**
- * SiteFlow catalog: the single source of truth for everything Sitesinc sells or links out to.
+ * Paused SiteFlow catalog (phase 2). Not a public shop: Sitesinc sells website builds and optional monitoring only.
  *
  * Rules (see docs/siteflow.md):
- *  - `listed: false` hides an entry everywhere public: /shop, product pages, the cart and /api/products.
+ *  - `listed: false` hides an entry from any future product page and from the (paused) cart/checkout.
  *  - `priceCents` stays undefined until Tony sets a price. An unpriced entry can never be checked out
  *    and is never pushed to Stripe.
  *  - `stripeLookupKey` is how scripts/siteflow/stripe-sync.mjs finds (or creates) the Stripe price and how
@@ -10,10 +10,10 @@
  *  - `deliverable` says what the buyer receives: a private Blobs file key, a generator id, or nothing
  *    (manual service). No strike-through "regular" prices: show only the real price.
  *
- * Path A (2026-10-05): SiteFlow is paused (lib/siteflow/flag.ts, SITEFLOW_ENABLED off by default). While paused
- * only the contact-only entries are public (lib/public-catalog.ts) and nothing is purchasable, whatever
- * `listed`/`priceCents` say here. The drafts below are kept for phase 2 and never shown to visitors.
- * The retired "Website Design Digital Product Bundle" and its images were removed entirely.
+ * 2026-10-05: SiteFlow is paused (lib/siteflow/flag.ts, SITEFLOW_ENABLED off by default) and the public shop
+ * (/shop, product pages, inquiry form, /api/products) was removed; /shop and /shop/* 301 to /. Nothing here is
+ * shown to visitors or purchasable while paused, whatever `listed`/`priceCents` say. The drafts below are kept
+ * for phase 2. The retired bundle and the old contact-only shop items were removed entirely, images included.
  *
  * This file has no imports on purpose: the Stripe sync script loads it directly with Node.
  */
@@ -68,35 +68,10 @@ export type CatalogEntry = {
   image: string;
 };
 
-/** Public/derived shape used by the shop UI. `price` is display text derived from `priceCents`. */
+/** Derived shape used by the paused cart/checkout UI. `price` is display text derived from `priceCents`. */
 export type Product = CatalogEntry & { price?: string };
 
 export const catalog: CatalogEntry[] = [
-  // --- Contact-only (listed) -------------------------------------------------------------------
-  {
-    slug: "financial-consulting",
-    name: "Financial Consultation",
-    category: "Consulting",
-    kind: "service",
-    listed: true,
-    contactOnly: true,
-    description:
-      "Professional financial consultation services. Contact us directly for pricing and service details.",
-    image: "/products/financial-consulting.jpg",
-  },
-  {
-    slug: "gold-filled-jewelry",
-    name: "24k, 18k & 14k Gold Filled Jewelry",
-    category: "Jewelry",
-    kind: "service",
-    listed: true,
-    contactOnly: true,
-    requiresShipping: true,
-    description:
-      "Gold-filled jewelry from our affiliate sources. Contact us for pricing, availability, and inventory.",
-    image: "/products/gold-filled-jewelry.jpg",
-  },
-
   // --- Planned SiteFlow products (phase 2, paused): unlisted drafts, never public while paused -----
   {
     slug: "keep-it-earning-kit",

@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 const ID_PATTERN = /^[a-z]+_[a-z0-9]{4,64}$/i;
 
 /**
- * Operator-only: set the pipeline stage of a lead, shop inquiry, or project.
+ * Operator-only: set the pipeline stage of a lead, a past product inquiry (the shop was removed 2026-10-05), or project.
  * Auth is enforced by middleware.ts (matcher /api/factory/*) and re-checked here.
  */
 export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {

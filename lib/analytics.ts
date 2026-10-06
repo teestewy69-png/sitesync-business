@@ -53,26 +53,10 @@ export function trackCtaClick(ctaName: string, params: GtagParams = {}): void {
   trackEvent("click", { cta_name: ctaName, ...params });
 }
 
-export type AnalyticsItem = {
-  item_id: string;
-  item_name?: string;
-  item_category?: string;
-  price?: number;
-  quantity?: number;
-};
-
-export function trackSelectItem(listName: string, item: AnalyticsItem): void {
-  trackEvent("select_item", { item_list_name: listName, items: [item] });
-}
-
-export function trackAddToCart(item: AnalyticsItem): void {
-  trackEvent("add_to_cart", {
-    currency: "USD",
-    value: (item.price ?? 0) * (item.quantity ?? 1),
-    items: [item],
-  });
-}
-
-export function trackBeginCheckout(items: AnalyticsItem[], value: number): void {
-  trackEvent("begin_checkout", { currency: "USD", value, items });
+/**
+ * Non-commerce content choice, e.g. the homepage design style picker.
+ * Sitesinc has no shop: there are deliberately no select_item / add_to_cart / begin_checkout helpers.
+ */
+export function trackSelectContent(contentType: string, contentId: string): void {
+  trackEvent("select_content", { content_type: contentType, content_id: contentId });
 }

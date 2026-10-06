@@ -56,22 +56,8 @@ export async function runConversionChecks(
     )
   );
 
-  const inq = await fetch(`${origin}/api/inquiry`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ slug: "", name: "", email: "", message: "x" }),
-  }).catch(() => null);
-  checks.push(
-    check(
-      "inquiry-validation",
-      "Successful submissions (guard)",
-      inq?.status === 400,
-      inq?.status === 400
-        ? "Inquiry form does not accept empty required fields."
-        : "Inquiry validation did not return 400.",
-      true
-    )
-  );
+  // No product inquiry check: the shop and /api/inquiry were removed on 2026-10-05. The only public form is the
+  // website build request (/api/subscribe), checked above.
 
   const writable = await storeWritable();
   const factoryStore = await docStoreHealth();

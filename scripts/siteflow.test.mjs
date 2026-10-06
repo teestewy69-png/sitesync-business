@@ -191,15 +191,18 @@ test("checkout params: session placeholder, no address for digital, subscription
 
 /* ---------------------------------- catalog --------------------------------- */
 
-test("catalog: no fake bundles, retired bundle hidden, drafts unlisted, contact-only kept", () => {
+test("catalog: no fake bundles, retired bundle hidden, drafts unlisted, old shop items removed", () => {
   const slugs = catalog.getPublicProducts().map((p) => p.slug);
   for (const gone of ["mack-makeup-bundle", "home-gym-bundle", "home-pet-grooming-kit", "longevity-life-bundle"]) {
     assert.equal(catalog.getCatalogEntry(gone), undefined);
   }
   assert.ok(!slugs.includes("website-design-digital-bundle"));
   assert.equal(catalog.getProduct("website-design-digital-bundle"), undefined);
-  assert.ok(slugs.includes("financial-consulting"));
-  assert.ok(slugs.includes("gold-filled-jewelry"));
+  for (const gone of ["financial-consulting", "gold-filled-jewelry"]) {
+    assert.ok(!slugs.includes(gone), gone);
+    assert.equal(catalog.getCatalogEntry(gone), undefined, gone);
+  }
+  assert.deepEqual(slugs, [], "nothing in the paused SiteFlow catalog is public");
   for (const p of catalog.getPublicProducts()) assert.ok(p.contactOnly || p.price, `${p.slug} listed without a price`);
 });
 

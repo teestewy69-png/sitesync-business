@@ -770,7 +770,7 @@ function SeoPanel({
         </button>
       </div>
       <p className="text-xs text-slate-500">
-        Production publish only adds approved factory URLs. Homepage, blog, and shop stay as they are. Rollback removes those new URLs.
+        Production publish only adds approved factory URLs. Homepage and blog stay as they are. Rollback removes those new URLs.
       </p>
       {workspace.deployments.length > 0 && (
         <div className={card}>

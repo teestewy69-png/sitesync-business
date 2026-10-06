@@ -130,7 +130,8 @@ export type BaselineSnapshot = {
   };
   intakeFormHealth: {
     checklistEndpoint: ConversionSeverity;
-    inquiryEndpoint: ConversionSeverity;
+    /** Legacy: older stored baselines have it. /api/inquiry was removed with the shop (2026-10-05); not set anymore. */
+    inquiryEndpoint?: ConversionSeverity;
     storeWritable: boolean;
     smtpConfigured: boolean;
     notes: string[];

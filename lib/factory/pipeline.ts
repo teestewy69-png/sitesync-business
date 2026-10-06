@@ -15,10 +15,7 @@ export const PUBLIC_PATHS = [
   "/blog",
   "/blog/real-small-business-website-needs",
   "/blog/diy-vs-done-for-you-websites",
-  "/shop",
-  "/shop/product/financial-consulting",
-  "/shop/product/gold-filled-jewelry",
-  // /cart and /checkout are not public paths: product checkout is paused with SiteFlow (Path A) and they 404.
+  // No shop (removed 2026-10-05; /shop 301s to /). /cart and /checkout are paused SiteFlow routes and 404.
   "/privacy",
   "/terms",
   "/thank-you",

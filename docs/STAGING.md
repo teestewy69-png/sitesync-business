@@ -49,7 +49,7 @@ Use the same values as `sitesyncllc`, plus the flag above:
    - Canonical / Open Graph URLs stay on `https://sitesinc.co` so staging cannot compete as a second indexable origin
 
 2. **Test leads stay obvious and separate**
-   - Lead capture is still `/api/subscribe` and `/api/inquiry` → Netlify Blobs + Titan SMTP. Netlify Forms is not used.
+   - Lead capture is `/api/subscribe` (website build request; the shop and `/api/inquiry` were removed 2026-10-05) → Netlify Blobs + Titan SMTP. Netlify Forms is not used.
    - Operator and customer emails sent through `sendMail` get a `[TEST]` subject prefix and a body line that names the staging site
    - Blobs go to store `sitesinc-crm-staging` instead of `sitesinc-crm`
    - Stored leads, inquiries, orders, and projects include `env: "staging"`

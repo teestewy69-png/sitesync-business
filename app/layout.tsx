@@ -4,7 +4,6 @@ import content from "@/content.json";
 import Analytics from "@/components/Analytics";
 import SitesincTicker from "@/components/SitesincTicker";
 import StagingBanner from "@/components/StagingBanner";
-import { CartProvider } from "@/components/shop/CartProvider";
 import {
   isStagingEnv,
   publicAnalyticsHosts,
@@ -67,12 +66,10 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-canvas text-slate-200">
-        <CartProvider>
-          <SitesincTicker />
-          {children}
-          <StagingBanner />
-          <Analytics measurementId={GA_MEASUREMENT_ID} allowedHosts={GA_HOSTS} />
-        </CartProvider>
+        <SitesincTicker />
+        {children}
+        <StagingBanner />
+        <Analytics measurementId={GA_MEASUREMENT_ID} allowedHosts={GA_HOSTS} />
       </body>
     </html>
   );

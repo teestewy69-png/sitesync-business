@@ -28,7 +28,7 @@ durable layer as leads: `lib/persistence.ts`.
   stable) but do not write. A stored document that is corrupt or has an unexpected project id makes reads/writes
   fail loudly instead of being reseeded over.
 - **The public intake mirror never creates the workspace.** `recordIntakeProject` (called by the public
-  `/api/subscribe` and `/api/inquiry`) saves the lead + project in the CRM first, then mirrors into the workspace
+  `/api/subscribe`, the website build request; `/api/inquiry` was removed with the shop on 2026-10-05) saves the lead + project in the CRM first, then mirrors into the workspace
   *only if a workspace document already exists* (`updateExistingWorkspace`). On a store with no workspace it
   writes nothing and logs `Factory workspace mirror SKIPPED ...` with `console.warn`; the lead is unaffected.
   Reason: a visitor submitting the form on a fresh store used to persist the code-default seed, which made a later

@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { useCart } from "@/components/shop/CartProvider";
-import ProductImage from "@/components/shop/ProductImage";
+import { useCart } from "@/components/siteflow/CartProvider";
+import ProductImage from "@/components/siteflow/ProductImage";
 import { formatMoney, parsePrice } from "@/data/products";
 
 export default function CartPage() {
@@ -28,14 +28,13 @@ export default function CartPage() {
           Cart
         </h1>
         <p className="mt-3 text-base text-slate-300">
-          Your cart is empty. Browse the shop and add a bundle when you&apos;re
-          ready.
+          Your cart is empty.
         </p>
         <Link
-          href="/shop"
+          href="/"
           className="mt-8 inline-flex items-center justify-center rounded-full bg-gradient-to-b from-brand-300 to-brand-600 px-6 py-3 text-sm font-semibold text-zinc-950 shadow-glow transition hover:from-brand-200 hover:to-brand-500"
         >
-          Browse the shop
+          Back to Sitesinc
         </Link>
       </section>
     );
@@ -123,8 +122,6 @@ export default function CartPage() {
           </div>
           <Link
             href="/checkout"
-            data-analytics-cta="proceed_to_checkout"
-            data-analytics-location="cart"
             className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-gradient-to-b from-brand-300 to-brand-600 px-6 py-3 text-sm font-semibold text-zinc-950 shadow-glow transition hover:from-brand-200 hover:to-brand-500"
           >
             Proceed to Checkout

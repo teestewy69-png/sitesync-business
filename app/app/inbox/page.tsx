@@ -57,10 +57,10 @@ export default async function InboxPage() {
         )}
       </ul>
 
-      <h2 className="mt-8 text-lg font-semibold">Shop inquiries</h2>
+      <h2 className="mt-8 text-lg font-semibold">Past product inquiries (shop removed Oct 5, 2026)</h2>
       <ul className="mt-3 space-y-2 text-sm">
         {inquiries.length === 0 ? (
-          <li className="text-slate-500">No shop inquiries yet.</li>
+          <li className="text-slate-500">No past product inquiries.</li>
         ) : (
           inquiries.map((item) => (
             <li key={item.id} className="rounded-xl border border-white/10 px-4 py-3">

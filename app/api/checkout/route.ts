@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
         await updateOrder(order.id, { status: "email_only" });
         await sendMail({
           to: getNotifyEmail(),
-          subject: `Shop order ${order.id} needs a payment link (Stripe checkout failed)`,
+          subject: `SiteFlow order ${order.id} needs a payment link (Stripe checkout failed)`,
           text: `Stripe Checkout could not be created for order ${order.id} (${order.name} <${order.email}>), total $${order.subtotal.toFixed(2)}. Send a payment link manually.`,
           replyTo: email,
         }).catch(() => undefined);
@@ -142,7 +142,7 @@ export async function POST(req: NextRequest) {
     try {
       const notify = await sendMail({
         to: getNotifyEmail(),
-        subject: `New shop order ${order.id} ($${order.subtotal.toFixed(2)}), payment link needed`,
+        subject: `New SiteFlow order ${order.id} ($${order.subtotal.toFixed(2)}), payment link needed`,
         text: summary,
         replyTo: email,
       });

@@ -1,13 +1,14 @@
 // Path A (2026-10-05): the public offer is ONLY the $1,995 website build (50% to start, 50% at launch) and optional
-// $129/month monitoring. SiteFlow is paused behind SITEFLOW_ENABLED (default off).
-// Checks the flag, the paused routes (middleware), the public catalog, and scans public copy for retired claims.
+// $129/month monitoring. SiteFlow is paused behind SITEFLOW_ENABLED (default off). The public shop was removed
+// (2026-10-05): /shop and /shop/* 301 to /, the two contact-only items and their assets are gone.
+// Checks the flag, the paused routes (middleware), the shop removal + redirects, and scans public copy for retired claims.
 //   node --test scripts/offer-copy.test.mjs     (Node >= 22.18 for TypeScript type stripping)
 import { register } from "node:module";
 register("./fixtures/ts-resolver.mjs", import.meta.url);
 
 const assert = (await import("node:assert/strict")).default;
 const { default: test } = await import("node:test");
-const { readFileSync, readdirSync, statSync } = await import("node:fs");
+const { existsSync, readFileSync, readdirSync, statSync } = await import("node:fs");
 const path = (await import("node:path")).default;
 const { fileURLToPath } = await import("node:url");
 
@@ -19,13 +20,12 @@ process.env.SITESINC_STORE = "local";
 
 const flag = await import("../lib/siteflow/flag.ts");
 const offer = await import("../lib/offer-copy.ts");
-const pub = await import("../lib/public-catalog.ts");
 const products = await import("../data/products.ts");
 const { quoteCart } = await import("../lib/catalog.ts");
 const { plainRegistrarUrl, REGISTRAR_SLUGS } = await import("../lib/affiliates.ts");
 const { PUBLIC_PATHS } = await import("../lib/factory/pipeline.ts");
 const { default: sitemap } = await import("../app/sitemap.ts");
-const { middleware } = await import("../middleware.ts");
+const { middleware, isRemovedShopPath } = await import("../middleware.ts");
 const { NextRequest } = await import("next/server");
 
 function withEnv(value, fn) {
@@ -70,7 +70,7 @@ test("flag: SiteFlow-only paths", () => {
     assert.equal(flag.isSiteflowPath(p), true, p);
   }
   for (const p of [
-    "/", "/shop", "/shop/product/financial-consulting", "/thank-you", "/api/inquiry", "/api/subscribe", "/api/products",
+    "/", "/shop", "/shop/product/anything", "/thank-you", "/api/subscribe",
     "/api/health", "/app", "/api/factory/domainiq", "/api/factory/city-launch", "/gopher", "/toolsets", "/packages",
   ]) {
     assert.equal(flag.isSiteflowPath(p), false, p);
@@ -114,15 +114,49 @@ test("middleware: SITEFLOW_ENABLED=true restores ref capture (code kept for phas
 
 /* --------------------------------- catalog --------------------------------- */
 
-test("public catalog while paused: only the two contact-only inquiries, nothing purchasable", () => {
-  const visible = pub.visibleProducts({});
-  assert.deepEqual(visible.map((p) => p.slug).sort(), ["financial-consulting", "gold-filled-jewelry"]);
-  assert.ok(visible.every((p) => p.contactOnly === true));
-  assert.equal(pub.anythingPurchasable({}), false);
-  for (const p of products.products) assert.equal(pub.canBuyOnline(p, {}), false, p.slug);
-  assert.equal(pub.visibleProduct("website-monitoring", {}), undefined);
-  assert.equal(pub.visibleProduct("keep-it-earning-kit", {}), undefined);
-  withEnv(undefined, () => assert.throws(() => quoteCart([{ slug: "financial-consulting", quantity: 1 }]), /not available/));
+/* ------------------------------- shop removed ------------------------------- */
+
+const SHOP_ITEMS = ["financial-consulting", "gold-filled-jewelry"];
+
+test("shop removed: /shop and /shop/* 301 to / (flag on or off), other paths untouched", async () => {
+  for (const value of [undefined, "true"]) {
+    await withEnvAsync(value, async () => {
+      for (const p of ["/shop", "/shop/", "/shop/product/financial-consulting", "/shop/product/gold-filled-jewelry?x=1", "/SHOP/cart"]) {
+        const res = await hit(`https://sitesinc.co${p}`);
+        assert.equal(res.status, 301, `${p} (SITEFLOW_ENABLED=${value})`);
+        assert.equal(res.headers.get("location"), "https://sitesinc.co/", p);
+      }
+    });
+  }
+  for (const p of ["/shopping", "/shops", "/workshop", "/blog/shop"]) assert.equal(isRemovedShopPath(p), false, p);
+  const home = await hit("https://sitesinc.co/");
+  assert.notEqual(home.status, 301);
+  // Client real domains keep their own routing: no Sitesinc shop redirect there.
+  assert.notEqual((await hit("https://desertflow-plumbing.com/shop")).status, 301);
+});
+
+test("shop removed: pages, components, inquiry form, /api/products, /api/inquiry and assets are gone", () => {
+  for (const rel of ["app/shop", "components/shop", "app/api/products", "app/api/inquiry", "lib/public-catalog.ts", "public/products"]) {
+    assert.equal(existsSync(path.join(ROOT, rel)), false, rel);
+  }
+  const blob = readFileSync(path.join(ROOT, "data/products.ts"), "utf8");
+  assert.doesNotMatch(blob, /jewel|gold|financial|affiliate sources/i);
+  for (const slug of SHOP_ITEMS) assert.equal(products.getCatalogEntry(slug), undefined, slug);
+  // Paused SiteFlow catalog: nothing public, nothing purchasable, checkout refuses while paused.
+  assert.deepEqual(products.getPublicProducts(), []);
+  for (const p of products.products) assert.equal(products.isPurchasable(p), false, p.slug);
+  withEnv(undefined, () => assert.throws(() => quoteCart([{ slug: "website-monitoring", quantity: 1 }]), /not available/));
+});
+
+test("shop removed: no shop GA events (select_item / add_to_cart / begin_checkout); generate_lead kept for builds", () => {
+  const files = [...walk(path.join(ROOT, "app")), ...walk(path.join(ROOT, "components")), ...walk(path.join(ROOT, "lib"))];
+  for (const f of files) {
+    const text = readFileSync(f, "utf8");
+    assert.doesNotMatch(text, /["'](select_item|add_to_cart|begin_checkout|product_inquiry)["']/, path.relative(ROOT, f));
+    assert.doesNotMatch(text, /trackSelectItem|trackAddToCart|trackBeginCheckout|data-analytics-cta="(product_teaser|proceed_to_checkout)"/, path.relative(ROOT, f));
+  }
+  assert.match(readFileSync(path.join(ROOT, "lib/analytics.ts"), "utf8"), /trackEvent\("generate_lead"/);
+  assert.match(readFileSync(path.join(ROOT, "components/EmailCapture.tsx"), "utf8"), /trackLead\("website_build_request"/);
 });
 
 test("catalog: the 4 deleted bundles and the retired website bundle are gone everywhere", () => {
@@ -131,8 +165,7 @@ test("catalog: the 4 deleted bundles and the retired website bundle are gone eve
   }
   const blob = readFileSync(path.join(ROOT, "data/products.ts"), "utf8");
   assert.doesNotMatch(blob, /website-design-bundle\.jpg|website-design-digital-bundle"/);
-  const assets = readdirSync(path.join(ROOT, "public/products"));
-  for (const a of assets) assert.doesNotMatch(a, /website-design|makeup|gym|pet-grooming|longevity/, a);
+  assert.equal(existsSync(path.join(ROOT, "public/products")), false);
 });
 
 test("DomainIQ bay registrar links while paused are plain registrar URLs (no /go, no affiliate template)", () => {
@@ -146,14 +179,15 @@ test("DomainIQ bay registrar links while paused are plain registrar URLs (no /go
 
 /* ------------------------------ sitemap / nav ------------------------------ */
 
-test("sitemap and public paths: no /cart, /checkout or /shop while nothing is purchasable", () => {
-  assert.ok(!PUBLIC_PATHS.includes("/cart"));
-  assert.ok(!PUBLIC_PATHS.includes("/checkout"));
+test("sitemap and public paths: no /cart, /checkout or /shop", () => {
+  for (const p of PUBLIC_PATHS) assert.doesNotMatch(p, /^\/(cart|checkout|shop)(\/|$)/, p);
   const urls = withEnv(undefined, () => sitemap()).map((e) => e.url);
   assert.ok(urls.includes("https://sitesinc.co"));
   for (const u of urls) assert.doesNotMatch(u, /\/(cart|checkout|shop|tools|go)(\/|$)/, u);
   const footer = readFileSync(path.join(ROOT, "components/Footer.tsx"), "utf8");
   assert.doesNotMatch(footer, /href="\/(shop|cart|checkout)"/);
+  const robots = readFileSync(path.join(ROOT, "app/robots.ts"), "utf8");
+  assert.doesNotMatch(robots, /\/shop/, "robots must not block /shop: crawlers need to see the 301");
 });
 
 /* ------------------------------- public copy ------------------------------- */
@@ -177,14 +211,12 @@ const PUBLIC_SOURCES = [
   "app/page.tsx",
   "app/terms/page.tsx",
   "app/privacy/page.tsx",
-  "app/shop/page.tsx",
   "lib/factory/drafts.ts",
   "lib/design-styles.ts",
   ...walk(path.join(ROOT, "app/blog")).map((f) => path.relative(ROOT, f)),
   ...readdirSync(path.join(ROOT, "components"))
     .filter((n) => n.endsWith(".tsx"))
     .map((n) => `components/${n}`),
-  ...readdirSync(path.join(ROOT, "components/shop")).map((n) => `components/shop/${n}`),
 ];
 
 test("public copy: no retired monetization claims (Path A)", () => {

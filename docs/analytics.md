@@ -31,15 +31,11 @@ and is wrapped in `try/catch`, so forms and checkout behave the same with or wit
 |---|---|---|
 | `page_view` | Every App Router pathname change (`components/Analytics.tsx`, `send_page_view: false` on config so there is no double count) | `page_path`, `page_location` |
 | `generate_lead` | `components/EmailCapture.tsx`: after `/api/subscribe` returns OK (website build request, homepage `#checklist`) | `form_name=website_build_request`, `monitoring_opt_in`, `page_path` |
-| `generate_lead` | `components/shop/ProductActions.tsx`: after `/api/inquiry` returns OK (contact-only product quote form) | `form_name=product_inquiry`, `item_id` (product slug), `page_path` |
-| `begin_checkout` | `app/checkout/page.tsx`: once per visit when the cart has items | `currency=USD`, `value`, `items` |
-| `add_to_cart` | Shop card "Add to cart", product page "Add to cart" / "Buy now" | `currency`, `value`, `items` |
-| `select_item` | Shop card links (`item_list_name=shop`); design style picker on the homepage (`item_list_name=design_styles`) | `items` |
+| `select_content` | Design style picker on the homepage (`components/PickYourDesign.tsx`) | `content_type=design_style`, `content_id`, `page_path` |
 | `click` | Elements with `data-analytics-cta` (delegated listener in `Analytics.tsx`) | `cta_name`, `cta_location`, `link_url`, `page_path` |
 
 `click` CTAs: `see_pricing` (hero nav), `start_build` (hero + pricing), `see_designs` (hero),
-`monitoring` (pricing), `proof_<target>` (proof section), `product_teaser`,
-`proceed_to_checkout` (cart page "Proceed to Checkout" link, `cta_location=cart`).
+`monitoring` (pricing), `proof_<target>` (proof section).
 To track another CTA add `data-analytics-cta="name"` (and optionally `data-analytics-location`).
 
 No PII is ever sent: no email, phone, name or message text.
@@ -49,4 +45,7 @@ No PII is ever sent: no email, phone, name or message text.
 1. Nothing is live until a **production deploy** of this code to sitesinc.co. Previews and staging send nothing by design.
 2. After the deploy, check GA4 Realtime / DebugView on https://sitesinc.co.
 3. In GA4 Admin, **Events** (or **Key events**), mark `generate_lead` as a **key event**
-   (it appears in the list after it has fired at least once). Optionally mark `begin_checkout` too.
+   (it appears in the list after it has fired at least once).
+
+There is no shop (removed 2026-10-05): no `select_item`, `add_to_cart`, `begin_checkout` or `product_inquiry` events.
+Sitesinc sells website builds and optional monitoring only.

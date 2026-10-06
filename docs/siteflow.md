@@ -1,4 +1,4 @@
-# SiteFlow: Sitesinc monetization
+# SiteFlow (paused phase 2 code)
 
 > **Status: PAUSED (phase 2). Decision: Path A, 2026-10-05.** The public offer is ONLY website builds starting at
 > $1,995 (50% to start, 50% at launch, invoiced by hand) and optional $129/month monitoring. SiteFlow (product
@@ -10,8 +10,13 @@
 > - Middleware returns 404 for `/cart`, `/checkout`, `/tools`, `/go/*`, `/api/checkout`, `/api/download/*`,
 >   `/api/stripe/webhook`, `/api/siteflow/*` and `/api/factory/siteflow*` on every host; each of those routes also
 >   checks the flag itself. `?ref=` does nothing (no redirect, no cookie).
-> - Only the two contact-only inquiry entries are public (`lib/public-catalog.ts`); nothing is purchasable, whatever
->   `listed`/`priceCents` say. `/shop` is an inquiry-only page: unlinked, noindex, out of the sitemap, forms working.
+> - **The public shop is gone (2026-10-05).** `/shop`, the product pages, the "Other inquiries" page, the inquiry form,
+>   `/api/inquiry`, `/api/products` and the shop components were removed. `/shop` and `/shop/*` 301 to `/`
+>   (middleware, Sitesinc hosts). The Financial Consulting and Gold-Filled Jewelry entries and their images were
+>   removed from the catalog. Nothing in `data/products.ts` is public or purchasable while paused.
+> - `/cart` and `/checkout` remain as paused SiteFlow code (`components/siteflow/CheckoutChrome.tsx`,
+>   `CartProvider`, `ProductImage`), 404 while paused. A future product launch needs new product pages: nothing
+>   adds items to the cart today.
 > - `/thank-you` only confirms build/monitoring requests; it ignores `?order=`/`session_id`.
 > - The `/app` SiteFlow bay shows "Paused (phase 2)". The DomainIQ bay links to plain registrar search URLs (no `/go`,
 >   no affiliate templates, no disclosure) and is internal only.
@@ -139,7 +144,8 @@ Local state lives in `data/siteflow/` and `data/private/` (gitignored). On Netli
 - Per-partner commission rate, how many subscription payments earn, the attribution window (30 days) and last-click attribution.
 - Refund policy and window (30 days). This also drives commission approval.
 - Already decided: the 4 placeholder affiliate bundles are deleted, the Website Design bundle is removed,
-  Financial Consulting and Gold-Filled Jewelry stay contact-only, and SiteFlow is paused (Path A).
+  SiteFlow is paused (Path A), and the public shop with its Financial Consulting and Gold-Filled Jewelry
+  entries was removed (2026-10-05).
 
 ## Caveats
 
