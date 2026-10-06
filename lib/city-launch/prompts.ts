@@ -105,7 +105,7 @@ export function systemPrompt(settings: CityPromptSettings, city: CityPromptCity)
     ' "localHighlights": [string] (3-5 short, city-specific points), ' +
       (settings.includeFaq ? '"faq": [{"question": string, "answer": string}] (4-5 items), ' : '"faq": [], ') +
       '"ctaHeadline": string, "ctaText": string (1-2 sentences)}',
-    `Write about ${wc} words in total, localized to ${city.name}, ${city.state}, targeting the keyword '${kw}'.`,
+    `Write about ${wc} words in total (at least ${Math.round(wc * 0.85)}; section bodies are 2 short paragraphs each), localized to ${city.name}, ${city.state}, targeting the keyword '${kw}'.`,
     "Address the competitor gaps provided and reflect the business/website context.",
     "Plain text inside every string: no HTML, no markdown headings. Separate paragraphs inside a section body with a blank line; a list item may start with '- '.",
     "",
@@ -113,11 +113,14 @@ export function systemPrompt(settings: CityPromptSettings, city: CityPromptCity)
     `- Ground the page in ${city.name} specifically: use the LOCAL FACTS block (population, county, where it sits relative to nearby cities) and well-known, verifiable local context that genuinely affects this service (climate and seasons, geography, water, typical housing age and construction, growth, local regulations or utilities).`,
     "- Pick section headings and an angle that fit THIS city. Do not use a generic skeleton like 'Why choose us' / 'Our services' / 'Contact us'.",
     "- Never write a page that would still make sense after swapping the city name for another city.",
+    `- Name the county and at least two of the listed nearest cities (with their real direction) in the body, e.g. in a service-area section, and use the distance from the business base when given.`,
+    "- Region-wide generalities (desert heat, hard water, monsoon, freezing winters...) may appear at most once; spend the page on what is particular to this city (its size, position relative to its neighbours, county, growth and housing mix as far as you reliably know them).",
     "- If you are not sure a local detail is true, leave it out. Do not invent neighborhoods, landmarks, statistics or ordinances.",
     "",
     "HONESTY RULES (about the business):",
     "- Only state business facts given in BUSINESS / WEBSITE CONTEXT. Do not invent license numbers, years in business, prices, discounts, guarantees, warranties, response times, awards, reviews, testimonials, staff names, or a physical office in this city.",
     "- Describe the service area honestly: the business serves this city from its base location unless the context says otherwise.",
+    "- Write as the business serving this city (\"serving <city>\", \"in <city>\"). Unless this IS the base city, never write \"our city\", \"our community\" or \"our neighbors\", and never imply an office, shop or crew based in this city.",
   ].join("\n");
 }
 

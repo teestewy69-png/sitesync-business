@@ -82,13 +82,23 @@ export function evaluateGate(drafts: CityDraft[], opts: GateOptions = {}): Map<s
       reasons.push("Unfilled {placeholder} in copy.");
     }
     const county = (d.city.county || "").replace(/\s+(County|Parish|Borough|Municipality|City and Borough|Census Area)$/i, "");
-    const localRefs =
-      (county ? countMentions(text, county) : 0) +
-      (d.nearby || []).reduce((acc, n) => acc + countMentions(text, n.name), 0) +
-      (opts.baseCity && opts.baseCity.toLowerCase() !== d.city.name.toLowerCase() ? countMentions(text, opts.baseCity) : 0);
-    if (localRefs === 0) {
+    const isBase = Boolean(opts.baseCity) && opts.baseCity!.toLowerCase() === d.city.name.toLowerCase();
+    const refNames = [
+      county,
+      ...(d.nearby || []).map((n) => n.name),
+      opts.baseCity && !isBase ? opts.baseCity : "",
+    ].filter((n, i, all) => n && n.toLowerCase() !== d.city.name.toLowerCase() && all.indexOf(n) === i);
+    const distinctRefs = refNames.filter((n) => countMentions(text, n) > 0).length;
+    if (distinctRefs === 0) {
       if (status === "pass") status = "warn";
       reasons.push("No local reference beyond the city name (county, nearby city, or base city).");
+    } else if (distinctRefs < 2) {
+      if (status === "pass") status = "warn";
+      reasons.push("Only one local reference (county / nearby city / base). Add real local context.");
+    }
+    if (!isBase && /\bour (city|town|community|neighbou?rs|neighbou?rhoods?)\b/i.test(text)) {
+      if (status === "pass") status = "warn";
+      reasons.push(`Implies the business is based in ${d.city.name} ("our city/community"). Fix the wording before approving.`);
     }
     if (!d.content.metaDescription) {
       status = "block";

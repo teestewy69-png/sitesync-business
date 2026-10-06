@@ -114,7 +114,7 @@ function makeContent(cityName, seed, { cloneOf } = {}) {
     metaDescription: `Plumbing help in ${cityName}, AZ near Maricopa County.`,
     h1: `Plumbing in ${cityName}`,
     heroSubhead: para(seed + 101, 12),
-    intro: `${cityName} homeowners in Maricopa County. ${para(seed + 202, 40)}`,
+    intro: `${cityName} homeowners in Maricopa County, a short drive from Phoenix. ${para(seed + 202, 40)}`,
     sections,
     localHighlights: [para(seed + 303, 10)],
     faq: [{ question: `Do you serve ${cityName}?`, answer: para(seed + 404, 25) }],
@@ -186,6 +186,15 @@ test("gate: blocks clones, thin pages, placeholders; approved-vs-draft scoring",
   const g2 = evaluateGate([draft("mesa-az", "Mesa", mesa), draft("gilbert-az", "Gilbert", clone, { status: "rejected" })]);
   assert.equal(g2.has("gilbert-az"), false);
   assert.notEqual(g2.get("mesa-az").status, "block");
+  // local-reference + honesty lint
+  const oneRef = { ...makeContent("Tempe", 2), intro: `Tempe homeowners. ${para(202, 40)}` };
+  const g3 = evaluateGate([draft("tempe-az", "Tempe", oneRef, { nearby: [] })], { baseCity: "Phoenix" });
+  assert.equal(g3.get("tempe-az").status, "warn");
+  const ours = { ...tempe, ctaText: "We love serving our city." };
+  const g4 = evaluateGate([draft("tempe-az", "Tempe", ours)], { baseCity: "Phoenix" });
+  assert.equal(g4.get("tempe-az").status, "warn");
+  assert.ok(g4.get("tempe-az").reasons.some((r) => /our city/.test(r)));
+  assert.equal(evaluateGate([draft("phoenix-az", "Phoenix", { ...ours, intro: ours.intro.replace(/Tempe/g, "Phoenix") }, { city: { name: "Phoenix", state: "AZ", stateName: "Arizona", county: "Maricopa County", population: 1, lat: 1, lng: 1, source: "dataset" } })], { baseCity: "Phoenix" }).get("phoenix-az").reasons.some((r) => /our city/.test(r)), false, "base city may say our city");
 });
 
 // ---------------------------------------------------------------- prompts
