@@ -26,7 +26,8 @@ import {
   type PickedCity,
   type UsCity,
 } from "@/lib/city-launch";
-import { evaluateGate, unsupportedClaims } from "@/lib/city-launch/gate";
+import { evaluateGate, popChangePct } from "@/lib/city-launch/gate";
+import { findHonestyIssues, repairInstructions, type HonestyIssue } from "@/lib/city-launch/honesty";
 import {
   clampInt,
   countItems,
@@ -287,6 +288,8 @@ export type QueueBatchInput = {
   promptTemplate?: string;
   competitorGaps?: string;
   websiteContent?: string;
+  /** Verified local notes with sources (water report, climate normals...). The only allowed source of such facts. */
+  localFacts?: string;
   targetWordCount?: number;
   includeFaq?: boolean;
   concurrency?: number;
@@ -393,6 +396,7 @@ export async function queueCityLaunchBatch(
     promptTemplate: (input.promptTemplate || DEFAULT_PROMPT_TEMPLATE).slice(0, 2000),
     competitorGaps: (input.competitorGaps || "").slice(0, 2000),
     websiteContent: (input.websiteContent || defaultWebsiteContent(ctx.business)).slice(0, 3000),
+    localFacts: (input.localFacts || "").trim().slice(0, 3000),
     targetWordCount: clampTargetWords(input.targetWordCount ?? DEFAULT_TARGET_WORDS),
     includeFaq: input.includeFaq !== false,
     concurrency: clampInt(input.concurrency, 1, 8, envInt("CITY_LAUNCH_CONCURRENCY", DEFAULT_CONCURRENCY)),
@@ -442,6 +446,19 @@ export async function queueCityLaunchBatch(
 
 /* ------------------------------- writing ------------------------------- */
 
+function pop2020For(item: BatchItem): number | undefined {
+  if (item.source !== "dataset") return undefined;
+  return getUsCityIndex().bySlug.get(item.slug)?.pop2020 || undefined;
+}
+
+/**
+ * What the operator vouched for: business/website context, CSV notes and verified local notes. Competitor gaps are
+ * topics to cover, not facts about this business, so they never back a claim.
+ */
+function supportText(item: BatchItem, settings: BatchSettings): string {
+  return [settings.websiteContent, item.notes, settings.localFacts].filter(Boolean).join("\n");
+}
+
 function promptCity(item: BatchItem) {
   return {
     name: item.name,
@@ -449,6 +466,7 @@ function promptCity(item: BatchItem) {
     stateName: item.stateName,
     county: item.county,
     population: item.population,
+    pop2020: pop2020For(item),
     keyword: item.keyword,
     notes: item.notes,
   };
@@ -474,7 +492,7 @@ export async function writeCityContent(
   item: BatchItem,
   settings: BatchSettings,
   opts: { beforeExtraCall?: () => Promise<boolean> } = {}
-): Promise<{ content: CityPageContent; model: string; envKey: string; nearby: CityDraft["nearby"]; repaired?: string[] }> {
+): Promise<{ content: CityPageContent; model: string; envKey: string; nearby: CityDraft["nearby"]; repaired?: HonestyIssue[] }> {
   const resolved = resolveLlmProvider(process.env);
   if (!resolved) throw new LlmError("missing_key", "No LLM key configured for City Launch.");
   const nearby = nearbyFor(item);
@@ -504,29 +522,38 @@ export async function writeCityContent(
     if (err instanceof CityContentError) throw new LlmError("bad_response", err.message);
     throw err;
   }
-  // Automatic honesty repair: models (gpt-4o-mini especially) still assert "licensed and insured", "24/7"...
-  // One follow-up call asks for exactly those sentences to be rewritten. Anything left is blocked by the gate.
-  const businessContext = [settings.websiteContent, item.notes, settings.competitorGaps].filter(Boolean).join("\n");
-  const claims = unsupportedClaims(contentText(content), businessContext, ctx.business.businessName);
-  let repaired: string[] | undefined;
-  if (claims.length && (!opts.beforeExtraCall || (await opts.beforeExtraCall()))) {
+  // Automatic honesty repair: models (gpt-4o-mini especially) still assert "licensed and insured", "24/7",
+  // "we are just 24 miles from...", "hard water in <city>". One follow-up call asks for exactly those sentences to
+  // be rewritten (same rules as the gate, see honesty.ts). Anything left is blocked by the gate for a human edit.
+  const honestyInput = {
+    cityName: item.name,
+    cityState: item.state,
+    stateName: item.stateName,
+    county: item.county,
+    baseCity: ctx.business.baseCity,
+    baseState: ctx.business.baseState,
+    businessName: ctx.business.businessName,
+    support: supportText(item, settings),
+    popChangePct: popChangePct({ city: { population: item.population, pop2020: city.pop2020 } as CityDraft["city"] }),
+  };
+  const issues = findHonestyIssues({ ...honestyInput, text: contentText(content) });
+  let repaired: HonestyIssue[] | undefined;
+  if (issues.length && (!opts.beforeExtraCall || (await opts.beforeExtraCall()))) {
     try {
+      const baseLabel = [ctx.business.baseCity, ctx.business.baseState].filter(Boolean).join(", ");
       const fix = await chatCompletion(
         resolved,
         [
           ...messages,
           { role: "assistant" as const, content: reply.content },
-          {
-            role: "user" as const,
-            content: `These sentences state business facts that are NOT in the business context, so they may be false:\n${claims.map((c) => `- ${c}`).join("\n")}\nRewrite only those sentences so they no longer assert the fact (e.g. "Ask us about licensing and insurance when you call."). Keep everything else identical. Return the full JSON again.`,
-          },
+          { role: "user" as const, content: repairInstructions(issues, item.name, baseLabel) },
         ],
         { timeoutMs: envInt("CITY_LAUNCH_LLM_TIMEOUT_MS", 90_000), temperature: 0.2, maxTokens: Math.min(4000, Math.round(settings.targetWordCount * 2.6) + 600), jsonMode: true }
       );
       const fixed = parseCityPageReply(fix.content, settings, city);
-      if (unsupportedClaims(contentText(fixed), businessContext, ctx.business.businessName).length < claims.length) {
+      if (findHonestyIssues({ ...honestyInput, text: contentText(fixed) }).length < issues.length) {
         content = fixed;
-        repaired = claims;
+        repaired = issues;
       }
     } catch {
       // keep the original draft; the gate will block it for a human edit
@@ -563,6 +590,7 @@ function draftFrom(
       stateName: item.stateName,
       county: item.county,
       population: item.population,
+      pop2020: pop2020For(item),
       lat: item.lat,
       lng: item.lng,
       source: item.source,
@@ -576,7 +604,7 @@ function draftFrom(
     model: written.model,
     providerEnvKey: written.envKey,
     nearby: written.nearby,
-    businessContext: [settings.websiteContent, item.notes, settings.competitorGaps].filter(Boolean).join("\n").slice(0, 4000),
+    businessContext: supportText(item, settings).slice(0, 7000),
   };
 }
 
@@ -754,7 +782,7 @@ export async function runCityLaunchTick(
       const previous = await readCityDraft(projectId, item.slug);
       const draft = draftFrom(projectId, batchId, item, item.keyword || settings.keyword, written, previous, settings);
       await writeDoc(cityDraftKey(projectId, item.slug), draft);
-      if (written.repaired?.length) logLines.push(`${nowIso()} ${item.slug}: auto-repaired unsupported claims (${written.repaired.map((c) => c.split(":")[0]).join(", ")})`);
+      if (written.repaired?.length) logLines.push(`${nowIso()} ${item.slug}: auto-repaired honesty issues (${written.repaired.map((c) => `${c.kind}: ${c.label}`).join(", ")})`);
       item.status = "drafted";
       item.words = draft.words;
       item.finishedAt = nowIso();
@@ -937,7 +965,12 @@ export async function runCityGate(projectId: string): Promise<{ checked: number;
   const project = await findProjectById(projectId);
   const business = project ? cityLaunchContext(project).business : null;
   const baseCity = business?.baseCity;
-  const gateOpts = { baseCity, businessName: business?.businessName, businessContext: business ? defaultWebsiteContent(business) : "" };
+  const gateOpts = {
+    baseCity,
+    baseState: business?.baseState,
+    businessName: business?.businessName,
+    businessContext: business ? defaultWebsiteContent(business) : "",
+  };
   const liveSlugs = Object.values(index.pages)
     .filter((p) => p.status === "draft" || p.status === "approved")
     .map((p) => p.slug);

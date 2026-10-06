@@ -14,6 +14,7 @@ const prompts = await import("../lib/city-launch/prompts.ts");
 const job = await import("../lib/city-launch/job.ts");
 const llm = await import("../lib/city-launch/llm.ts");
 const { evaluateGate, unsupportedClaims } = await import("../lib/city-launch/gate.ts");
+const honesty = await import("../lib/city-launch/honesty.ts");
 
 const index = cities.createCityIndex(US_CITIES, US_STATE_ROWS);
 
@@ -93,9 +94,9 @@ const settings = {
 
 function para(seed, n) {
   // deterministic pseudo-unique prose per seed
-  const words = ["water", "heater", "pipe", "slab", "leak", "drain", "valve", "pressure", "hard", "mineral", "monsoon", "repipe",
-    "copper", "pex", "sewer", "line", "root", "clay", "caliche", "soil", "permit", "inspection", "remodel", "kitchen", "bath",
-    "softener", "filter", "backflow", "irrigation", "freeze", "summer", "heat", "attic", "garage", "older", "homes", "newer",
+  const words = ["water", "heater", "pipe", "slab", "leak", "drain", "valve", "pressure", "hose", "gasket", "flange", "repipe",
+    "copper", "pex", "sewer", "line", "root", "clay", "nipple", "union", "permit", "inspection", "remodel", "kitchen", "bath",
+    "softener", "filter", "backflow", "irrigation", "elbow", "cartridge", "heat", "attic", "garage", "spigot", "homes", "coupling",
     "subdivision", "townhome", "commercial", "restaurant", "grease", "trap", "camera", "hydro", "jet", "tankless", "gas",
     "meter", "shutoff", "fixture", "toilet", "faucet", "disposal", "sump", "expansion", "tank", "thermal", "corrosion", "scale"];
   let x = seed * 2654435761 >>> 0;
@@ -192,7 +193,7 @@ test("gate: blocks clones, thin pages, placeholders; approved-vs-draft scoring",
   assert.equal(g3.get("tempe-az").status, "warn");
   const ours = { ...tempe, ctaText: "We love serving our city." };
   const g4 = evaluateGate([draft("tempe-az", "Tempe", ours)], { baseCity: "Phoenix" });
-  assert.equal(g4.get("tempe-az").status, "warn");
+  assert.equal(g4.get("tempe-az").status, "block", "non-base page may not speak as a local business");
   assert.ok(g4.get("tempe-az").reasons.some((r) => /our city/.test(r)));
   assert.equal(evaluateGate([draft("phoenix-az", "Phoenix", { ...ours, intro: ours.intro.replace(/Tempe/g, "Phoenix") }, { city: { name: "Phoenix", state: "AZ", stateName: "Arizona", county: "Maricopa County", population: 1, lat: 1, lng: 1, source: "dataset" } })], { baseCity: "Phoenix" }).get("phoenix-az").reasons.some((r) => /our city/.test(r)), false, "base city may say our city");
 });
@@ -212,6 +213,85 @@ test("gate: invented business claims block unless the business context supports 
   assert.equal(unsupportedClaims("Desert Flow Plumbing is top-rated.", "", "Desert Flow Plumbing").length, 1);
   assert.deepEqual(unsupportedClaims("Please inquire about any warranties or guarantees when you contact us. Ask us about licensing and insurance when you call.", ""), []);
   assert.deepEqual(unsupportedClaims("Are your plumbers licensed and insured?", ""), [], "a question asserts nothing");
+});
+
+test("honesty: non-base pages never claim a location in the city; base page may", () => {
+  const chandler = { cityName: "Chandler", cityState: "AZ", stateName: "Arizona", county: "Maricopa County", baseCity: "Phoenix", baseState: "AZ", businessName: "Desert Flow Plumbing" };
+  const bad = [
+    "We are just 24 miles southeast of Phoenix, making it easy to reach Chandler.",
+    "We are located in Chandler near Gilbert.",
+    "Visit our Chandler office for a consultation.",
+    "Our team is just minutes from downtown Chandler.",
+    "Desert Flow Plumbing is located right in Chandler.",
+    "As your local Chandler plumber, we know these streets.",
+    "We are proud to serve our community.",
+  ];
+  for (const text of bad) {
+    const issues = honesty.findHonestyIssues({ ...chandler, text });
+    assert.ok(issues.some((i) => i.kind === "location_claim"), `should block: ${text}`);
+  }
+  const good = [
+    "Desert Flow Plumbing serves Chandler from our Phoenix base. Chandler sits about 24 miles southeast of Phoenix, with Gilbert to the east and Tempe to the north.",
+    "Chandler is in Maricopa County, about 4 miles south of Mesa.",
+    "We serve homes across Chandler and nearby Gilbert.",
+    "Contact your local water utility if you notice low pressure across the street.",
+  ];
+  for (const text of good) {
+    assert.deepEqual(honesty.findHonestyIssues({ ...chandler, text }), [], `should pass: ${text}`);
+  }
+  // base city: local voice is true there
+  assert.deepEqual(honesty.findHonestyIssues({ ...chandler, cityName: "Phoenix", text: "We are located in Phoenix and proud to serve our community." }), []);
+  // same name, different state is NOT the base
+  assert.ok(honesty.findHonestyIssues({ ...chandler, cityName: "Phoenix", cityState: "OR", stateName: "Oregon", text: "We are located in Phoenix." }).length);
+
+  // gate wiring: the exact live-test sentence blocks the page
+  const page = { ...makeContent("Chandler", 7), serviceArea: "We are just 24 miles southeast of Phoenix, so Chandler is easy for us to reach." };
+  const city = { name: "Chandler", state: "AZ", stateName: "Arizona", county: "Maricopa County", population: 280167, pop2020: 275987, lat: 33.28, lng: -111.85, source: "dataset" };
+  const g = evaluateGate([draft("chandler-az", "Chandler", page, { city })], { baseCity: "Phoenix", baseState: "AZ", businessName: "Desert Flow Plumbing" });
+  assert.equal(g.get("chandler-az").status, "block");
+  assert.ok(g.get("chandler-az").reasons.some((r) => /located in or next to this city/.test(r) && /24 miles/.test(r)));
+
+  // repair instructions name the base and the allowed phrasing
+  const fix = honesty.repairInstructions(honesty.findHonestyIssues({ ...chandler, text: bad[0] }), "Chandler", "Phoenix, AZ");
+  assert.match(fix, /SERVES Chandler/);
+  assert.match(fix, /Phoenix, AZ/);
+  assert.match(fix, /We are just 24 miles/);
+});
+
+test("honesty: climate / water / housing / growth claims need a source", () => {
+  const mesa = { cityName: "Mesa", cityState: "AZ", stateName: "Arizona", county: "Maricopa County", baseCity: "Mesa", baseState: "AZ", businessName: "Desert Flow Plumbing" };
+  const water = "Mesa homes deal with hard water that builds scale in water heaters.";
+  assert.deepEqual(honesty.findHonestyIssues({ ...mesa, text: water }).map((i) => i.label), ["water hardness / quality"]);
+  assert.deepEqual(honesty.findHonestyIssues({ ...mesa, text: water, support: "Mesa water hardness ~14 grains per gallon (City of Mesa 2025 Water Quality Report)" }), [], "verified note backs it");
+  assert.equal(honesty.findHonestyIssues({ ...mesa, text: "Monsoon storms in the area can overwhelm drains." })[0].label, "climate / weather");
+  assert.equal(honesty.findHonestyIssues({ ...mesa, text: "Many older homes in Mesa still have galvanized pipes." })[0].label, "housing age / stock");
+  // generic advice not tied to the place is fine
+  assert.deepEqual(honesty.findHonestyIssues({ ...mesa, text: "Hard water shortens the life of any water heater; a softener helps." }), []);
+  assert.deepEqual(honesty.findHonestyIssues({ ...mesa, text: "We install climate control systems for Mesa homes." }), [], "climate control is a product, not a climate claim");
+  // growth: backed by the Census change we pass in, in the right direction only
+  const grow = "Mesa is a fast-growing city with new neighborhoods.";
+  assert.ok(honesty.findHonestyIssues({ ...mesa, text: "Mesa continues to grow." }).some((i) => i.label === "population growth"));
+  assert.deepEqual(honesty.findHonestyIssues({ ...mesa, text: "Mesa continues to grow.", popChangePct: 2.5 }), []);
+  assert.ok(honesty.findHonestyIssues({ ...mesa, text: "Mesa continues to grow.", popChangePct: -3 }).length, "shrinking city may not be called growing");
+  assert.ok(honesty.findHonestyIssues({ ...mesa, text: grow, popChangePct: 2.5 }).every((i) => i.label !== "population growth"));
+});
+
+test("prompts: voice block + local-facts-only + Census growth line", () => {
+  const biz = { businessName: "Desert Flow Plumbing", niche: "plumbing", baseCity: "Phoenix", baseState: "AZ" };
+  const chandler = { name: "Chandler", state: "AZ", stateName: "Arizona", county: "Maricopa County", population: 280167, pop2020: 275987 };
+  const user = prompts.userPrompt(settings, chandler, biz, [], { distanceMiles: 22.6, direction: "SE" });
+  assert.match(user, /VOICE: Desert Flow Plumbing is based in Phoenix, AZ\. It SERVES Chandler from Phoenix/);
+  assert.match(user, /Chandler is about 23 miles SE of Phoenix/);
+  assert.match(user, /Never write "we are located/);
+  assert.match(user, /Population change since April 2020 .*\+1\.5%/);
+  assert.match(user, /VERIFIED LOCAL NOTES[^\n]*\n\(none provided: do not state such facts\)/);
+  const withNotes = prompts.userPrompt({ ...settings, localFacts: "Hardness 14 gpg (City report)" }, chandler, biz, [], null);
+  assert.match(withNotes, /Hardness 14 gpg \(City report\)/);
+  const home = prompts.userPrompt(settings, { ...chandler, name: "Phoenix" }, biz, [], { distanceMiles: 0, direction: "N" });
+  assert.match(home, /Phoenix is Desert Flow Plumbing's home base/);
+  const sys = prompts.systemPrompt(settings, chandler);
+  assert.match(sys, /LOCAL FACTS ONLY/);
+  assert.doesNotMatch(sys, /may appear at most once/);
 });
 
 // ---------------------------------------------------------------- prompts

@@ -44,6 +44,8 @@ export type CityPromptCity = {
   stateName: string;
   county?: string;
   population?: number;
+  /** Census April 2020 estimates base. */
+  pop2020?: number;
   keyword?: string;
   notes?: string;
 };
@@ -68,6 +70,8 @@ export type CityPromptSettings = {
   websiteContent: string;
   targetWordCount: number;
   includeFaq: boolean;
+  /** Operator-verified local notes (with sources), e.g. from a utility water-quality report. Optional. */
+  localFacts?: string;
 };
 
 /** ScaleQuan fill_placeholders. */
@@ -113,18 +117,42 @@ export function systemPrompt(settings: CityPromptSettings, city: CityPromptCity)
     "Plain text inside every string: no HTML, no markdown headings. Separate paragraphs inside a section body with a blank line; a list item may start with '- '.",
     "",
     "UNIQUENESS RULES (pages for many cities are generated; each must stand on its own):",
-    `- Ground the page in ${city.name} specifically: use the LOCAL FACTS block (population, county, where it sits relative to nearby cities) and well-known, verifiable local context that genuinely affects this service (climate and seasons, geography, water, typical housing age and construction, growth, local regulations or utilities).`,
+    `- Ground the page in ${city.name} specifically with the LOCAL FACTS block (population and its change since 2020, county, where it sits relative to the listed nearby cities, distance from the business base) and the VERIFIED LOCAL NOTES if any.`,
     "- Pick section headings and an angle that fit THIS city. Do not use a generic skeleton like 'Why choose us' / 'Our services' / 'Contact us'.",
     "- Never write a page that would still make sense after swapping the city name for another city.",
     `- Name the county and at least two of the listed nearest cities (with their real direction) in the body, e.g. in a service-area section, and use the distance from the business base when given.`,
-    "- Region-wide generalities (desert heat, hard water, monsoon, freezing winters...) may appear at most once; spend the page on what is particular to this city (its size, position relative to its neighbours, county, growth and housing mix as far as you reliably know them).",
-    "- If you are not sure a local detail is true, leave it out. Do not invent neighborhoods, landmarks, statistics or ordinances.",
+    "- LOCAL FACTS ONLY: do not state climate or weather, water hardness or quality, soil or geology, natural hazards, housing age or housing mix, population growth, local regulations, permits or utilities as facts about this place unless they appear in LOCAL FACTS or VERIFIED LOCAL NOTES. General service advice that is true anywhere is fine, but do not tie it to this city as a local fact.",
+    "- Do not invent neighborhoods, landmarks, statistics or ordinances.",
     "",
     "HONESTY RULES (about the business):",
     "- Only state business facts given in BUSINESS / WEBSITE CONTEXT. Do not invent license numbers, years in business, prices, discounts, guarantees, warranties, response times, awards, reviews, testimonials, staff names, or a physical office in this city.",
     "- FAQ or copy about licensing, insurance, pricing, guarantees, availability (24/7, same-day) or experience: unless the context states it, do not assert it; tell the reader to ask or call to confirm.",
     "- Describe the service area honestly: the business serves this city from its base location unless the context says otherwise.",
-    "- Write as the business serving this city (\"serving <city>\", \"in <city>\"). Unless this IS the base city, never write \"our city\", \"our community\" or \"our neighbors\", and never imply an office, shop or crew based in this city.",
+    "- Follow the VOICE block in the user message exactly: the business's location is its base city, nothing else.",
+  ].join("\n");
+}
+
+function fmtChange(now: number, base: number): string {
+  const pct = Math.round(((now - base) / base) * 1000) / 10;
+  if (Math.abs(pct) < 1) return `roughly flat (${pct >= 0 ? "+" : ""}${pct}%)`;
+  return `${pct > 0 ? "+" : ""}${pct}% (${pct > 0 ? "growing" : "declining"})`;
+}
+
+export function voiceBlock(city: CityPromptCity, business: CityPromptBusiness, fromBase?: { distanceMiles: number; direction: string } | null): string {
+  const base = [business.baseCity, business.baseState].filter(Boolean).join(", ");
+  const name = business.businessName || "The business";
+  if (!base) {
+    return `VOICE: ${name}'s base location is not given. Never say or imply where the business is located; say it serves ${city.name}.`;
+  }
+  const isBase =
+    (business.baseCity || "").trim().toLowerCase() === city.name.trim().toLowerCase() &&
+    (!business.baseState || business.baseState.trim().toUpperCase() === city.state.trim().toUpperCase());
+  if (isBase) return `VOICE: ${city.name} is ${name}'s home base. You may write as the local business here.`;
+  const dist = fromBase && fromBase.distanceMiles > 0.5 ? `${city.name} is about ${Math.round(fromBase.distanceMiles)} miles ${fromBase.direction} of ${business.baseCity}` : "";
+  return [
+    `VOICE: ${name} is based in ${base}. It SERVES ${city.name} from ${business.baseCity}; it has no office, shop, crew base or address in ${city.name}.`,
+    `- Write "serving ${city.name} from our ${business.baseCity} base" style copy.${dist ? ` State distance as a fact about the city: "${dist}".` : ""}`,
+    `- Never write "we are located/based in...", "we are just/about N miles...", "our ${city.name} office/team/shop", "your local ${city.name} ...", "here in ${city.name}", "our city/community/area".`,
   ].join("\n");
 }
 
@@ -147,6 +175,9 @@ export function userPrompt(
     `City: ${city.name}, ${city.stateName} (${city.state})`,
     city.county ? `County: ${city.county}` : "",
     `Population (U.S. Census Vintage 2024 estimate): ${fmtPop(city.population)}`,
+    city.pop2020 && city.population
+      ? `Population change since April 2020 (Census estimates base ${fmtPop(city.pop2020)}): ${fmtChange(city.population, city.pop2020)}`
+      : "",
     base
       ? fromBase && fromBase.distanceMiles > 0.5
         ? `Business base: ${base}; ${city.name} is about ${Math.round(fromBase.distanceMiles)} miles ${fromBase.direction} of it`
@@ -167,6 +198,11 @@ export function userPrompt(
     "",
     "LOCAL FACTS (verified, from U.S. Census data):",
     facts,
+    "",
+    "VERIFIED LOCAL NOTES (operator-supplied, with sources; the only allowed source for climate/water/soil/housing/regulation facts):",
+    (settings.localFacts || "").trim() || "(none provided: do not state such facts)",
+    "",
+    voiceBlock(city, business, fromBase),
     "",
     "COMPETITOR GAPS TO COVER:",
     gaps || "(none provided)",

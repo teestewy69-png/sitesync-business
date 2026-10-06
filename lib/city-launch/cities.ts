@@ -19,6 +19,8 @@ export type UsCity = {
   lng: number;
   county: string;
   geoid: string;
+  /** Census April 1, 2020 estimates base (0 when unknown). */
+  pop2020: number;
 };
 
 export type CityIndex = {
@@ -54,7 +56,7 @@ export function createCityIndex(rows: readonly string[], stateRows: readonly str
   const bySlug = new Map<string, UsCity>();
   const byState = new Map<string, UsCity[]>();
   for (const row of rows) {
-    const [name, state, pop, lat, lng, county, geoid] = row.split("|");
+    const [name, state, pop, lat, lng, county, geoid, base] = row.split("|");
     const city: UsCity = {
       slug: slugifyCity(name, state),
       name,
@@ -65,6 +67,7 @@ export function createCityIndex(rows: readonly string[], stateRows: readonly str
       lng: Number(lng),
       county: county || "",
       geoid: geoid || "",
+      pop2020: Number(base) || 0,
     };
     if (bySlug.has(city.slug)) continue;
     all.push(city);
@@ -307,6 +310,7 @@ export function parseCityPaste(index: CityIndex, text: string): CsvPasteResult {
           lng: Number.NaN,
           county: "",
           geoid: "",
+          pop2020: 0,
           source: "csv",
           keyword: keyword || undefined,
           notes: notes || undefined,

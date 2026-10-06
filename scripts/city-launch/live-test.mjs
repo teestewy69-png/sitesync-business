@@ -22,7 +22,8 @@ const { initClientWorkspace } = await import("../../lib/factory/client-workspace
 const cl = await import("../../lib/factory/city-launch.ts");
 const { contentText, countWords } = await import("../../lib/city-launch/prompts.ts");
 const { checkUniqueness, buildMasker, normalizeForSimilarity, shingleSet, overlapScore, jaccardScore } = await import("../../lib/city-launch/similarity.ts");
-const { ownMaskTerms } = await import("../../lib/city-launch/gate.ts");
+const { ownMaskTerms, popChangePct } = await import("../../lib/city-launch/gate.ts");
+const { findHonestyIssues } = await import("../../lib/city-launch/honesty.ts");
 
 const provider = cl.cityLaunchProviderStatus();
 if (!provider.configured) {
@@ -102,6 +103,18 @@ if (drafts.length >= 2) {
     { slug: `${b.slug}-clone`, text: cloneText, maskTerms: ownMaskTerms(b) },
   ], { globalMaskTerms: [...global] });
   console.log(`control: find-and-replace clone of ${a.slug} renamed to ${b.city.name} scores ${ctrl[1].maxScore} -> ${ctrl[1].status}`);
+}
+
+console.log("\nVOICE / HONESTY (final drafts, same check as the gate)");
+for (const d of drafts) {
+  const issues = findHonestyIssues({
+    text: contentText(d.content), cityName: d.city.name, cityState: d.city.state, stateName: d.city.stateName, county: d.city.county,
+    baseCity: project.city, baseState: project.state, businessName: project.businessName, support: d.businessContext || "",
+    popChangePct: popChangePct(d),
+  });
+  const loc = issues.filter((i) => i.kind === "location_claim").length;
+  console.log(`- ${d.city.name}: location claims ${loc}, other honesty issues ${issues.length - loc}${issues.length ? ` (${issues.map((i) => `${i.kind}: ${i.label}`).join("; ")})` : ""}`);
+  console.log(`  service area: ${d.content.serviceArea || "-"}`);
 }
 
 console.log("\nEXCERPTS");

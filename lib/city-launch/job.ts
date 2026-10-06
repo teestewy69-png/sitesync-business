@@ -84,6 +84,8 @@ export type CityDraft = {
     stateName: string;
     county: string;
     population: number;
+    /** Census April 2020 estimates base (dataset cities). */
+    pop2020?: number;
     lat: number | null;
     lng: number | null;
     source: "dataset" | "csv";

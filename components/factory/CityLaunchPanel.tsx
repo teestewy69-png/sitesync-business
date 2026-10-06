@@ -110,6 +110,7 @@ export default function CityLaunchPanel({
     promptTemplate: DEFAULT_PROMPT_TEMPLATE,
     competitorGaps: "",
     websiteContent: defaults.websiteContent,
+    localFacts: "",
     targetWordCount: DEFAULT_TARGET_WORDS,
     includeFaq: true,
     concurrency: 4,
@@ -450,8 +451,9 @@ export default function CityLaunchPanel({
           <label>Keyword<input value={settings.keyword} onChange={(e) => setSettings({ ...settings, keyword: e.target.value })} className={`${input} mt-1 w-full`} /></label>
           <label>Title template<input value={settings.titleTemplate} onChange={(e) => setSettings({ ...settings, titleTemplate: e.target.value })} className={`${input} mt-1 w-full font-mono`} /></label>
           <label className="md:col-span-2">AI prompt / instructions<textarea value={settings.promptTemplate} onChange={(e) => setSettings({ ...settings, promptTemplate: e.target.value })} rows={2} className={`${input} mt-1 w-full`} /></label>
-          <label>Competitor gaps to cover<textarea value={settings.competitorGaps} onChange={(e) => setSettings({ ...settings, competitorGaps: e.target.value })} rows={3} className={`${input} mt-1 w-full`} placeholder="Same-day service, upfront pricing explained…" /></label>
+          <label>Competitor gaps to cover<textarea value={settings.competitorGaps} onChange={(e) => setSettings({ ...settings, competitorGaps: e.target.value })} rows={3} className={`${input} mt-1 w-full`} placeholder="Topics competitors skip, e.g. how pricing works, what to expect on the first visit… (not proof of a business claim)" /></label>
           <label>Business / website context (only facts stated here can appear as business claims)<textarea value={settings.websiteContent} onChange={(e) => setSettings({ ...settings, websiteContent: e.target.value })} rows={3} className={`${input} mt-1 w-full`} /></label>
+          <label className="md:col-span-2">Verified local notes, with sources (optional; the ONLY allowed source for climate, water, soil, housing-age or regulation statements, otherwise the page leaves them out)<textarea value={settings.localFacts} onChange={(e) => setSettings({ ...settings, localFacts: e.target.value })} rows={2} className={`${input} mt-1 w-full`} placeholder="e.g. Mesa water hardness ~ 14 grains/gallon (City of Mesa 2025 Water Quality Report)" /></label>
           <div className="flex flex-wrap items-end gap-3 md:col-span-2">
             <label>Target words<br /><input type="number" value={settings.targetWordCount} onChange={(e) => setSettings({ ...settings, targetWordCount: Number(e.target.value) })} className={`${input} w-24`} /></label>
             <label>Concurrency<br /><input type="number" min={1} max={8} value={settings.concurrency} onChange={(e) => setSettings({ ...settings, concurrency: Number(e.target.value) })} className={`${input} w-20`} /></label>

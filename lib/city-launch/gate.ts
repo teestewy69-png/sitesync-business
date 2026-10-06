@@ -4,13 +4,18 @@
  *   - near-duplicate check across all of the client's city pages (masked shingle overlap, see similarity.ts)
  *   - minimum substance (word count), the city actually named, no unfilled placeholders
  *   - at least one local reference beyond the city name (county, a nearby city, or the business base)
+ *   - honesty (honesty.ts): no invented business claims, no "we are located in <non-base city>", no unsourced
+ *     local facts (climate, water, soil, housing age, growth...)
  * "block" = cannot be approved or published. "warn" = approval allowed, flagged for a closer read.
  *
  * Pure + erasable TypeScript so `node --test` can import it.
  */
 import type { CityDraft, GateResult } from "./job";
 import { contentText, countWords } from "./prompts";
+import { describeIssues, findHonestyIssues, isBaseCity } from "./honesty";
 import { checkUniqueness, DEFAULT_BLOCK_THRESHOLD, DEFAULT_WARN_THRESHOLD } from "./similarity";
+
+export { BUSINESS_CLAIMS, findHonestyIssues, unsupportedClaims } from "./honesty";
 
 export const MIN_PUBLISH_WORDS = 300;
 
@@ -19,42 +24,18 @@ export type GateOptions = {
   warnThreshold?: number;
   minWords?: number;
   baseCity?: string;
+  baseState?: string;
   now?: string;
   businessName?: string;
   /** Fallback business facts when a draft carries none (the client's default website context). */
   businessContext?: string;
 };
 
-/**
- * Business claims an LLM tends to invent. A claim made in the business's own voice ("we", "our", the business name)
- * blocks the page unless the business context the operator provided supports it.
- */
-export const BUSINESS_CLAIMS: Array<{ label: string; re: RegExp; support: RegExp }> = [
-  { label: "licensed", re: /\blicen[sc]ed\b|\blicense (number|#)/i, support: /licen[sc]/i },
-  { label: "insured / bonded", re: /\b(insured|bonded)\b/i, support: /insured|bonded|insurance/i },
-  { label: "certified", re: /\bcertified\b/i, support: /certified|certification/i },
-  { label: "guarantee / warranty", re: /\bguarantee(d|s)?\b|\bwarrant(y|ies|ied)\b/i, support: /guarantee|warrant/i },
-  { label: "years in business", re: /\b\d+\+?\s+years (of|in)\b|\bsince (19|20)\d\d\b|\bdecades? of (experience|service)\b/i, support: /\byears?\b|since (19|20)\d\d|decade/i },
-  { label: "awards / ratings / reviews", re: /\baward|\b(five|5)[- ]star|\btop[- ]rated\b|\bbbb\b|\bA\+ rat/i, support: /award|star|rated|bbb|review/i },
-  { label: "free estimates", re: /\bfree (estimate|quote|inspection|consultation)s?\b/i, support: /free (estimate|quote|inspection|consultation)/i },
-  { label: "24/7 / same-day", re: /\b24\/7\b|\b24 hours\b|around the clock|\bsame[- ]day\b/i, support: /24\/7|24 hours|around the clock|same[- ]day/i },
-  { label: "discounts / prices", re: /\b\d+% off\b|\bdiscount|\$\s?\d/i, support: /%|discount|\$/i },
-  { label: "family-owned", re: /\bfamily[- ]owned\b|\blocally owned\b/i, support: /family|locally owned/i },
-];
-
-/** Claims made in the business's own voice that the business context does not support. */
-export function unsupportedClaims(text: string, context: string, businessName = ""): string[] {
-  const voice = new RegExp(`\\b(we|we're|we've|we'll|our|ours|us)\\b${businessName ? `|${businessName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}` : ""}`, "i");
-  // Sentences that invite the reader to ask/confirm ("Ask us about licensing when you call") assert nothing.
-  const invitation = /\b(ask|inquire|enquire|confirm|check with us|questions? about)\b/i;
-  const sentences = text.split(/(?<=[.!?])\s+|\n+/).filter((s) => voice.test(s) && !invitation.test(s) && !/\?\s*$/.test(s));
-  const found: string[] = [];
-  for (const claim of BUSINESS_CLAIMS) {
-    if (claim.support.test(context)) continue;
-    const hit = sentences.find((s) => claim.re.test(s));
-    if (hit) found.push(`${claim.label}: "${hit.trim().slice(0, 140)}"`);
-  }
-  return found;
+/** Census 2020 -> 2024 population change in percent, when both numbers are known. */
+export function popChangePct(d: Pick<CityDraft, "city">): number | undefined {
+  const base = d.city.pop2020 || 0;
+  if (!base || !d.city.population) return undefined;
+  return Math.round(((d.city.population - base) / base) * 1000) / 10;
 }
 
 function countMentions(text: string, term: string): number {
@@ -117,7 +98,7 @@ export function evaluateGate(drafts: CityDraft[], opts: GateOptions = {}): Map<s
       reasons.push("Unfilled {placeholder} in copy.");
     }
     const county = (d.city.county || "").replace(/\s+(County|Parish|Borough|Municipality|City and Borough|Census Area)$/i, "");
-    const isBase = Boolean(opts.baseCity) && opts.baseCity!.toLowerCase() === d.city.name.toLowerCase();
+    const isBase = isBaseCity({ cityName: d.city.name, cityState: d.city.state, baseCity: opts.baseCity, baseState: opts.baseState });
     const refNames = [
       county,
       ...(d.nearby || []).map((n) => n.name),
@@ -131,14 +112,21 @@ export function evaluateGate(drafts: CityDraft[], opts: GateOptions = {}): Map<s
       if (status === "pass") status = "warn";
       reasons.push("Only one local reference (county / nearby city / base). Add real local context.");
     }
-    if (!isBase && /\bour (city|town|community|neighbou?rs|neighbou?rhoods?)\b/i.test(text)) {
-      if (status === "pass") status = "warn";
-      reasons.push(`Implies the business is based in ${d.city.name} ("our city/community"). Fix the wording before approving.`);
-    }
-    const claims = unsupportedClaims(text, d.businessContext ?? opts.businessContext ?? "", opts.businessName);
-    if (claims.length) {
+    const honesty = findHonestyIssues({
+      text,
+      cityName: d.city.name,
+      cityState: d.city.state,
+      stateName: d.city.stateName,
+      county: d.city.county,
+      baseCity: opts.baseCity,
+      baseState: opts.baseState,
+      businessName: opts.businessName,
+      support: d.businessContext ?? opts.businessContext ?? "",
+      popChangePct: popChangePct(d),
+    });
+    if (honesty.length) {
       status = "block";
-      reasons.push(`Unverified business claim (not in the business context): ${claims.join("; ")}. Edit it out, or add the fact to the business context and regenerate.`);
+      reasons.push(`${describeIssues(honesty)} Edit it, or regenerate.`);
     }
     if (!d.content.metaDescription) {
       status = "block";
