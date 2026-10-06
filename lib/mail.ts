@@ -61,10 +61,19 @@ function authFailureCode(err: unknown): string | null {
   return null;
 }
 
+function stagingMailHtml(html: string): string {
+  const note = stagingMailBody("");
+  if (!note.trim()) return html;
+  const escaped = note.trim().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return `${html}<p style="color:#666;font-size:12px">${escaped}</p>`;
+}
+
 export async function sendMail(opts: {
   to: string;
   subject: string;
   text: string;
+  /** Optional HTML body; `text` stays as the plain-text alternative. */
+  html?: string;
   replyTo?: string;
 }): Promise<{ sent: boolean }> {
   const user = process.env.TITAN_SMTP_USER;
@@ -79,6 +88,7 @@ export async function sendMail(opts: {
     to: opts.to,
     subject: stagingMailSubject(opts.subject),
     text: stagingMailBody(opts.text),
+    ...(opts.html ? { html: stagingMailHtml(opts.html) } : {}),
     replyTo: opts.replyTo,
   };
 

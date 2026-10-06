@@ -221,8 +221,11 @@ export function getProductImageFallbackSrc(product: Product): string {
   return `/products/${product.slug}.svg`;
 }
 
+/** Public = listed, not retired, and either inquiry-only or actually priced (a listed entry without a price stays hidden). */
 export function isListedProduct(product: CatalogEntry): boolean {
-  return product.listed === true && !product.retired;
+  if (product.listed !== true || product.retired) return false;
+  if (product.kind === "affiliate_out") return false;
+  return Boolean(product.contactOnly) || (typeof product.priceCents === "number" && product.priceCents > 0);
 }
 
 /** Can this entry be put in a cart and paid for right now? */

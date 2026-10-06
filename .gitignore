@@ -63,3 +63,7 @@ next-env.d.ts
 # local dev artifacts
 .next-seo-dev/
 tailwindcss-*.log
+
+# SiteFlow local state (orders ledger, partners, commissions, clicks) and private deliverables
+/data/siteflow/**
+/data/private/**

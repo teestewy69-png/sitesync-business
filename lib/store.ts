@@ -209,6 +209,8 @@ export type Order = {
   canceledAt?: string;
   failedAt?: string;
   fulfillment?: OrderFulfillment;
+  /** Site origin the order was placed on (download links in emails point back here). */
+  siteOrigin?: string;
   updatedAt?: string;
 };
 

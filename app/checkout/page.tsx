@@ -19,6 +19,16 @@ export default function CheckoutPage() {
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [zip, setZip] = useState("");
+  const [inputs, setInputs] = useState<Record<string, Record<string, string>>>({});
+  const [canceled, setCanceled] = useState(false);
+
+  useEffect(() => {
+    // Read once on mount (useSearchParams would force a Suspense boundary on this page).
+    if (new URLSearchParams(window.location.search).get("canceled") === "1") {
+      const timer = window.setTimeout(() => setCanceled(true), 0);
+      return () => window.clearTimeout(timer);
+    }
+  }, []);
 
   const items = useMemo(
     () =>
@@ -30,6 +40,9 @@ export default function CheckoutPage() {
         .filter((row): row is NonNullable<typeof row> => Boolean(row)),
     [getLineProduct, lines]
   );
+  // Only physical goods need a postal address; digital and service carts never ask for one.
+  const needsAddress = items.some(({ product }) => product.requiresShipping);
+  const inputProducts = items.filter(({ product }) => product.fulfillmentInputs?.length);
 
   // begin_checkout once per visit, as soon as the cart has items.
   const checkoutTracked = useRef(false);
@@ -60,12 +73,11 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           email,
           name,
-          address,
-          city,
-          zip,
+          ...(needsAddress ? { address, city, zip } : {}),
           lines: lines.map((line) => ({
             slug: line.slug,
             quantity: line.quantity,
+            ...(inputs[line.slug] ? { inputs: inputs[line.slug] } : {}),
           })),
         }),
       });
@@ -76,7 +88,7 @@ export default function CheckoutPage() {
         throw new Error(data?.error ?? "Checkout failed. Please try again.");
       }
       clear();
-      const next = data.checkoutUrl || data.redirect || "/thank-you?product=ebook";
+      const next = data.checkoutUrl || data.redirect || "/thank-you";
       if (next.startsWith("http")) {
         window.location.assign(next);
         return;
@@ -115,9 +127,14 @@ export default function CheckoutPage() {
         Checkout
       </h1>
       <p className="mt-3 text-base text-slate-300">
-        Place the order. We&apos;ll email save@sitesinc.co and you. If Stripe
-        is configured, you&apos;ll continue to a secure payment page.
+        Enter your details, then continue to Stripe&apos;s secure payment page.
+        Prices come from our catalog on the server.
       </p>
+      {canceled ? (
+        <p role="status" className="mt-3 text-sm text-amber-200">
+          Payment was canceled, so nothing was charged. Your cart is still here.
+        </p>
+      ) : null}
       <form
         onSubmit={handleSubmit}
         className="mt-10 grid gap-8 lg:grid-cols-[1.1fr_0.9fr]"
@@ -149,44 +166,75 @@ export default function CheckoutPage() {
               placeholder="John Smith"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-200">
-              Billing Address
-            </label>
-            <input
-              type="text"
-              value={address}
-              onChange={(event) => setAddress(event.target.value)}
-              className="mt-2 w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none focus:border-brand-400/60"
-              placeholder="123 Main Street"
-            />
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
+          {needsAddress ? (
+            <>
             <div>
               <label className="block text-sm font-medium text-slate-200">
-                City
+                Shipping Address
               </label>
               <input
                 type="text"
-                value={city}
-                onChange={(event) => setCity(event.target.value)}
+                value={address}
+                onChange={(event) => setAddress(event.target.value)}
                 className="mt-2 w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none focus:border-brand-400/60"
-                placeholder="City"
+                placeholder="123 Main Street"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-200">
-                ZIP / Postal Code
-              </label>
-              <input
-                type="text"
-                value={zip}
-                onChange={(event) => setZip(event.target.value)}
-                className="mt-2 w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none focus:border-brand-400/60"
-                placeholder="ZIP Code"
-              />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="block text-sm font-medium text-slate-200">
+                  City
+                </label>
+                <input
+                  type="text"
+                  value={city}
+                  onChange={(event) => setCity(event.target.value)}
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none focus:border-brand-400/60"
+                  placeholder="City"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-200">
+                  ZIP / Postal Code
+                </label>
+                <input
+                  type="text"
+                  value={zip}
+                  onChange={(event) => setZip(event.target.value)}
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none focus:border-brand-400/60"
+                  placeholder="ZIP Code"
+                />
+              </div>
             </div>
-          </div>
+            </>
+          ) : null}
+          {inputProducts.map(({ product }) => (
+            <fieldset key={product.slug} className="space-y-3 rounded-2xl border border-white/10 p-4">
+              <legend className="px-1 text-sm font-semibold text-slate-100">{product.name}: details we need</legend>
+              {product.fulfillmentInputs!.map((field) => (
+                <div key={field.key}>
+                  <label htmlFor={`${product.slug}-${field.key}`} className="block text-sm font-medium text-slate-200">
+                    {field.label}
+                  </label>
+                  <input
+                    id={`${product.slug}-${field.key}`}
+                    type={field.kind === "url" ? "url" : "text"}
+                    required={field.required}
+                    maxLength={field.maxLength}
+                    value={inputs[product.slug]?.[field.key] ?? ""}
+                    onChange={(event) =>
+                      setInputs((prev) => ({
+                        ...prev,
+                        [product.slug]: { ...(prev[product.slug] || {}), [field.key]: event.target.value },
+                      }))
+                    }
+                    placeholder={field.placeholder}
+                    className="mt-2 w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none focus:border-brand-400/60"
+                  />
+                </div>
+              ))}
+            </fieldset>
+          ))}
         </div>
         <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
           <h2 className="text-lg font-semibold text-slate-50">Order Summary</h2>
@@ -209,15 +257,15 @@ export default function CheckoutPage() {
             disabled={status === "loading"}
             className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-gradient-to-b from-brand-300 to-brand-600 px-6 py-3 text-sm font-semibold text-zinc-950 shadow-glow transition hover:from-brand-200 hover:to-brand-500 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {status === "loading" ? "Placing order..." : "Complete checkout"}
+            {status === "loading" ? "Placing order..." : "Continue to payment"}
           </button>
           {status === "error" ? (
             <p className="mt-3 text-sm text-red-400">{errorMessage}</p>
           ) : (
             <p className="mt-3 text-sm text-slate-400">
-              Prices come from the catalog on the server. Card collection uses
-              Stripe Checkout when a secret key is set; otherwise we email the
-              order and follow up with a payment link.
+              Card details are entered on Stripe, never on this site. Promotion
+              codes can be applied on the Stripe page. If online payment is
+              unavailable, we save the order and email you a payment link.
             </p>
           )}
         </div>

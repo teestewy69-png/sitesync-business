@@ -131,7 +131,7 @@ async function fetchText(
   }
 }
 
-function parsePage(origin: string, pathName: string, fetched: Awaited<ReturnType<typeof fetchText>>): PageAudit {
+export function parsePage(origin: string, pathName: string, fetched: Awaited<ReturnType<typeof fetchText>>): PageAudit {
   const html = fetched.body;
   const images = [...html.matchAll(/<img\b[^>]*>/gi)].map((m) => ({
     src: attr(m[0], "src"),
