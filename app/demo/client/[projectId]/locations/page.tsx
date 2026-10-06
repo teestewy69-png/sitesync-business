@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import CityReveal from "@/components/city-launch/CityReveal";
 import s from "@/components/city-launch/city-landing.module.css";
+import { getUsCityIndex } from "@/lib/city-launch";
 import { approvedEntries, cityTheme, previewBase } from "@/lib/factory/city-launch-public";
 import { cityLaunchContext, readCityIndex } from "@/lib/factory/city-launch";
 import { DESIGN_STYLES } from "@/lib/design-styles";
@@ -73,8 +74,11 @@ export default async function LocationsIndex({ params }: { params: Promise<{ pro
               Where <span className={s.accentText}>{ctx.business.businessName}</span> works
             </h1>
             <p className={s.sub}>
-              {ctx.business.niche ? `${ctx.business.niche} ` : ""}
-              {ctx.business.baseCity ? `from our ${ctx.business.baseCity} base. ` : ""}Pick your city for local details.
+              {[
+                ctx.business.niche ? `${ctx.business.niche.charAt(0).toUpperCase()}${ctx.business.niche.slice(1)}` : "Serving these cities",
+                ctx.business.baseCity ? `from our ${ctx.business.baseCity} base.` : ".",
+              ].join(" ").replace(" .", ".")}{" "}
+              Pick your city for local details.
             </p>
           </div>
         </div>
@@ -85,7 +89,7 @@ export default async function LocationsIndex({ params }: { params: Promise<{ pro
         ) : (
           [...byState.entries()].map(([state, list]) => (
             <section key={state} className={s.section}>
-              <h2 className={s.h2}>{state}</h2>
+              <h2 className={s.h2}>{getUsCityIndex().states.get(state) || state}</h2>
               <div className={s.indexGrid}>
                 {list.map((p, i) => (
                   <Link
