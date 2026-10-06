@@ -258,6 +258,44 @@ test("honesty: non-base pages never claim a location in the city; base page may"
   assert.match(fix, /We are just 24 miles/);
 });
 
+test("honesty: live-run regressions (no false positives on honest sentences, rankings flagged)", () => {
+  const mesa = { cityName: "Mesa", cityState: "AZ", stateName: "Arizona", county: "Maricopa County", baseCity: "Phoenix", baseState: "AZ", businessName: "Desert Flow Plumbing" };
+  for (const text of [
+    "We serve Mesa from our Phoenix base, with nearby Gilbert just 6 miles south and Apache Junction located 10 miles east.",
+    "Please call us to discuss your plumbing needs, and we will provide you with an estimate based on the specifics of your situation.",
+    "We are based in Phoenix and serve Mesa every day.",
+    "Desert Flow Plumbing, a Phoenix company, is based in Phoenix.",
+    "Desert Flow Plumbing is just a call away.",
+  ]) {
+    assert.deepEqual(honesty.findHonestyIssues({ ...mesa, text }), [], `should pass: ${text}`);
+  }
+  for (const text of ["Desert Flow Plumbing is just 24 miles from Mesa.", "We are conveniently located in Mesa.", "Our team is based in Mesa."]) {
+    assert.ok(honesty.findHonestyIssues({ ...mesa, text }).some((i) => i.kind === "location_claim"), `should block: ${text}`);
+  }
+  assert.equal(honesty.findHonestyIssues({ ...mesa, text: "Mesa is one of the fastest-growing cities in Arizona.", popChangePct: 2.5 })[0]?.label, "rankings / reputation");
+  assert.equal(honesty.findHonestyIssues({ ...mesa, text: "The city is known for its beautiful parks." })[0]?.label, "rankings / reputation");
+});
+
+test("honesty: distances and directions must match the Census coordinates", () => {
+  const at = (slug) => { const c = index.bySlug.get(slug); return { name: c.name, lat: c.lat, lng: c.lng }; };
+  const glendale = { city: at("glendale-az"), places: [at("phoenix-az"), at("tolleson-az"), at("youngtown-az")] };
+  const base = { cityName: "Glendale", cityState: "AZ", baseCity: "Phoenix", baseState: "AZ", businessName: "Desert Flow Plumbing" };
+  // Census internal points: Glendale is ~6.3 mi WSW (245 deg) of Phoenix -> the live run's "southwest" is right
+  assert.deepEqual(honesty.findHonestyIssues({ ...base, geo: glendale, text: "Desert Flow Plumbing is proud to serve Glendale, AZ, located about 6 miles southwest of Phoenix." }), []);
+  const wrong = honesty.findHonestyIssues({ ...base, geo: glendale, text: "Desert Flow Plumbing is proud to serve Glendale, AZ, located about 6 miles northeast of Phoenix." });
+  assert.equal(wrong.length, 1);
+  assert.equal(wrong[0].kind, "geo_claim");
+  assert.match(wrong[0].label, /Glendale is southwest of Phoenix, not northeast/);
+  assert.deepEqual(honesty.findHonestyIssues({ ...base, geo: glendale, text: "Glendale is about 6 miles west of Phoenix, with Tolleson to the south and Youngtown to the northwest." }), []);
+  const far = honesty.findHonestyIssues({ ...base, geo: glendale, text: "Glendale sits 30 miles west of Phoenix." });
+  assert.match(far[0].label, /distance: Glendale is about 6 miles from Phoenix, not 30/);
+  // unknown references are not guessed at
+  assert.deepEqual(honesty.findHonestyIssues({ ...base, geo: glendale, text: "The shop is 2 miles north of the freeway." }), []);
+  const mesa = { city: at("mesa-az"), places: [at("phoenix-az"), at("gilbert-az"), at("apache-junction-az")] };
+  assert.deepEqual(honesty.findHonestyIssues({ cityName: "Mesa", baseCity: "Phoenix", geo: mesa, text: "Mesa is about 25 miles southeast of Phoenix. We serve Mesa from our Phoenix base, with nearby Gilbert just 6 miles south and Apache Junction located 10 miles east." }), []);
+  assert.ok(honesty.findHonestyIssues({ cityName: "Mesa", baseCity: "Phoenix", geo: mesa, text: "Gilbert lies 6 miles north of Mesa." }).length);
+});
+
 test("honesty: climate / water / housing / growth claims need a source", () => {
   const mesa = { cityName: "Mesa", cityState: "AZ", stateName: "Arizona", county: "Maricopa County", baseCity: "Mesa", baseState: "AZ", businessName: "Desert Flow Plumbing" };
   const water = "Mesa homes deal with hard water that builds scale in water heaters.";

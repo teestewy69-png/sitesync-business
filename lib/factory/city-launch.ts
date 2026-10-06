@@ -27,7 +27,7 @@ import {
   type UsCity,
 } from "@/lib/city-launch";
 import { evaluateGate, popChangePct } from "@/lib/city-launch/gate";
-import { findHonestyIssues, repairInstructions, type HonestyIssue } from "@/lib/city-launch/honesty";
+import { findHonestyIssues, repairInstructions, type HonestyGeo, type HonestyIssue } from "@/lib/city-launch/honesty";
 import {
   clampInt,
   countItems,
@@ -459,6 +459,22 @@ function supportText(item: BatchItem, settings: BatchSettings): string {
   return [settings.websiteContent, item.notes, settings.localFacts].filter(Boolean).join("\n");
 }
 
+/** Census coordinates of a page city, the business base and the nearby cities named in the prompt (geo check). */
+export function cityHonestyGeo(
+  city: { name: string; lat: number | null; lng: number | null },
+  nearbySlugs: string[],
+  base: UsCity | null
+): HonestyGeo | undefined {
+  if (city.lat === null || city.lng === null) return undefined;
+  const index = getUsCityIndex();
+  const places = nearbySlugs
+    .map((slug) => index.bySlug.get(slug))
+    .filter((c): c is UsCity => Boolean(c))
+    .map((c) => ({ name: c.name, lat: c.lat, lng: c.lng }));
+  if (base && base.name.toLowerCase() !== city.name.toLowerCase()) places.unshift({ name: base.name, lat: base.lat, lng: base.lng });
+  return { city: { name: city.name, lat: city.lat, lng: city.lng }, places };
+}
+
 function promptCity(item: BatchItem) {
   return {
     name: item.name,
@@ -535,6 +551,7 @@ export async function writeCityContent(
     businessName: ctx.business.businessName,
     support: supportText(item, settings),
     popChangePct: popChangePct({ city: { population: item.population, pop2020: city.pop2020 } as CityDraft["city"] }),
+    geo: cityHonestyGeo(item, nearby.map((n) => n.slug), base),
   };
   const issues = findHonestyIssues({ ...honestyInput, text: contentText(content) });
   let repaired: HonestyIssue[] | undefined;
@@ -965,7 +982,9 @@ export async function runCityGate(projectId: string): Promise<{ checked: number;
   const project = await findProjectById(projectId);
   const business = project ? cityLaunchContext(project).business : null;
   const baseCity = business?.baseCity;
+  const baseUs = project ? cityLaunchContext(project).baseCity : null;
   const gateOpts = {
+    geoFor: (d: CityDraft) => cityHonestyGeo(d.city, (d.nearby || []).map((n) => n.slug), baseUs),
     baseCity,
     baseState: business?.baseState,
     businessName: business?.businessName,

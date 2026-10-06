@@ -12,7 +12,7 @@
  */
 import type { CityDraft, GateResult } from "./job";
 import { contentText, countWords } from "./prompts";
-import { describeIssues, findHonestyIssues, isBaseCity } from "./honesty";
+import { describeIssues, findHonestyIssues, isBaseCity, type HonestyGeo } from "./honesty";
 import { checkUniqueness, DEFAULT_BLOCK_THRESHOLD, DEFAULT_WARN_THRESHOLD } from "./similarity";
 
 export { BUSINESS_CLAIMS, findHonestyIssues, unsupportedClaims } from "./honesty";
@@ -25,6 +25,8 @@ export type GateOptions = {
   minWords?: number;
   baseCity?: string;
   baseState?: string;
+  /** Coordinates of the page city, the base and its nearest cities, for the distance/direction check. */
+  geoFor?: (draft: CityDraft) => HonestyGeo | undefined;
   now?: string;
   businessName?: string;
   /** Fallback business facts when a draft carries none (the client's default website context). */
@@ -123,6 +125,7 @@ export function evaluateGate(drafts: CityDraft[], opts: GateOptions = {}): Map<s
       businessName: opts.businessName,
       support: d.businessContext ?? opts.businessContext ?? "",
       popChangePct: popChangePct(d),
+      geo: opts.geoFor?.(d),
     });
     if (honesty.length) {
       status = "block";
