@@ -26,7 +26,7 @@ import {
   type PickedCity,
   type UsCity,
 } from "@/lib/city-launch";
-import { evaluateGate } from "@/lib/city-launch/gate";
+import { evaluateGate, unsupportedClaims } from "@/lib/city-launch/gate";
 import {
   clampInt,
   countItems,
@@ -53,6 +53,7 @@ import { chatCompletion, describeLlmProvider, LlmError, resolveLlmProvider } fro
 import {
   clampTargetWords,
   CityContentError,
+  contentText,
   contentWordCount,
   DEFAULT_PROMPT_TEMPLATE,
   DEFAULT_TARGET_WORDS,
@@ -471,8 +472,9 @@ function nearbyFor(item: BatchItem) {
 export async function writeCityContent(
   ctx: CityLaunchClientContext,
   item: BatchItem,
-  settings: BatchSettings
-): Promise<{ content: CityPageContent; model: string; envKey: string; nearby: CityDraft["nearby"] }> {
+  settings: BatchSettings,
+  opts: { beforeExtraCall?: () => Promise<boolean> } = {}
+): Promise<{ content: CityPageContent; model: string; envKey: string; nearby: CityDraft["nearby"]; repaired?: string[] }> {
   const resolved = resolveLlmProvider(process.env);
   if (!resolved) throw new LlmError("missing_key", "No LLM key configured for City Launch.");
   const nearby = nearbyFor(item);
@@ -502,6 +504,34 @@ export async function writeCityContent(
     if (err instanceof CityContentError) throw new LlmError("bad_response", err.message);
     throw err;
   }
+  // Automatic honesty repair: models (gpt-4o-mini especially) still assert "licensed and insured", "24/7"...
+  // One follow-up call asks for exactly those sentences to be rewritten. Anything left is blocked by the gate.
+  const businessContext = [settings.websiteContent, item.notes, settings.competitorGaps].filter(Boolean).join("\n");
+  const claims = unsupportedClaims(contentText(content), businessContext, ctx.business.businessName);
+  let repaired: string[] | undefined;
+  if (claims.length && (!opts.beforeExtraCall || (await opts.beforeExtraCall()))) {
+    try {
+      const fix = await chatCompletion(
+        resolved,
+        [
+          ...messages,
+          { role: "assistant" as const, content: reply.content },
+          {
+            role: "user" as const,
+            content: `These sentences state business facts that are NOT in the business context, so they may be false:\n${claims.map((c) => `- ${c}`).join("\n")}\nRewrite only those sentences so they no longer assert the fact (e.g. "Ask us about licensing and insurance when you call."). Keep everything else identical. Return the full JSON again.`,
+          },
+        ],
+        { timeoutMs: envInt("CITY_LAUNCH_LLM_TIMEOUT_MS", 90_000), temperature: 0.2, maxTokens: Math.min(4000, Math.round(settings.targetWordCount * 2.6) + 600), jsonMode: true }
+      );
+      const fixed = parseCityPageReply(fix.content, settings, city);
+      if (unsupportedClaims(contentText(fixed), businessContext, ctx.business.businessName).length < claims.length) {
+        content = fixed;
+        repaired = claims;
+      }
+    } catch {
+      // keep the original draft; the gate will block it for a human edit
+    }
+  }
   if (ctx.business.businessName && content.title.length + ctx.business.businessName.length + 3 <= 65) {
     content.title = `${content.title} | ${ctx.business.businessName}`;
   }
@@ -510,6 +540,7 @@ export async function writeCityContent(
     model: reply.model,
     envKey: resolved.provider.envKey,
     nearby: nearby.map(({ slug, name, state, distanceMiles, direction }) => ({ slug, name, state, distanceMiles, direction })),
+    repaired,
   };
 }
 
@@ -711,10 +742,19 @@ export async function runCityLaunchTick(
     }
     const t0 = Date.now();
     try {
-      const written = await writeCityContent(ctx, item, settings);
+      const written = await writeCityContent(ctx, item, settings, {
+        // Only repair when this tick still has time for one more call (Netlify function limit); otherwise the gate blocks
+        // the page and Regenerate (its own request) can fix it.
+        beforeExtraCall: async () => {
+          if (budget && timeLeft() < avgCallMs * 1.2) return false;
+          await limiter.acquire();
+          return true;
+        },
+      });
       const previous = await readCityDraft(projectId, item.slug);
       const draft = draftFrom(projectId, batchId, item, item.keyword || settings.keyword, written, previous, settings);
       await writeDoc(cityDraftKey(projectId, item.slug), draft);
+      if (written.repaired?.length) logLines.push(`${nowIso()} ${item.slug}: auto-repaired unsupported claims (${written.repaired.map((c) => c.split(":")[0]).join(", ")})`);
       item.status = "drafted";
       item.words = draft.words;
       item.finishedAt = nowIso();
