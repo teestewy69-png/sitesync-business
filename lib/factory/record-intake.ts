@@ -4,6 +4,7 @@ import { applyConfigToProject, buildClientConfig } from "./client-config";
 import type { IntakeConfigInput } from "./client-config";
 import { initClientWorkspace } from "./client-workspace";
 import { queueAutoClientBaseline } from "./client-automation";
+import { queueAutoDomainCandidates } from "./domainiq";
 import type { IntakeProject } from "./types";
 import { updateExistingWorkspace } from "./workspace";
 
@@ -55,7 +56,11 @@ export async function recordIntakeProject(
     leadId: input.leadId,
     monitoringInterest: config.monitoringInterest,
   };
-  const stored = await appendProject(applyConfigToProject(base, config));
+  const stored = await appendProject({
+    ...applyConfigToProject(base, config),
+    // DomainIQ candidates are generated right after the response (see below).
+    domainStatus: "pending",
+  });
 
   try {
     const init = await initClientWorkspace(stored.id, config, {
@@ -68,6 +73,8 @@ export async function recordIntakeProject(
   } catch (err) {
     console.error("Client factory workspace init FAILED (CRM project is saved):", err);
   }
+  // Domain candidates only need the CRM project fields, so queue them even if workspace init failed.
+  queueAutoDomainCandidates(stored.id);
 
   const project: IntakeProject = {
     id: stored.id,

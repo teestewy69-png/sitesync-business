@@ -7,6 +7,16 @@ import {
   queueAutoClientBaseline,
 } from "./client-automation";
 import { recordIntakeProject } from "./record-intake";
+import {
+  approveDomainPurchase,
+  backfillDomainCandidates,
+  checkProjectDomainAvailability,
+  clearProjectDomainSelection,
+  generateDomainCandidatesForProject,
+  markDomainCandidatesPending,
+  queueAutoDomainCandidates,
+  selectProjectDomain,
+} from "./domainiq";
 export { recordIntakeProject } from "./record-intake";
 import { runConversionChecks } from "./conversions";
 import { draftFromBrief, wordCount } from "./drafts";
@@ -60,7 +70,7 @@ function nowIso() {
 export async function applyFactoryAction(
   op: string,
   body: Record<string, string | string[] | undefined>
-): Promise<{ ok: boolean; error?: string; workspace?: FactoryWorkspace; created?: boolean; backfill?: import("./client-automation").BackfillResult }> {
+): Promise<{ ok: boolean; error?: string; workspace?: FactoryWorkspace; created?: boolean; backfill?: import("./client-automation").BackfillResult; domainBackfill?: import("./domainiq").DomainBackfillResult }> {
   const actor = String(body.approvedBy || "operator");
   const when = nowIso();
 
@@ -580,7 +590,60 @@ export async function applyFactoryAction(
     const result = await initClientWorkspace(project.id, config, { hostOrigin: hostHint });
     // Auto baseline: never block the action response.
     queueAutoClientBaseline(project.id, hostHint);
+    // Auto DomainIQ candidates (idempotent: skips when candidates already exist).
+    await markDomainCandidatesPending(project.id);
+    queueAutoDomainCandidates(project.id);
     return { ok: true, created: result.created, workspace: result.workspace };
+  }
+
+  // DomainIQ bay. Generation/scoring run in-process; availability uses keyless
+  // public RDAP + DNS. Nothing here purchases, reserves, or registers a domain.
+  if (op === "domainiq-generate") {
+    const projectId = String(body.projectId || "");
+    if (!projectId) return { ok: false, error: "projectId required." };
+    const result = await generateDomainCandidatesForProject(projectId, {
+      force: String(body.force ?? "1") !== "0",
+      checkAvailability: String(body.checkAvailability ?? "1") !== "0",
+    });
+    return result.ok ? { ok: true } : { ok: false, error: result.error };
+  }
+
+  if (op === "domainiq-check-availability") {
+    const projectId = String(body.projectId || "");
+    if (!projectId) return { ok: false, error: "projectId required." };
+    const raw = body.domains ?? body.domain;
+    const domains = (Array.isArray(raw) ? raw : String(raw || "").split(/[\n,]/))
+      .map((item) => String(item).trim())
+      .filter(Boolean);
+    const result = await checkProjectDomainAvailability(projectId, domains.length ? domains : undefined);
+    return result.ok ? { ok: true } : { ok: false, error: result.error };
+  }
+
+  if (op === "domainiq-select") {
+    const projectId = String(body.projectId || "");
+    const domain = String(body.domain || "");
+    if (!projectId || !domain) return { ok: false, error: "projectId and domain required." };
+    const result = await selectProjectDomain(projectId, domain, actor);
+    return result.ok ? { ok: true } : { ok: false, error: result.error };
+  }
+
+  if (op === "domainiq-clear-selection") {
+    const projectId = String(body.projectId || "");
+    if (!projectId) return { ok: false, error: "projectId required." };
+    const result = await clearProjectDomainSelection(projectId);
+    return result.ok ? { ok: true } : { ok: false, error: result.error };
+  }
+
+  if (op === "domainiq-approve-purchase") {
+    const projectId = String(body.projectId || "");
+    if (!projectId) return { ok: false, error: "projectId required." };
+    const result = await approveDomainPurchase(projectId, String(body.approvedBy || ""));
+    return result.ok ? { ok: true } : { ok: false, error: result.error };
+  }
+
+  if (op === "domainiq-backfill") {
+    const backfill = await backfillDomainCandidates();
+    return { ok: true, created: backfill.generated > 0, domainBackfill: backfill };
   }
 
   if (op === "set-brief-competitors") {

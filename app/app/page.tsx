@@ -1,12 +1,24 @@
+import { headers } from "next/headers";
 import ActionForm from "@/components/factory/ActionForm";
+import DomainIQBay from "@/components/factory/DomainIQBay";
 import CaptureButton from "@/components/factory/CaptureButton";
 import FactoryShell, { Pill } from "@/components/factory/Shell";
 import { PRODUCTION_ORIGIN } from "@/lib/factory/pipeline";
 import { latestBaseline, readWorkspace } from "@/lib/factory/workspace";
+import { summarizeDomainBay } from "@/lib/factory/domainiq";
+import { ensureBlobsFromRequest, listProjects } from "@/lib/store";
 
 export default async function FactoryHome() {
   const workspace = await readWorkspace();
   const baseline = await latestBaseline();
+  ensureBlobsFromRequest({ headers: await headers() });
+  let clientProjects: Awaited<ReturnType<typeof listProjects>> = [];
+  try {
+    clientProjects = await listProjects();
+  } catch (err) {
+    console.warn("DomainIQ bay: client projects unavailable.", err instanceof Error ? err.name : "unknown");
+  }
+  const domainBay = summarizeDomainBay(clientProjects);
 
   return (
     <FactoryShell title="Sitesinc Growth Case Study">
@@ -52,6 +64,8 @@ export default async function FactoryHome() {
           fields={{ source: "factory_intake", label: "Operator factory intake (no PII)" }}
         />
       </div>
+
+      <DomainIQBay summary={domainBay} />
 
       <h2 className="mt-10 text-xl font-semibold">Pipeline</h2>
       <div className="mt-4 divide-y divide-white/10 rounded-2xl border border-white/10">

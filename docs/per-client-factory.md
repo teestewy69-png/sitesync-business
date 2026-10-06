@@ -1,4 +1,4 @@
-﻿# Per-client factory wiring
+# Per-client factory wiring
 
 This note describes what is **fully wired** vs **still manual** after the per-client factory path (and client baseline/crawl + automation) landed on `staging-merge`.
 
@@ -24,6 +24,10 @@ This note describes what is **fully wired** vs **still manual** after the per-cl
 | Analyze top 3 / `competitorUrls` fill | **Blocked on external setup** | No SERP/search API key in repo (`SERPER_API_KEY` / `BRAVE_SEARCH_API_KEY` / etc.). UI shows `needs_search_provider`. Manual `set-brief-competitors` only. |
 | Final client-approved copy polish | **Manual by design** | Seed drafts are templated placeholders, not LLM research |
 | Photos / logo / legal claims / pricing | **Manual by design** | Client-provided |
+| DomainIQ domain candidates (generate + score) on client setup | **Automated** | Background via `after()` on intake / `init-client-factory` / backfill (`queueAutoDomainCandidates`). In-process engine, no server/key |
+| Domain availability check (top 12 candidates) | **Automated** | Keyless public RDAP (Verisign .com/.net) + Cloudflare DNS NS, same sources as DomainIQ. `DOMAINIQ_AVAILABILITY=off` leaves them `unchecked` |
+| Domain pick | **Manual by design** | Operator picks on `/app/clients/<projectId>` (or types a client-owned domain - it gets DomainIQ-scored) |
+| Domain purchase | **Manual by design** | Tony signs off (`domainiq-approve-purchase` records who/when). Sitesinc never buys, reserves, or registers a domain |
 | Netlify production publish for the client site | **Manual by design** | Preview ≠ live client domain |
 | Search Console / analytics for a **live** client domain | **Manual by design** | Not required for preview baselines |
 
@@ -51,6 +55,62 @@ If none resolve → baseline automation status **`missing`** with reason. Operat
 9. **Client baseline / crawl** + **auto queue** (`lib/factory/client-baseline.ts`, `client-automation.ts`).
 10. **SEO Intelligence**: client projects with a factory workspace appear as their own site (`kind: client_preview`).
 
+## DomainIQ bay (client domains)
+
+**Approach: DomainIQ's engine runs in-process inside Sitesinc (TypeScript port), not as a proxied service.**
+
+Why: DomainIQ's FastAPI `POST /generate` is not a standalone function - it requires a DomainIQ *project row in Postgres*
+(`project_id`), persists results, enforces usage, and gates every name on live RDAP inside the request. Proxying it
+would need a second always-on server + database + auth for Sitesinc to reach, and today it only runs on Tony's PC. The
+part Sitesinc needs - the lexicon/rules generator and the `/score` engine - is pure and deterministic, so it is ported to
+`lib/domainiq/` and works on Netlify with zero extra infrastructure, no env vars and no keys.
+
+- `lib/domainiq/engine.ts` - port of `app/services/generation/*` (niche resolver, harvest, combiners, filters, engine)
+  and `app/services/scoring/*` (analyzers, niche fit, weights, explanations). Pure, data injected.
+- `lib/domainiq/data.generated.ts` - word lists, lexicon, niche profiles and scoring rules **exported from the real
+  DomainIQ Python source** by `scripts/domainiq/export-domainiq.py` (run with DomainIQ's venv:
+  `<DOMAINIQ>\.venv\Scripts\python.exe scripts\domainiq\export-domainiq.py <DOMAINIQ>`; re-run when DomainIQ's data
+  changes). Do not edit by hand.
+- `scripts/fixtures/domainiq-golden.json` - outputs of the real Python engine for plumbing / roofing / HVAC /
+  unknown-niche requests and `/score` cases. `node --test scripts/domainiq.test.mjs` asserts the TS port matches them
+  exactly (candidate order, ranking, every sub-score and contribution, summary, explanation).
+- Not ported on purpose (live, rotating, or resale-only): UTC-date hot-niche rotation, live trends, sale-history
+  harvest, liquidity / "flip score" blend, trademark prescreen. DomainIQ's RDAP oversample loop is replaced by a simpler
+  availability-first pool (below). Ranking uses DomainIQ's quality
+  score (the `/score` total), which still includes the major-brand confusion risk penalty.
+- `lib/domainiq/client.ts` - seeds DomainIQ from `niche`, `businessName`, `city`, `state`: a **local** pass
+  (DomainIQ `descriptive` style with niche + city + business tokens; keeps names containing the city/business) and a
+  **brand** pass (DomainIQ `brandable`, the niche-selector default). Merged, deduped, ranked by DomainIQ score.
+- `lib/domainiq/availability.ts` - optional keyless check, same sources DomainIQ uses: RDAP 404 + no DNS NS =
+  `available`; RDAP 200 or NS records = `registered`; lookup failure = `error`; TLDs other than .com/.net =
+  `unsupported_tld`. Never fakes `available`.
+- `lib/factory/domainiq.ts` - persistence, `after()` automation, bay summary. Generation builds an 18 + 18 pool
+  (local + brand), stores the top 12 unchecked right away, then (unless `DOMAINIQ_AVAILABILITY=off`) checks the whole
+  pool (concurrency 8, 4 s timeout) and re-ranks with `rankByVerifiedAvailability`: verified-available names first
+  (by score), then the best-scoring taken/unknown names fill up to 12. Short premium .com names are almost always
+  registered (real Phoenix plumbing run: 34/36 taken), so this is what surfaces buyable names. The bay's try-it form
+  sends `checkAvailability: true` to get the same ranking ad hoc.
+
+**`ClientProject` fields:** `domainCandidates[]` (domain, score, band, source `local|brand|operator`, sub-scores,
+summary, highlights/concerns, `availability`), `selectedDomain`, `domainStatus`
+(`pending | candidates_ready | missing_input | failed | selected | purchase_approved`), `domainIQ` (engine, seed,
+generatedAt, availability run, selectedBy/At, purchaseApprovedBy/At, `purchase: "manual"`).
+
+**Ops actions** (`/api/factory/action`): `domainiq-generate` (force regenerate; keeps an existing pick),
+`domainiq-check-availability`, `domainiq-select` (`domain`; a non-candidate domain is DomainIQ-scored and added as
+`operator`), `domainiq-clear-selection`, `domainiq-approve-purchase` (`approvedBy`; records sign-off only),
+`domainiq-backfill` (idempotent: projects with no candidates yet).
+
+**API** (factory-auth protected by middleware): `GET /api/factory/domainiq` (status), `POST /api/factory/domainiq/generate`
+(`{projectId}` persists, or `{niche,businessName,city,state}` ad-hoc), `POST /api/factory/domainiq/score`
+(`{domain, niche?}`), `POST /api/factory/domainiq/availability` (`{domains[]}`, max 12).
+
+**UI:** DomainIQ bay tile on `/app` (live per-status counts, per-client rows, try-it form) and the DomainIQ section on
+`/app/clients/<projectId>` (scored table, Pick, availability, custom domain, purchase sign-off).
+
+**Env:** none required. Optional `DOMAINIQ_AVAILABILITY=off` disables the outbound RDAP/DNS check (candidates then
+stay `unchecked`).
+
 ## Truthfulness rules
 
 - Do not claim auto-publish happened.
@@ -59,11 +119,14 @@ If none resolve → baseline automation status **`missing`** with reason. Operat
 - Do not reuse Sitesinc, smith-plumbing, or kurtis baselines for a client.
 - Sitesinc case-study kickoff remains Sitesinc-only.
 - If host cannot be resolved, status is `missing` - never a faked crawl against production.
+- Domain availability is `unchecked` until a real RDAP/DNS answer exists; lookup failures are `error`, never `available`.
+- Never purchase/reserve a domain. `purchase_approved` only records Tony's sign-off; buying happens manually.
 
 ## Operator path (happy path)
 
-1. Intake or `init-client-factory` → structured config + client workspace + seeded drafts + queued auto baseline.
+1. Intake or `init-client-factory` → structured config + client workspace + seeded drafts + queued auto baseline + queued DomainIQ domain candidates (with availability check).
 2. Open `/demo/client/<projectId>` (local or staging host).
 3. Confirm automation status on `/app/clients/<projectId>` (baseline status, drafts seeded, competitors needs_search_provider, stage auto-states).
 4. Manual Capture still available if auto status is `missing`/`failed`.
 5. Open SEO workspace (`?site=<projectId>`) for inventory/issues scoped to that site.
+6. DomainIQ section: pick a domain (status `selected`), get Tony's sign-off (`purchase_approved`), buy manually at a registrar.

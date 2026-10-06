@@ -13,6 +13,10 @@ import {
 } from "@/lib/persistence";
 import { isStagingEnv } from "@/lib/site-env";
 import type { LeadStage } from "@/lib/lead-stage";
+import type {
+  ClientDomainCandidate,
+  ClientDomainStatus,
+} from "@/lib/domainiq/client";
 
 export type Lead = {
   id: string;
@@ -87,6 +91,37 @@ export type ClientProject = {
   seededPages?: SeededClientPage[];
   /** Per-client factory workspace key (usually same as project id). */
   factoryWorkspaceId?: string;
+  /** DomainIQ bay: scored domain suggestions (auto-generated on setup). Never purchased by Sitesinc. */
+  domainCandidates?: ClientDomainCandidate[];
+  /** Operator-picked domain (awaiting Tony's purchase sign-off until domainStatus=purchase_approved). */
+  selectedDomain?: string;
+  domainStatus?: ClientDomainStatus;
+  /** DomainIQ run + audit metadata (seed, engine version, selection / sign-off trail). */
+  domainIQ?: ClientDomainIQState;
+};
+
+export type ClientDomainIQState = {
+  engine: string;
+  mode: "in-process";
+  generatedAt?: string;
+  reason?: string;
+  seed?: { businessName: string; niche: string; city: string; state: string };
+  nicheKey?: string | null;
+  resolutionSource?: string;
+  localKeywords?: string[];
+  availability?: {
+    enabled: boolean;
+    checkedAt?: string;
+    checked?: number;
+    detail?: string;
+  };
+  selectedBy?: string;
+  selectedAt?: string;
+  selectionWarning?: string;
+  purchaseApprovedBy?: string;
+  purchaseApprovedAt?: string;
+  /** Always "manual": Sitesinc never buys domains. */
+  purchase: "manual";
 };
 
 export type OrderItem = {

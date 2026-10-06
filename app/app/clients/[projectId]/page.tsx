@@ -2,6 +2,7 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import CaptureButton from "@/components/factory/CaptureButton";
+import DomainIQPanel from "@/components/factory/DomainIQPanel";
 import FactoryShell, { Pill } from "@/components/factory/Shell";
 import { configFromProject } from "@/lib/factory/client-config";
 import { getClientTemplate } from "@/lib/factory/client-templates";
@@ -10,6 +11,7 @@ import { clientPreviewOrigin, hostOriginFrom } from "@/lib/factory/seo-sites";
 import { DESIGN_STYLES } from "@/lib/design-styles";
 import { findProjectById } from "@/lib/store";
 import { readBaseline } from "@/lib/factory/workspace";
+import { clientDomainSeedFromProject } from "@/lib/factory/domainiq";
 
 export const dynamic = "force-dynamic";
 
@@ -76,6 +78,17 @@ export default async function ClientProjectDetailPage({
         >
           auto-baseline {workspace?.clientAutomation?.baseline?.status || "n/a"}
           {workspace?.clientAutomation?.baseline?.stale ? " · stale" : ""}
+        </Pill>
+        <Pill
+          tone={
+            project.domainStatus === "purchase_approved" || project.domainStatus === "selected"
+              ? "ok"
+              : project.domainStatus === "candidates_ready"
+                ? "warn"
+                : "muted"
+          }
+        >
+          domain {project.selectedDomain || project.domainStatus || "not run"}
         </Pill>
         <Pill tone={workspace?.clientAutomation?.drafts?.seeded ? "ok" : "muted"}>
           drafts {workspace?.clientAutomation?.drafts?.seeded
@@ -157,6 +170,15 @@ export default async function ClientProjectDetailPage({
         </div>
       </section>
 
+
+      <DomainIQPanel
+        projectId={projectId}
+        candidates={project.domainCandidates || []}
+        selectedDomain={project.selectedDomain}
+        domainStatus={project.domainStatus}
+        state={project.domainIQ}
+        seedPreview={clientDomainSeedFromProject(project)}
+      />
 
       <section className="mt-6 rounded-2xl border border-white/10 p-5">
         <h2 className="text-lg font-semibold">Automation status</h2>
@@ -344,7 +366,8 @@ export default async function ClientProjectDetailPage({
 
       <p className="mt-8 text-xs text-slate-500">
         Automated: workspace init, templated draft seed, stage auto-progress (except approval/deploy),
-        baseline capture/recapture when host known. Manual by design: human_approval, production_deployment,
+        baseline capture/recapture when host known, DomainIQ domain candidates + keyless availability check.
+        Manual by design: domain pick + Tony&apos;s purchase sign-off (Sitesinc never buys a domain). Manual by design: human_approval, production_deployment,
         final copy polish, photos, Netlify client publish. Blocked on external setup: analyze top 3 (no
         SERP/search API key in this repo).
       </p>

@@ -572,6 +572,8 @@ export async function backfillClientFactories(opts?: {
         result.initialized += 1;
         result.projectIds.push(project.id);
         queueAutoClientBaseline(project.id, opts?.hostOrigin);
+        const { queueAutoDomainCandidates } = await import("./domainiq");
+        queueAutoDomainCandidates(project.id);
       } else {
         result.skipped += 1;
       }
