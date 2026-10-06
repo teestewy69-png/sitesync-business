@@ -210,6 +210,8 @@ test("gate: invented business claims block unless the business context supports 
   assert.deepEqual(unsupportedClaims("We see pipes that are 30 years old in older homes.", ""), []);
   assert.equal(unsupportedClaims("We offer free estimates and same-day service, with 20 years of experience.", "").length, 3);
   assert.equal(unsupportedClaims("Desert Flow Plumbing is top-rated.", "", "Desert Flow Plumbing").length, 1);
+  assert.deepEqual(unsupportedClaims("Please inquire about any warranties or guarantees when you contact us. Ask us about licensing and insurance when you call.", ""), []);
+  assert.deepEqual(unsupportedClaims("Are your plumbers licensed and insured?", ""), [], "a question asserts nothing");
 });
 
 // ---------------------------------------------------------------- prompts

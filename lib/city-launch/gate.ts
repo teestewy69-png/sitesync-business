@@ -45,7 +45,9 @@ export const BUSINESS_CLAIMS: Array<{ label: string; re: RegExp; support: RegExp
 /** Claims made in the business's own voice that the business context does not support. */
 export function unsupportedClaims(text: string, context: string, businessName = ""): string[] {
   const voice = new RegExp(`\\b(we|we're|we've|we'll|our|ours|us)\\b${businessName ? `|${businessName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}` : ""}`, "i");
-  const sentences = text.split(/(?<=[.!?])\s+|\n+/).filter((s) => voice.test(s));
+  // Sentences that invite the reader to ask/confirm ("Ask us about licensing when you call") assert nothing.
+  const invitation = /\b(ask|inquire|enquire|confirm|check with us|questions? about)\b/i;
+  const sentences = text.split(/(?<=[.!?])\s+|\n+/).filter((s) => voice.test(s) && !invitation.test(s) && !/\?\s*$/.test(s));
   const found: string[] = [];
   for (const claim of BUSINESS_CLAIMS) {
     if (claim.support.test(context)) continue;
