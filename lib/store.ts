@@ -130,11 +130,52 @@ export type OrderItem = {
   quantity: number;
   unitAmount: number;
   lineTotal: number;
+  /** SiteFlow (absent on legacy orders). */
+  unitAmountCents?: number;
+  kind?: "digital" | "subscription" | "service" | "affiliate_out";
+  interval?: "month" | "year";
+  stripeLookupKey?: string;
+};
+
+/**
+ * Order lifecycle. Legacy: recorded (no payment collected), awaiting_stripe (sent to Stripe Checkout,
+ * not yet confirmed), email_only (Stripe failed; payment link by email). SiteFlow: paid (confirmed by the
+ * webhook or a server-side session check), fulfilled (every deliverable delivered), refunded (fully
+ * refunded), failed (payment failed, or fulfillment failed after retries; see `fulfillment`).
+ */
+export type OrderStatus =
+  | "recorded"
+  | "awaiting_stripe"
+  | "email_only"
+  | "paid"
+  | "fulfilled"
+  | "refunded"
+  | "failed";
+
+export type OrderDelivery = {
+  slug: string;
+  /** Private deliverables-store key for the file the download link serves. */
+  fileKey: string;
+  filename: string;
+  state: "ready" | "manual" | "failed";
+  error?: string;
+  readyAt?: string;
+};
+
+export type OrderFulfillment = {
+  state: "pending" | "running" | "delivered" | "manual" | "failed";
+  attempts: number;
+  lastAttemptAt?: string;
+  deliveredAt?: string;
+  emailedAt?: string;
+  /** Short, sanitized error (never secrets). */
+  lastError?: string;
+  deliveries: OrderDelivery[];
 };
 
 export type Order = {
   id: string;
-  status: "recorded" | "awaiting_stripe" | "email_only";
+  status: OrderStatus;
   email: string;
   name: string;
   address: string;
@@ -146,6 +187,29 @@ export type Order = {
   stripeCheckoutUrl?: string;
   createdAt: string;
   env?: "staging";
+  /** SiteFlow fields (all optional so legacy orders still load). */
+  mode?: "payment" | "subscription";
+  requiresShipping?: boolean;
+  fulfillmentInputs?: Record<string, Record<string, string>>;
+  /** In-house partner code (validated `sf_ref` cookie at checkout). */
+  ref?: string;
+  refRejected?: "self_referral" | "inactive_partner";
+  stripeSessionId?: string;
+  stripeCustomerId?: string;
+  stripePaymentIntentId?: string;
+  stripeSubscriptionId?: string;
+  subscriptionStatus?: "active" | "canceled";
+  stripeLivemode?: boolean;
+  amountPaidCents?: number;
+  amountRefundedCents?: number;
+  currency?: string;
+  paidAt?: string;
+  fulfilledAt?: string;
+  refundedAt?: string;
+  canceledAt?: string;
+  failedAt?: string;
+  fulfillment?: OrderFulfillment;
+  updatedAt?: string;
 };
 
 function withSiteEnv<T extends { env?: "staging" }>(record: T): T {
@@ -452,6 +516,17 @@ export async function appendOrder(order: Order): Promise<Order> {
   const record = withSiteEnv(order);
   await writeRecord("orders", record);
   return record;
+}
+
+export async function findOrderById(id: string): Promise<Order | null> {
+  if (!id) return null;
+  return readRecord<Order>("orders", id);
+}
+
+export async function listOrders(): Promise<Order[]> {
+  return [...(await readRecords<Order>("orders"))].sort((a, b) =>
+    b.createdAt.localeCompare(a.createdAt)
+  );
 }
 
 export async function updateOrder(id: string, patch: Partial<Order>): Promise<Order | null> {

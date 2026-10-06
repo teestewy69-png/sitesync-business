@@ -1,20 +1,21 @@
 import { NextResponse } from "next/server";
-import { products } from "@/data/products";
+import { getPublicProducts, isPurchasable } from "@/data/products";
 
 export const runtime = "nodejs";
 
+/** Public catalog: listed entries only. Drafts, unlisted and retired entries never appear here. */
 export async function GET() {
   return NextResponse.json({
     ok: true,
-    products: products.map((product) => ({
+    products: getPublicProducts().map((product) => ({
       slug: product.slug,
       name: product.name,
       category: product.category,
+      kind: product.kind,
       price: product.price ?? null,
-      regularPrice: product.regularPrice ?? null,
+      purchasable: isPurchasable(product),
       contactOnly: Boolean(product.contactOnly),
       description: product.description,
-      badge: product.badge ?? null,
       image: product.image,
     })),
   });

@@ -3,7 +3,7 @@ import { getPublicProducts } from "@/data/products";
 
 export const metadata = {
   title: "Shop | Sitesinc",
-  description: "Affiliate product bundles from Sitesinc. Website builds are requested separately and are not sold here.",
+  description: "Contact-only offers and digital products from Sitesinc. Website builds are requested separately and are not sold here.",
 };
 
 export default function ShopPage() {
@@ -19,7 +19,7 @@ export default function ShopPage() {
           Featured Products
         </h1>
         <p className="text-base text-slate-400">
-          Affiliate bundles and contact-only services. Website builds are not sold
+          Contact-only offers and digital products. Website builds are not sold
           in this shop. Request a Sitesinc website from the homepage form — that
           is a request, not a purchase.
         </p>

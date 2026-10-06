@@ -35,16 +35,9 @@ export default function ProductDetail({ product }: { product: Product }) {
               Contact for pricing
             </span>
           ) : (
-            <>
-              <span className="text-3xl font-semibold text-white">
-                {product.price}
-              </span>
-              {product.regularPrice ? (
-                <span className="text-base text-slate-400 line-through">
-                  {product.regularPrice}
-                </span>
-              ) : null}
-            </>
+            <span className="text-3xl font-semibold text-white">
+              {product.price}
+            </span>
           )}
         </div>
 

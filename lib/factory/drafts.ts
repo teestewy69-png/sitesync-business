@@ -68,7 +68,7 @@ We do not sell 20 “city + service” landing pages. We do not sell guaranteed 
 
 ## How payment works
 
-Pay in full through Stripe. After payment and onboarding details, we start. If you have questions before paying, email save@sitesinc.co. Prices on this page must match the homepage — if they ever drift, trust the homepage and tell us.
+Submitting the build form is a request, not a purchase. If we accept the project, Sitesinc emails a $997.50 start invoice; we start once it is paid and your onboarding details are in. The remaining $997.50 is invoiced at launch. If you have questions first, email save@sitesinc.co. Prices on this page must match the homepage — if they ever drift, trust the homepage and tell us.
 
 Twelve-month math, stated plainly: a $1,995 build plus optional $129/mo monitoring is $1,995 + $1,548 if you keep monitoring for a year. A $30–$50/mo builder is cheaper up front and more expensive if you stay for years — and you still do not own the code. Pick the model that matches how you want to operate.`,
   },

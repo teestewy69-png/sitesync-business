@@ -16,10 +16,6 @@ export const PUBLIC_PATHS = [
   "/blog/real-small-business-website-needs",
   "/blog/diy-vs-done-for-you-websites",
   "/shop",
-  "/shop/product/mack-makeup-bundle",
-  "/shop/product/home-gym-bundle",
-  "/shop/product/home-pet-grooming-kit",
-  "/shop/product/longevity-life-bundle",
   "/shop/product/financial-consulting",
   "/shop/product/gold-filled-jewelry",
   "/cart",
@@ -332,7 +328,7 @@ export const SEED_BRIEFS: ContentBrief[] = [
     wordCountGuidance: {
       min: 800,
       max: 1200,
-      note: "Guidance only. Must stay consistent with live Stripe prices.",
+      note: "Guidance only. Prices must match content.json: $1,995 starting, 50% ($997.50) to start, 50% at launch.",
     },
     headings: [
       "One-time build",
@@ -348,9 +344,9 @@ export const SEED_BRIEFS: ContentBrief[] = [
       "Price table matching the homepage",
       "What’s included",
       "Optional monitoring",
-      "CTA to Stripe — same URLs as production",
+      "CTA to the build request form (requests are not purchases; start and launch invoices are sent manually)",
     ],
-    citations: ["content.json pricing", "Live Stripe checkout links on production"],
+    citations: ["content.json pricing (50% to start / 50% at launch, invoiced manually)"],
   }),
   brief({
     id: "brief-website-redesign",

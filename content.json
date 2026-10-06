@@ -171,13 +171,10 @@
         "cta": { "label": "Get the free checklist", "target": "checklist" }
       },
       {
-        "status": "Available now",
+        "status": "In progress",
         "name": "Keep-it-earning kit",
-        "detail": "Offer-page templates, update cadence, and simple SEO refresh prompts so your site stays sharp after launch. Ask about this kit when you request a build.",
-        "cta": {
-          "label": "Request a build",
-          "href": "#checklist"
-        }
+        "detail": "Offer-page templates, update cadence, and simple SEO refresh prompts so your site stays sharp after launch. We're still putting it together, so it isn't for sale yet.",
+        "cta": null
       },
       {
         "status": "On the roadmap",

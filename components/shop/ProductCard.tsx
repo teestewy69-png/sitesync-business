@@ -53,16 +53,9 @@ export default function ProductCard({ product }: { product: Product }) {
               Contact for pricing
             </span>
           ) : (
-            <>
-              <span className="text-xl font-semibold text-white">
-                {product.price}
-              </span>
-              {product.regularPrice ? (
-                <span className="text-sm text-slate-400 line-through">
-                  {product.regularPrice}
-                </span>
-              ) : null}
-            </>
+            <span className="text-xl font-semibold text-white">
+              {product.price}
+            </span>
           )}
         </div>
 

@@ -69,16 +69,9 @@ export default async function ProductPage({ params }: Props) {
                 Contact for pricing
               </span>
             ) : (
-              <>
-                <span className="text-3xl font-semibold text-white">
-                  {product.price}
-                </span>
-                {product.regularPrice ? (
-                  <span className="text-base text-slate-400 line-through">
-                    {product.regularPrice}
-                  </span>
-                ) : null}
-              </>
+              <span className="text-3xl font-semibold text-white">
+                {product.price}
+              </span>
             )}
           </div>
 
@@ -97,17 +90,15 @@ export default async function ProductPage({ params }: Props) {
                 <span className="text-slate-400">Category:</span>{" "}
                 {product.category}
               </li>
-              {product.badge ? (
-                <li>
-                  <span className="text-slate-400">Offer:</span>{" "}
-                  {product.badge}
-                </li>
-              ) : null}
               <li>
                 <span className="text-slate-400">Fulfillment:</span>{" "}
                 {product.contactOnly
                   ? "Contact / custom quote"
-                  : "Digital / affiliate bundle"}
+                  : product.kind === "subscription"
+                    ? `Subscription (${product.interval === "year" ? "yearly" : "monthly"}, cancel anytime)`
+                    : product.deliverable?.type === "manual"
+                      ? "Service, set up by Sitesinc after payment"
+                      : "Digital download, emailed after payment"}
               </li>
             </ul>
           </div>
