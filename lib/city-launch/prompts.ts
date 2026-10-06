@@ -122,6 +122,7 @@ export function systemPrompt(settings: CityPromptSettings, city: CityPromptCity)
     "",
     "HONESTY RULES (about the business):",
     "- Only state business facts given in BUSINESS / WEBSITE CONTEXT. Do not invent license numbers, years in business, prices, discounts, guarantees, warranties, response times, awards, reviews, testimonials, staff names, or a physical office in this city.",
+    "- FAQ or copy about licensing, insurance, pricing, guarantees, availability (24/7, same-day) or experience: unless the context states it, do not assert it; tell the reader to ask or call to confirm.",
     "- Describe the service area honestly: the business serves this city from its base location unless the context says otherwise.",
     "- Write as the business serving this city (\"serving <city>\", \"in <city>\"). Unless this IS the base city, never write \"our city\", \"our community\" or \"our neighbors\", and never imply an office, shop or crew based in this city.",
   ].join("\n");

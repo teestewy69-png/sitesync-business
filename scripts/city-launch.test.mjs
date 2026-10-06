@@ -13,7 +13,7 @@ const sim = await import("../lib/city-launch/similarity.ts");
 const prompts = await import("../lib/city-launch/prompts.ts");
 const job = await import("../lib/city-launch/job.ts");
 const llm = await import("../lib/city-launch/llm.ts");
-const { evaluateGate } = await import("../lib/city-launch/gate.ts");
+const { evaluateGate, unsupportedClaims } = await import("../lib/city-launch/gate.ts");
 
 const index = cities.createCityIndex(US_CITIES, US_STATE_ROWS);
 
@@ -195,6 +195,21 @@ test("gate: blocks clones, thin pages, placeholders; approved-vs-draft scoring",
   assert.equal(g4.get("tempe-az").status, "warn");
   assert.ok(g4.get("tempe-az").reasons.some((r) => /our city/.test(r)));
   assert.equal(evaluateGate([draft("phoenix-az", "Phoenix", { ...ours, intro: ours.intro.replace(/Tempe/g, "Phoenix") }, { city: { name: "Phoenix", state: "AZ", stateName: "Arizona", county: "Maricopa County", population: 1, lat: 1, lng: 1, source: "dataset" } })], { baseCity: "Phoenix" }).get("phoenix-az").reasons.some((r) => /our city/.test(r)), false, "base city may say our city");
+});
+
+test("gate: invented business claims block unless the business context supports them", () => {
+  const tempe = makeContent("Tempe", 2);
+  const faqClaim = { ...tempe, faq: [{ question: "Are your plumbers licensed and insured?", answer: "Yes, all our plumbers are licensed and insured." }] };
+  const g = evaluateGate([draft("tempe-az", "Tempe", faqClaim)], { baseCity: "Phoenix", businessContext: "Desert Flow Plumbing - plumbing business based in Phoenix, AZ." });
+  assert.equal(g.get("tempe-az").status, "block");
+  assert.ok(g.get("tempe-az").reasons.some((r) => /licensed/.test(r) && /insured/.test(r)));
+  const ok = evaluateGate([draft("tempe-az", "Tempe", faqClaim, { businessContext: "Licensed and insured (ROC #000000)." })], { baseCity: "Phoenix" });
+  assert.notEqual(ok.get("tempe-az").status, "block");
+  // advice that is not in the business's voice is fine
+  assert.deepEqual(unsupportedClaims("Always hire a licensed plumber. Check the warranty on a new water heater.", ""), []);
+  assert.deepEqual(unsupportedClaims("We see pipes that are 30 years old in older homes.", ""), []);
+  assert.equal(unsupportedClaims("We offer free estimates and same-day service, with 20 years of experience.", "").length, 3);
+  assert.equal(unsupportedClaims("Desert Flow Plumbing is top-rated.", "", "Desert Flow Plumbing").length, 1);
 });
 
 // ---------------------------------------------------------------- prompts

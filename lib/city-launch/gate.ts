@@ -20,7 +20,40 @@ export type GateOptions = {
   minWords?: number;
   baseCity?: string;
   now?: string;
+  businessName?: string;
+  /** Fallback business facts when a draft carries none (the client's default website context). */
+  businessContext?: string;
 };
+
+/**
+ * Business claims an LLM tends to invent. A claim made in the business's own voice ("we", "our", the business name)
+ * blocks the page unless the business context the operator provided supports it.
+ */
+export const BUSINESS_CLAIMS: Array<{ label: string; re: RegExp; support: RegExp }> = [
+  { label: "licensed", re: /\blicen[sc]ed\b|\blicense (number|#)/i, support: /licen[sc]/i },
+  { label: "insured / bonded", re: /\b(insured|bonded)\b/i, support: /insured|bonded|insurance/i },
+  { label: "certified", re: /\bcertified\b/i, support: /certified|certification/i },
+  { label: "guarantee / warranty", re: /\bguarantee(d|s)?\b|\bwarrant(y|ies|ied)\b/i, support: /guarantee|warrant/i },
+  { label: "years in business", re: /\b\d+\+?\s+years (of|in)\b|\bsince (19|20)\d\d\b|\bdecades? of (experience|service)\b/i, support: /\byears?\b|since (19|20)\d\d|decade/i },
+  { label: "awards / ratings / reviews", re: /\baward|\b(five|5)[- ]star|\btop[- ]rated\b|\bbbb\b|\bA\+ rat/i, support: /award|star|rated|bbb|review/i },
+  { label: "free estimates", re: /\bfree (estimate|quote|inspection|consultation)s?\b/i, support: /free (estimate|quote|inspection|consultation)/i },
+  { label: "24/7 / same-day", re: /\b24\/7\b|\b24 hours\b|around the clock|\bsame[- ]day\b/i, support: /24\/7|24 hours|around the clock|same[- ]day/i },
+  { label: "discounts / prices", re: /\b\d+% off\b|\bdiscount|\$\s?\d/i, support: /%|discount|\$/i },
+  { label: "family-owned", re: /\bfamily[- ]owned\b|\blocally owned\b/i, support: /family|locally owned/i },
+];
+
+/** Claims made in the business's own voice that the business context does not support. */
+export function unsupportedClaims(text: string, context: string, businessName = ""): string[] {
+  const voice = new RegExp(`\\b(we|we're|we've|we'll|our|ours|us)\\b${businessName ? `|${businessName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}` : ""}`, "i");
+  const sentences = text.split(/(?<=[.!?])\s+|\n+/).filter((s) => voice.test(s));
+  const found: string[] = [];
+  for (const claim of BUSINESS_CLAIMS) {
+    if (claim.support.test(context)) continue;
+    const hit = sentences.find((s) => claim.re.test(s));
+    if (hit) found.push(`${claim.label}: "${hit.trim().slice(0, 140)}"`);
+  }
+  return found;
+}
 
 function countMentions(text: string, term: string): number {
   if (!term) return 0;
@@ -99,6 +132,11 @@ export function evaluateGate(drafts: CityDraft[], opts: GateOptions = {}): Map<s
     if (!isBase && /\bour (city|town|community|neighbou?rs|neighbou?rhoods?)\b/i.test(text)) {
       if (status === "pass") status = "warn";
       reasons.push(`Implies the business is based in ${d.city.name} ("our city/community"). Fix the wording before approving.`);
+    }
+    const claims = unsupportedClaims(text, d.businessContext ?? opts.businessContext ?? "", opts.businessName);
+    if (claims.length) {
+      status = "block";
+      reasons.push(`Unverified business claim (not in the business context): ${claims.join("; ")}. Edit it out, or add the fact to the business context and regenerate.`);
     }
     if (!d.content.metaDescription) {
       status = "block";

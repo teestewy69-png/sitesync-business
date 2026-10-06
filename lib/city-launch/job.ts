@@ -103,6 +103,8 @@ export type CityDraft = {
   rejectedReason?: string;
   gate?: GateResult;
   nearby: Array<{ slug: string; name: string; state: string; distanceMiles: number; direction: string }>;
+  /** Business facts the writer was given (website context + CSV notes). The gate checks business claims against it. */
+  businessContext?: string;
 };
 
 export type CityIndexEntry = {

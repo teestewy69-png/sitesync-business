@@ -519,7 +519,8 @@ function draftFrom(
   item: BatchItem,
   keyword: string,
   written: Awaited<ReturnType<typeof writeCityContent>>,
-  previous: CityDraft | null
+  previous: CityDraft | null,
+  settings: BatchSettings
 ): CityDraft {
   return {
     slug: item.slug,
@@ -544,6 +545,7 @@ function draftFrom(
     model: written.model,
     providerEnvKey: written.envKey,
     nearby: written.nearby,
+    businessContext: [settings.websiteContent, item.notes, settings.competitorGaps].filter(Boolean).join("\n").slice(0, 4000),
   };
 }
 
@@ -711,7 +713,7 @@ export async function runCityLaunchTick(
     try {
       const written = await writeCityContent(ctx, item, settings);
       const previous = await readCityDraft(projectId, item.slug);
-      const draft = draftFrom(projectId, batchId, item, item.keyword || settings.keyword, written, previous);
+      const draft = draftFrom(projectId, batchId, item, item.keyword || settings.keyword, written, previous, settings);
       await writeDoc(cityDraftKey(projectId, item.slug), draft);
       item.status = "drafted";
       item.words = draft.words;
@@ -893,15 +895,17 @@ export async function runCityGate(projectId: string): Promise<{ checked: number;
   const index = await readCityIndex(projectId);
   if (!index) return { checked: 0, blocked: 0, warned: 0 };
   const project = await findProjectById(projectId);
-  const baseCity = project ? cityLaunchContext(project).business.baseCity : undefined;
+  const business = project ? cityLaunchContext(project).business : null;
+  const baseCity = business?.baseCity;
+  const gateOpts = { baseCity, businessName: business?.businessName, businessContext: business ? defaultWebsiteContent(business) : "" };
   const liveSlugs = Object.values(index.pages)
     .filter((p) => p.status === "draft" || p.status === "approved")
     .map((p) => p.slug);
   const drafts = await readDrafts(projectId, liveSlugs);
   const approved = drafts.filter((d) => d.status === "approved");
   const now = nowIso();
-  const approvedGate = evaluateGate(approved, { baseCity, now });
-  const allGate = evaluateGate(drafts, { baseCity, now });
+  const approvedGate = evaluateGate(approved, { ...gateOpts, now });
+  const allGate = evaluateGate(drafts, { ...gateOpts, now });
   const result = new Map<string, GateResult>();
   for (const d of drafts) result.set(d.slug, d.status === "approved" ? approvedGate.get(d.slug)! : allGate.get(d.slug)!);
   let blocked = 0;
@@ -986,7 +990,7 @@ export async function regenerateCityDraft(projectId: string, slug: string, actor
   try {
     const written = await writeCityContent(ctx, item, batch.settings);
     const previous = await readCityDraft(projectId, slug);
-    const draft = draftFrom(projectId, batch.id, item, item.keyword || batch.settings.keyword, written, previous);
+    const draft = draftFrom(projectId, batch.id, item, item.keyword || batch.settings.keyword, written, previous, batch.settings);
     await writeDoc(cityDraftKey(projectId, slug), draft);
     await updateIndex(projectId, (idx) => {
       const p = idx.pages[slug];
