@@ -177,7 +177,18 @@ Picking methods (`POST /api/factory/city-launch {op:"pick"}`), each capped at 50
 
    The system prompt forbids invented business facts (licenses, years, reviews, prices, guarantees) and invented
    local statistics. It also requires a structured `serviceArea` paragraph that names the county and 2+ real nearest
-   cities, and it caps region-wide filler.
+   cities, and it caps region-wide filler. Two honesty blocks were added after the live runs:
+   - **VOICE (business location).** On any city that is not the client's base, the page speaks as "serving
+     <city> from <base city>". It must never say or imply the business is located, based or has an office there
+     ("we are located in Chandler", "our Chandler office", "we are just 24 miles southeast of Phoenix"). The base
+     city page may say "based in <base>".
+   - **LOCAL FACTS ONLY.** Climate, water hardness, soil, hazards, housing age, growth pace, rankings, reputation
+     and local regulations may only be stated from the facts given: Census population (2020 and latest), the
+     population change since 2020, the city's population rank in its state, county, distances/directions, and the
+     operator's optional **Verified local notes, with sources** field (`localFacts`, e.g. "Mesa water hardness ~14
+     grains/gallon (City of Mesa 2025 Water Quality Report)"). Without a note, the page leaves such statements out.
+     We chose this over a hand-made per-state facts table: a table would need its own sourcing and upkeep, and a
+     state-level fact ("Arizona has hard water") is too coarse to be honest about one city.
 
    Replies are validated: at least 3 sections, a meta description, enough words, the city named, and no
    `{placeholders}`. Weak output counts as a failed attempt.
@@ -188,10 +199,26 @@ Picking methods (`POST /api/factory/city-launch {op:"pick"}`), each capped at 50
    Progress is flushed to the batch doc every ~2.5s. Each draft is stored at
    `.../city-launch/drafts/<citySlug>`.
 4. **Continue / resume (automatic).**
-   - **Netlify:** a tick stops starting new calls once its budget is spent (`CITY_LAUNCH_TICK_BUDGET_MS`, 18s by
-     default, inside the ~26s function limit). It then chains the next tick with a self-request to
-     `/api/factory/city-launch/tick`, authenticated by the factory session.
-   - **Locally:** the tick loops in-process until the batch is done.
+   - **Netlify, primary path: Background Function.** `netlify/functions/city-launch-background.mts` (the
+     `-background` suffix gives a 15-minute limit and an immediate 202). Queue/continue POST the batch id to
+     `/.netlify/functions/city-launch-background` with the factory session cookie; the function runs the same
+     lease-guarded writing loop with a 13-minute budget, then hands off to a fresh invocation if cities remain.
+     On by default on Netlify; `CITY_LAUNCH_BACKGROUND=off` disables it (`=on` forces it, e.g. under `netlify dev`).
+   - **Proof of life + fallback.** The batch records `background.requestedAt` (before the trigger) and the function
+     records `background.startedAt` first thing. A trigger that does not answer 202 falls back immediately. A
+     hand-off that is not picked up within 90 s is logged ("background function did not start within 90s; using
+     chained ticks") and the batch switches to the chained path below. While a hand-off is pending it is not
+     re-triggered.
+   - **Netlify, fallback: chained ticks.** A tick stops starting new calls once its budget is spent
+     (`CITY_LAUNCH_TICK_BUDGET_MS`, 18s by default, inside the ~26s function limit). It then chains the next tick
+     with a self-request to `/api/factory/city-launch/tick`, authenticated by the factory session.
+   - **Locally (`next dev`):** the tick loops in-process until the batch is done. Under `netlify dev` the
+     background function is used (verified with `netlify dev --offline` and the local Blobs sandbox).
+   - Both hosted paths need `FACTORY_ACCESS_TOKEN` and the deploy URL env (`URL` / `DEPLOY_PRIME_URL`, set by
+     Netlify) at runtime; without them the batch waits for the operator panel's auto-resume poll.
+   - Modules shared with the function (`lib/persistence.ts`, `lib/factory/workspace.ts`,
+     `lib/factory/client-domain.ts`) load `next/*` lazily (`lib/next-runtime.ts`): Netlify keeps `next` external in
+     function bundles and plain Node ESM cannot resolve `next/headers`.
    - **Recovery:** if a function dies, its lease expires. Items stuck in `generating` for more than 4 minutes are
      re-queued. The operator panel polls and re-kicks a stalled batch, and *Resume* / *Retry failed* are buttons.
    - About 500 cities at 40 req/min takes roughly 13-15 minutes. Raise `requestsPerMinute` and `concurrency` if the
@@ -212,6 +239,18 @@ Picking methods (`POST /api/factory/city-launch {op:"pick"}`), each capped at 50
      rewrites only those sentences (rate-limited, and skipped if the tick has no time left). Anything still left is
      blocked for a human edit. In the real test, gpt-4o-mini added "all our plumbers are licensed and insured" to
      3 of 5 pages even though the prompt forbids it, which is why this check exists.
+   - **Honesty blocks** (`lib/city-launch/honesty.ts`), all of which block approval:
+     - `location_claim`: first-person location claims on a non-base page ("we are located in", "we're based in",
+       "our <city> office/shop/location", "we are just N miles", "<business> is just N miles from"). "Based in
+       <base city>" is allowed.
+     - `unverified_local`: climate / hard water / soil / hazards / housing age / regulations / "known for" /
+       reputation / rankings not backed by the facts above; "rapid growth" needs ≥ +8% since 2020, "growing" ≥ +1%;
+       "Nth-largest" must match the Census state rank.
+     - `geo_claim`: a stated distance or compass direction between two cities that disagrees with Census
+       coordinates (45° / 30% tolerance).
+   - **Automatic repair.** While writing, the job makes up to `CITY_LAUNCH_REPAIR_ROUNDS` (default 2) repair calls
+     that rewrite only the flagged sentences, for business claims and honesty issues alike (rate-limited, skipped if
+     the tick has no time left). Anything still left is blocked for a human edit.
    - **Other warnings:** fewer than 2 local references (county, nearby cities, base city), or "our city / our
      community" wording on a city that is not the business's base.
    - Approved pages are compared only with other approved pages, so a newer draft that copies an approved page is
@@ -231,7 +270,51 @@ Picking methods (`POST /api/factory/city-launch {op:"pick"}`), each capped at 50
      domain.
 8. **Real domain (manual by design).** `signoff-production` records Tony's sign-off. It needs a selected domain and
    at least one approved page, and it deploys nothing. After sign-off, `sitemap.xml?target=production` lists
-   client-domain URLs (it returns 409 before). The actual go-live remains the manual `production_deployment` stage.
+   client-domain URLs (it returns 409 before), and the app will serve the client's pages on that domain as soon as
+   requests for it reach the production site (see **Serving on the client's real domain** below). Pointing the
+   domain at Netlify is the manual go-live step. `revoke-production` withdraws the sign-off; domain serving stops
+   on the next request, because every client-domain request re-checks the sign-off.
+
+### Serving on the client's real domain
+
+**How it works.** `middleware.ts` looks at the request `Host`:
+
+- **Sitesinc hosts are unchanged:** `sitesinc.co` and subdomains, `*.netlify.app` / `*.netlify.live` (deploy,
+  branch and preview hosts), localhost / IPs / bare names / `.local` / `.internal`, the deploy env URLs (`URL`,
+  `DEPLOY_PRIME_URL`, `DEPLOY_URL`, `NEXT_PUBLIC_SITE_URL`, `SITE_URL`), and anything in `SITESINC_HOSTS`
+  (comma/space separated; add Sitesinc's own extra custom domains here if it ever gets more). Direct
+  `/client-domain/...` requests on these hosts return 404.
+- **Any other host** is rewritten to `app/client-domain/[host]/...`, which serves only: `/`, `/locations`,
+  `/locations/<citySlug>`, approved/staged/published workspace pages (`/<slug>`, e.g. `/contact`), `/sitemap.xml`
+  and `/robots.txt`. Everything else (including `/app`, `/api`, `/demo`) is 404.
+- The host must map to a `ClientProject` whose `selectedDomain` equals it (www and apex both match) **and** whose
+  City Launch production sign-off is recorded. Lookup: the `factory/client-domains/<host>` index written at sign-off,
+  then a cached (60 s) scan of client projects. Unknown or unsigned hosts get 404. `www.` ↔ apex requests get a 308
+  to the selected form.
+- Client-domain pages are indexable (`index, follow`), with canonical, Open Graph and sitemap URLs on
+  `https://<client domain>`; only approved city pages appear. No Sitesinc chrome, ticker or sample copy is rendered.
+- Kill switch: `CLIENT_DOMAIN_ROUTING=off` treats every host as a Sitesinc host.
+- Tests: `node --test scripts/client-domain.test.mjs` (host classification, mapping, sign-off requirement,
+  www/apex, sitemap).
+
+**Manual Netlify step (only after Tony's sign-off; not automated, not done yet):**
+
+1. Netlify → the Sitesinc **production** site → Site configuration → Domain management → Production domains →
+   **Add domain alias** → `<client domain>` (Netlify adds the `www.` variant automatically). Use the production
+   site only: branch/preview contexts set `NEXT_PUBLIC_FACTORY_PREVIEW=1`, which adds an `X-Robots-Tag: noindex`
+   header to every response.
+2. DNS at the client's registrar (or move the zone to Netlify DNS, which creates these itself):
+   - apex `@`: ALIAS / ANAME / flattened CNAME → `apex-loadbalancer.netlify.com`, or, if the provider has none,
+     an `A` record → `75.2.60.5`
+   - `www`: `CNAME` → `<sitesinc-site>.netlify.app`
+   - remove any old A/AAAA/CNAME records for those names
+3. Wait for Netlify to verify DNS and issue the Let's Encrypt certificate (Domain management → HTTPS).
+4. Check: `curl -I https://<domain>/` → 200 without `X-Robots-Tag`; `curl -I https://www.<domain>/` → a single
+   308 to the apex (no redirect loop); `/sitemap.xml` lists only approved city URLs on the client domain. Then
+   submit the sitemap in the client's Search Console.
+
+Netlify recommends no more than 50 domain aliases per site, so past ~50 live clients this needs a different setup
+(e.g. a separate Netlify site per batch of clients).
 
 ### The animated page template
 
@@ -272,7 +355,9 @@ The UI shows which env var name and model are in use, or a **missing key** state
 never logged or returned.
 
 Tuning env vars: `CITY_LAUNCH_CONCURRENCY`, `CITY_LAUNCH_RPM`, `CITY_LAUNCH_MAX_ATTEMPTS`,
-`CITY_LAUNCH_LLM_TIMEOUT_MS`, `CITY_LAUNCH_TICK_BUDGET_MS`. Hosted self-chaining needs `FACTORY_ACCESS_TOKEN`.
+`CITY_LAUNCH_LLM_TIMEOUT_MS`, `CITY_LAUNCH_TICK_BUDGET_MS`, `CITY_LAUNCH_REPAIR_ROUNDS` (default 2),
+`CITY_LAUNCH_BACKGROUND` (`on`/`off`, default on Netlify). Hosted hand-off and self-chaining need
+`FACTORY_ACCESS_TOKEN`. Domain serving: `CLIENT_DOMAIN_ROUTING=off` (kill switch), `SITESINC_HOSTS`.
 
 ### API
 
@@ -286,9 +371,11 @@ Tuning env vars: `CITY_LAUNCH_CONCURRENCY`, `CITY_LAUNCH_RPM`, `CITY_LAUNCH_MAX_
 - `edit`, `regenerate`
 - `approve` (`slugs[]`, `approvedBy`), `reject`, `reopen`
 - `gate`
-- `signoff-production`
+- `signoff-production`, `revoke-production`
 
-`POST /api/factory/city-launch/tick` continues a batch, and is used for chaining.
+`POST /api/factory/city-launch/tick` continues a batch, and is used for chaining and fallback.
+`POST /.netlify/functions/city-launch-background` (`{projectId, batchId}`, factory session cookie) is the
+background writer; it answers 202 on Netlify.
 
 ### Ported from ScaleQuan Content Studio
 
@@ -305,8 +392,16 @@ Tuning env vars: `CITY_LAUNCH_CONCURRENCY`, `CITY_LAUNCH_RPM`, `CITY_LAUNCH_MAX_
 SITESINC_STORE=local node scripts/city-launch/seed-local-client.mjs "Desert Flow Plumbing" plumbing Phoenix AZ "(602) 555-0142"
 # set one LLM key in the process env (never commit it), then
 SITESINC_STORE=local npx next dev   # open /app/clients/<id>
-node --test scripts/city-launch.test.mjs
+node --test scripts/city-launch.test.mjs scripts/client-domain.test.mjs scripts/city-launch-background.test.mjs
+# live 5-city run (real LLM, isolated temp store; key in the process env only):
+node scripts/city-launch/live-test.mjs <empty-dir> 5 25
+# background function locally, no Netlify login: CITY_LAUNCH_BACKGROUND=on FACTORY_ACCESS_TOKEN=<any local value>
+netlify dev --offline --framework '#custom' --command 'npx next dev -p 3200' --target-port 3200 --port 8888
 ```
+
+`netlify dev` uses the local Blobs sandbox (`.netlify/blobs-serve`, site id `unlinked`), not `./data`, so a client
+project has to exist there first. Next 16 prints a deprecation notice for `middleware.ts` (renamed `proxy.ts`
+upstream); it still works.
 
 ## Truthfulness rules
 
@@ -321,7 +416,9 @@ node --test scripts/city-launch.test.mjs
 - City Launch never writes copy without a real LLM reply (no template fallback). A missing key is shown as missing.
 - City pages are only publishable when approved by a named human **and** the gate is not `block`.
 - City Launch `signoff-production` records Tony's sign-off only. It never deploys and never claims a page is live on
-  the client's domain.
+  the client's domain; the domain alias + DNS step is manual.
+- A city page never says or implies the business is located in a city other than its base, and never states
+  climate, water, housing, growth or ranking facts that are not in Census data or an operator note with a source.
 
 ## Operator path (happy path)
 
