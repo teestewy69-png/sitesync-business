@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import content from "@/content.json";
 import Analytics from "@/components/Analytics";
 import AnnouncementTicker from "@/components/AnnouncementTicker";
+import HideOnClientSite from "@/components/HideOnClientSite";
 import StagingBanner from "@/components/StagingBanner";
 import { CartProvider } from "@/components/shop/CartProvider";
 import {
@@ -68,7 +69,9 @@ export default function RootLayout({
     >
       <body className="flex min-h-full flex-col bg-canvas text-slate-200">
         <CartProvider>
-          <AnnouncementTicker />
+          <HideOnClientSite>
+            <AnnouncementTicker />
+          </HideOnClientSite>
           {children}
           <StagingBanner />
           <Analytics measurementId={GA_MEASUREMENT_ID} allowedHosts={GA_HOSTS} />

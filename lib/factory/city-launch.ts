@@ -20,6 +20,8 @@ import {
   haversineMiles,
   nearestCities,
   parseCityPaste,
+  normalizeState,
+  slugifyCity,
   topCitiesInStates,
   type PickedCity,
   type UsCity,
@@ -320,9 +322,10 @@ function resolveCityRows(input: QueueBatchInput["cities"]): { items: BatchItem[]
     const name = String(row.name || "").trim();
     const state = String(row.state || "").trim();
     if (!name || !state) continue;
-    const match = findCity(index, name, state);
-    const slug = match ? match.slug : String(row.slug || "").trim();
-    if (!match && (!SAFE_SLUG.test(slug) || !index.states.has(state.toUpperCase()))) {
+    const st = normalizeState(index, state);
+    const match = st ? findCity(index, name, st) : null;
+    const slug = match ? match.slug : String(row.slug || "").trim() || (st ? slugifyCity(name, st) : "");
+    if (!match && (!st || !SAFE_SLUG.test(slug))) {
       issues.push(`${name}, ${state}: not a known U.S. city/state.`);
       continue;
     }
@@ -331,8 +334,8 @@ function resolveCityRows(input: QueueBatchInput["cities"]): { items: BatchItem[]
     items.push({
       slug,
       name: match ? match.name : name.slice(0, 80),
-      state: match ? match.state : state.toUpperCase(),
-      stateName: match ? match.stateName : index.states.get(state.toUpperCase()) || state,
+      state: match ? match.state : st,
+      stateName: match ? match.stateName : index.states.get(st) || st,
       county: match?.county || "",
       population: match?.population || 0,
       lat: match ? match.lat : null,

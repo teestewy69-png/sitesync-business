@@ -490,6 +490,10 @@
   .heroIn > *:nth-child(5) {
     animation-delay: 0.32s;
   }
+  /* The H1 is the likely LCP element: move it, never hide it, so LCP is not delayed by the entrance. */
+  .heroIn > h1 {
+    animation-name: riseSolid;
+  }
   .mapLine {
     animation: draw 1.6s ease-out both;
     animation-delay: var(--d, 0.3s);
@@ -539,6 +543,14 @@
   }
   to {
     opacity: 1;
+    transform: none;
+  }
+}
+@keyframes riseSolid {
+  from {
+    transform: translateY(14px);
+  }
+  to {
     transform: none;
   }
 }

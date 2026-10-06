@@ -4,6 +4,7 @@ import { readCityIndex } from "@/lib/factory/city-launch";
 import { configFromProject } from "@/lib/factory/client-config";
 import { ensureBlobsFromRequest } from "@/lib/persistence";
 import { findProjectById } from "@/lib/store";
+import { requestOrigin } from "@/lib/factory/request-origin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -40,7 +41,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ proj
       ...cities.map((c) => ({ loc: `${root}/locations/${c.slug}/`, lastmod: c.approvedAt || c.updatedAt })),
     ];
   } else {
-    const root = `${req.nextUrl.origin}/demo/client/${projectId}`;
+    const root = `${await requestOrigin()}/demo/client/${projectId}`;
     urls = [
       { loc: root },
       ...seeded.map((p) => ({ loc: `${root}/${p.slug}` })),

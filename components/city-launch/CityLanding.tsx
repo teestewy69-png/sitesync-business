@@ -33,6 +33,33 @@ function telHref(phone: string) {
 }
 
 /** Plots the city and its nearest real neighbours (Census internal-point coordinates) on a small animated SVG map. */
+type MapLabel = { x: number; y: number; anchor: "start" | "middle" | "end"; text: string };
+
+/** Greedy label placement: try above / below / right / left of each dot; drop a label that would overlap (dot keeps a tooltip). */
+function placeMapLabels(points: Array<{ x: number; y: number; text: string }>): Array<MapLabel | null> {
+  const boxes: Array<[number, number, number, number]> = [[200 - 40, 165, 200 + 40, 182]]; // main city label
+  const charW = 5.4;
+  const h = 11;
+  return points.map((p) => {
+    const w = p.text.length * charW;
+    const options: MapLabel[] = [
+      { x: p.x, y: p.y - 9, anchor: "middle", text: p.text },
+      { x: p.x, y: p.y + 16, anchor: "middle", text: p.text },
+      { x: p.x + 8, y: p.y + 4, anchor: "start", text: p.text },
+      { x: p.x - 8, y: p.y + 4, anchor: "end", text: p.text },
+    ];
+    for (const o of options) {
+      const x1 = o.anchor === "middle" ? o.x - w / 2 : o.anchor === "start" ? o.x : o.x - w;
+      const box: [number, number, number, number] = [x1, o.y - h + 2, x1 + w, o.y + 2];
+      if (box[0] < 2 || box[2] > 398 || box[1] < 2 || box[3] > 298) continue;
+      if (boxes.some((b) => box[0] < b[2] && box[2] > b[0] && box[1] < b[3] && box[3] > b[1])) continue;
+      boxes.push(box);
+      return o;
+    }
+    return null;
+  });
+}
+
 function ServiceMap({ data }: { data: CityLandingData }) {
   const { draft } = data;
   if (draft.city.lat === null || draft.city.lng === null || !draft.nearby.length) return null;
@@ -56,6 +83,7 @@ function ServiceMap({ data }: { data: CityLandingData }) {
     return { ...p, x: 200 + r * Math.cos(a), y: 150 + r * Math.sin(a) * 0.9 };
   });
   const live = new Set(data.nearbyLive.map((n) => n.slug));
+  const labels = placeMapLabels(placed.map((p) => ({ x: p.x, y: p.y, text: `${p.name} · ${Math.round(p.distanceMiles)} mi` })));
   return (
     <div className={`${s.mapCard} ${s.reveal}`} data-reveal="">
       <svg viewBox="0 0 400 300" className={s.map} role="img" aria-label={`Map of ${draft.city.name} and nearby cities`}>
@@ -69,12 +97,15 @@ function ServiceMap({ data }: { data: CityLandingData }) {
         <text x={200} y={178} textAnchor="middle" className={s.mapLabelMain}>
           {draft.city.name}
         </text>
-        {placed.map((p) => (
+        {placed.map((p, i) => (
           <g key={`${p.slug}-pt`}>
+            <title>{`${p.name}, ${p.state}: ${p.distanceMiles} mi ${p.direction}`}</title>
             <circle cx={p.x} cy={p.y} r={live.has(p.slug) ? 5 : 3.5} fill={live.has(p.slug) ? "var(--cl-accent)" : "var(--cl-muted)"} />
-            <text x={p.x} y={p.y - 9} textAnchor="middle" className={s.mapLabel}>
-              {p.name} · {Math.round(p.distanceMiles)} mi
-            </text>
+            {labels[i] ? (
+              <text x={labels[i]!.x} y={labels[i]!.y} textAnchor={labels[i]!.anchor} className={s.mapLabel}>
+                {labels[i]!.text}
+              </text>
+            ) : null}
           </g>
         ))}
       </svg>
