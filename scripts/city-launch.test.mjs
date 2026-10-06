@@ -1,0 +1,327 @@
+// City Launch: dataset pickers, CSV paste, ScaleQuan prompt port, uniqueness/quality gate, job helpers, provider status.
+// No network, no keys, no store.
+//   node --test scripts/city-launch.test.mjs     (Node >= 22.18 for TypeScript type stripping)
+import { register } from "node:module";
+register("./fixtures/ts-resolver.mjs", import.meta.url);
+
+const assert = (await import("node:assert/strict")).default;
+const { default: test } = await import("node:test");
+const { readFileSync } = await import("node:fs");
+const { US_CITY_ROWS: US_CITIES, US_CITIES_META, US_STATE_ROWS } = await import("../lib/city-launch/us-cities.generated.ts");
+const cities = await import("../lib/city-launch/cities.ts");
+const sim = await import("../lib/city-launch/similarity.ts");
+const prompts = await import("../lib/city-launch/prompts.ts");
+const job = await import("../lib/city-launch/job.ts");
+const llm = await import("../lib/city-launch/llm.ts");
+const { evaluateGate } = await import("../lib/city-launch/gate.ts");
+
+const index = cities.createCityIndex(US_CITIES, US_STATE_ROWS);
+
+test("dataset: real unique Census places, no padded zones", () => {
+  assert.equal(US_CITIES_META.count, US_CITIES.length);
+  assert.ok(US_CITIES.length > 9000, `expected >9000 places, got ${US_CITIES.length}`);
+  assert.equal(index.bySlug.size, index.all.length, "slugs are unique");
+  assert.ok(!index.all.some((c) => /\bzone\s*\d+/i.test(c.name)), "no synthetic 'Zone N' rows");
+  assert.equal(index.states.size, 51);
+  for (const c of index.all) {
+    assert.ok(c.population >= 1000, c.slug);
+    assert.ok(c.lat > 17 && c.lat < 72 && c.lng < -64 && c.lng > -180, `${c.slug} coords`);
+  }
+  const phx = cities.findCity(index, "Phoenix", "AZ");
+  assert.ok(phx);
+  assert.equal(phx.county, "Maricopa County");
+  assert.ok(phx.population > 1_500_000);
+  assert.ok(Math.abs(phx.lat - 33.57) < 0.2 && Math.abs(phx.lng + 112.09) < 0.2);
+  assert.ok(cities.findCity(index, "nashville", "Tennessee"), "consolidated-city override + state name");
+  assert.ok(cities.findCity(index, "Honolulu", "HI"), "Urban Honolulu CDP mapped");
+  assert.ok(cities.findCity(index, "St. Louis", "MO") || cities.findCity(index, "Saint Louis", "MO"));
+});
+
+test("pickers: top N in states, within X miles, nearest", () => {
+  const top = cities.topCitiesInStates(index, ["az", "Nevada"], 10);
+  assert.equal(top.length, 10);
+  assert.equal(top[0].slug, "phoenix-az");
+  assert.ok(top.some((c) => c.slug === "las-vegas-nv"));
+  for (let i = 1; i < top.length; i += 1) assert.ok(top[i - 1].population >= top[i].population);
+  assert.equal(cities.topCitiesInStates(index, ["TX"], 9999).length, 500, "capped at 500");
+
+  const phx = cities.findCity(index, "Phoenix", "AZ");
+  const near = cities.citiesWithinMiles(index, phx, 25, 50, { originSlug: phx.slug, order: "distance" });
+  assert.ok(near.length >= 10);
+  assert.ok(!near.some((c) => c.slug === phx.slug));
+  assert.ok(near.every((c) => c.distanceMiles <= 25));
+  const slugs = near.map((c) => c.slug);
+  for (const s of ["glendale-az", "scottsdale-az", "tempe-az"]) assert.ok(slugs.includes(s), s);
+  assert.ok(!slugs.includes("tucson-az"));
+  const k = cities.nearestCities(phx, index.byState.get("AZ"), 3);
+  assert.equal(k.length, 3);
+  assert.ok(k[0].distanceMiles <= k[1].distanceMiles && /^(north|south|east|west|northeast|northwest|southeast|southwest)$/.test(k[0].direction));
+});
+
+test("CSV paste: ScaleQuan template, bare lines, unknown cities flagged not invented", () => {
+  const sample = readFileSync(new URL("./fixtures/scalequan_locations_template.csv", import.meta.url), "utf8");
+  const r = cities.parseCityPaste(index, sample);
+  assert.deepEqual(r.cities.map((c) => c.slug), ["austin-tx", "dallas-tx"]);
+  assert.ok(r.cities.every((c) => c.source === "dataset"), JSON.stringify(r.issues));
+  assert.ok(r.cities.some((c) => c.keyword));
+
+  const bare = cities.parseCityPaste(index, "Mesa, AZ\nChandler AZ\nmesa,az\nNowhereville, AZ\nFoo, ZZ\n");
+  assert.deepEqual(bare.cities.map((c) => c.slug), ["mesa-az", "chandler-az", "nowhereville-az"]);
+  assert.equal(bare.duplicates, 1);
+  const nowhere = bare.cities[2];
+  assert.equal(nowhere.source, "csv");
+  assert.ok(Number.isNaN(nowhere.lat) && nowhere.population === 0, "no invented coordinates/population");
+  assert.ok(bare.issues.some((i) => /unknown state/i.test(i.message)));
+
+  const many = Array.from({ length: 700 }, (_, i) => `${index.all[i].name}, ${index.all[i].state}`).join("\n");
+  const big = cities.parseCityPaste(index, many);
+  assert.equal(big.cities.length, 500);
+  assert.ok(big.truncated > 0);
+});
+
+// ---------------------------------------------------------------- similarity / gate
+
+const settings = {
+  keyword: "Plumbing",
+  titleTemplate: prompts.DEFAULT_TITLE_TEMPLATE,
+  promptTemplate: prompts.DEFAULT_PROMPT_TEMPLATE,
+  competitorGaps: "",
+  websiteContent: "",
+  targetWordCount: 400,
+  includeFaq: true,
+};
+
+function para(seed, n) {
+  // deterministic pseudo-unique prose per seed
+  const words = ["water", "heater", "pipe", "slab", "leak", "drain", "valve", "pressure", "hard", "mineral", "monsoon", "repipe",
+    "copper", "pex", "sewer", "line", "root", "clay", "caliche", "soil", "permit", "inspection", "remodel", "kitchen", "bath",
+    "softener", "filter", "backflow", "irrigation", "freeze", "summer", "heat", "attic", "garage", "older", "homes", "newer",
+    "subdivision", "townhome", "commercial", "restaurant", "grease", "trap", "camera", "hydro", "jet", "tankless", "gas",
+    "meter", "shutoff", "fixture", "toilet", "faucet", "disposal", "sump", "expansion", "tank", "thermal", "corrosion", "scale"];
+  let x = seed * 2654435761 >>> 0;
+  const out = [];
+  for (let i = 0; i < n; i += 1) {
+    x = (x * 1103515245 + 12345) >>> 0;
+    out.push(words[x % words.length]);
+  }
+  return out.join(" ") + ".";
+}
+
+function makeContent(cityName, seed, { cloneOf } = {}) {
+  const sections = [0, 1, 2, 3].map((i) => ({ heading: `Section ${i} ${cityName}`, body: `${cityName} ${para(seed * 10 + i, 90)} ${cityName}` }));
+  const c = {
+    title: `Plumbing in ${cityName}, AZ`,
+    metaDescription: `Plumbing help in ${cityName}, AZ near Maricopa County.`,
+    h1: `Plumbing in ${cityName}`,
+    heroSubhead: para(seed + 101, 12),
+    intro: `${cityName} homeowners in Maricopa County. ${para(seed + 202, 40)}`,
+    sections,
+    localHighlights: [para(seed + 303, 10)],
+    faq: [{ question: `Do you serve ${cityName}?`, answer: para(seed + 404, 25) }],
+    ctaHeadline: `Call for ${cityName}`,
+    ctaText: para(seed + 505, 12),
+  };
+  if (cloneOf) {
+    // find-and-replace clone: same copy, only the city name swapped
+    const json = JSON.stringify(cloneOf.content).split(cloneOf.name).join(cityName);
+    return JSON.parse(json);
+  }
+  return c;
+}
+
+function draft(slug, name, content, extra = {}) {
+  return {
+    slug, projectId: "p", batchId: "b",
+    city: { name, state: "AZ", stateName: "Arizona", county: "Maricopa County", population: 100000, lat: 33.4, lng: -112, source: "dataset" },
+    keyword: "Plumbing", content, status: "draft", words: prompts.contentWordCount(content), generatedAt: "", generations: 1,
+    model: "test", providerEnvKey: "TEST",
+    nearby: [{ slug: "phoenix-az", name: "Phoenix", state: "AZ", distanceMiles: 10, direction: "E" }],
+    ...extra,
+  };
+}
+
+test("similarity: find-and-replace clone blocks, distinct copy passes", () => {
+  const mesa = makeContent("Mesa", 1);
+  const tempe = makeContent("Tempe", 2);
+  const cloneGilbert = makeContent("Gilbert", 3, { cloneOf: { name: "Mesa", content: mesa } });
+  const res = sim.checkUniqueness([
+    { slug: "mesa-az", text: prompts.contentText(mesa), maskTerms: ["Mesa", "Arizona"] },
+    { slug: "tempe-az", text: prompts.contentText(tempe), maskTerms: ["Tempe", "Arizona"] },
+    { slug: "gilbert-az", text: prompts.contentText(cloneGilbert), maskTerms: ["Gilbert", "Arizona"] },
+  ], { globalMaskTerms: ["Mesa", "Tempe", "Gilbert", "Phoenix"] });
+  const by = Object.fromEntries(res.map((r) => [r.slug, r]));
+  assert.ok(by["gilbert-az"].maxScore >= 0.95, `clone score ${by["gilbert-az"].maxScore}`);
+  assert.equal(by["gilbert-az"].status, "block");
+  assert.equal(by["gilbert-az"].nearestSlug, "mesa-az");
+  assert.equal(by["tempe-az"].status, "pass");
+  assert.ok(by["tempe-az"].maxScore < sim.DEFAULT_WARN_THRESHOLD, `distinct score ${by["tempe-az"].maxScore}`);
+  // masking: a template that only swaps the city is identical after masking
+  const a = sim.shingleSet(sim.normalizeForSimilarity("Best plumbers in Mesa serving every Mesa street since 1999 call now", sim.buildMasker(["Mesa"])));
+  const b = sim.shingleSet(sim.normalizeForSimilarity("Best plumbers in Chandler serving every Chandler street since 2004 call now", sim.buildMasker(["Chandler"])));
+  assert.equal(sim.overlapScore(a, b), 1);
+  assert.equal(sim.jaccardScore(a, b), 1);
+});
+
+test("gate: blocks clones, thin pages, placeholders; approved-vs-draft scoring", () => {
+  const mesa = makeContent("Mesa", 1);
+  const tempe = makeContent("Tempe", 2);
+  const clone = makeContent("Gilbert", 3, { cloneOf: { name: "Mesa", content: mesa } });
+  const thin = { ...makeContent("Peoria", 4), sections: [{ heading: "x", body: "Peoria short." }], intro: "Peoria.", faq: [], localHighlights: [] };
+  const placeholder = makeContent("Glendale", 5);
+  placeholder.intro += " Serving {city} fast.";
+  const g = evaluateGate([
+    draft("mesa-az", "Mesa", mesa),
+    draft("tempe-az", "Tempe", tempe),
+    draft("gilbert-az", "Gilbert", clone),
+    draft("peoria-az", "Peoria", thin),
+    draft("glendale-az", "Glendale", placeholder),
+  ], { baseCity: "Phoenix" });
+  assert.equal(g.get("tempe-az").status, "pass", g.get("tempe-az").reasons.join("; "));
+  assert.equal(g.get("gilbert-az").status, "block");
+  assert.match(g.get("gilbert-az").reasons[0], /Near-duplicate/);
+  assert.equal(g.get("peoria-az").status, "block");
+  assert.ok(g.get("peoria-az").reasons.some((r) => /Thin page/.test(r)));
+  assert.equal(g.get("glendale-az").status, "block");
+  // rejected drafts are excluded from comparison
+  const g2 = evaluateGate([draft("mesa-az", "Mesa", mesa), draft("gilbert-az", "Gilbert", clone, { status: "rejected" })]);
+  assert.equal(g2.has("gilbert-az"), false);
+  assert.notEqual(g2.get("mesa-az").status, "block");
+});
+
+// ---------------------------------------------------------------- prompts
+
+test("prompts: ScaleQuan placeholders, honest system prompt, strict reply parsing", () => {
+  assert.equal(prompts.fillPlaceholders("{keyword} in {city}, {state}", "Mesa", "AZ", "plumbing"), "plumbing in Mesa, AZ");
+  const city = { name: "Mesa", state: "AZ", stateName: "Arizona", county: "Maricopa County", population: 518012 };
+  assert.equal(prompts.pageTitleFor(settings, city), "Plumbing in Mesa, AZ");
+  const sys = prompts.systemPrompt(settings, city);
+  assert.match(sys, /JSON/);
+  assert.match(sys, /invent|fabricat/i);
+  const user = prompts.userPrompt(settings, city, { businessName: "Desert Flow Plumbing", niche: "plumbing", baseCity: "Phoenix", baseState: "AZ" },
+    [{ name: "Gilbert", state: "AZ", distanceMiles: 8.1, direction: "SE" }], { distanceMiles: 17.2, direction: "E" });
+  assert.match(user, /Mesa/);
+  assert.match(user, /Maricopa County/);
+  assert.match(user, /518,012|518012/);
+  assert.match(user, /Gilbert/);
+
+  const good = {
+    metaDescription: "Licensed-style plumbing help for Mesa, AZ homes.",
+    h1: "Plumbing in Mesa",
+    heroSubhead: "Fast help across Mesa.",
+    intro: `Mesa ${para(9, 60)}`,
+    sections: [1, 2, 3].map((i) => ({ heading: `H${i}`, body: para(i + 20, 70) })),
+    localHighlights: ["Near Gilbert"],
+    faq: [{ question: "Do you serve Mesa?", answer: "Yes." }],
+    ctaHeadline: "Call now",
+    ctaText: "Book a visit.",
+  };
+  const parsed = prompts.parseCityPageReply("```json\n" + JSON.stringify(good) + "\n```", settings, city);
+  assert.equal(parsed.title, "Plumbing in Mesa, AZ");
+  assert.equal(parsed.sections.length, 3);
+  assert.throws(() => prompts.parseCityPageReply(JSON.stringify({ ...good, sections: good.sections.slice(0, 1) }), settings, city), prompts.CityContentError);
+  assert.throws(() => prompts.parseCityPageReply("not json at all", settings, city));
+  assert.throws(() => prompts.parseCityPageReply(JSON.stringify({ ...good, intro: good.intro.replace("Mesa", "{city}") }), settings, city), /placeholder/);
+  // editor round trips
+  assert.deepEqual(prompts.textToSections(prompts.sectionsToText(parsed.sections)), parsed.sections);
+  assert.deepEqual(prompts.textToFaq(prompts.faqToText(parsed.faq)), parsed.faq);
+});
+
+// ---------------------------------------------------------------- job helpers
+
+test("job: runnable/retry/backoff/final status", () => {
+  const now = Date.parse("2026-10-05T12:00:00Z");
+  const base = { slug: "a", name: "A", state: "AZ", attempts: 0 };
+  assert.equal(job.isRunnable({ ...base, status: "queued" }, now, 3), true);
+  assert.equal(job.isRunnable({ ...base, status: "failed", attempts: 1, nextAttemptAt: "2026-10-05T11:59:00Z" }, now, 3), true);
+  assert.equal(job.isRunnable({ ...base, status: "failed", attempts: 1, nextAttemptAt: "2026-10-05T12:01:00Z" }, now, 3), false);
+  assert.equal(job.isRunnable({ ...base, status: "failed", attempts: 3, nextAttemptAt: "2026-10-05T11:00:00Z" }, now, 3), false);
+  assert.equal(job.isRunnable({ ...base, status: "generating", startedAt: "2026-10-05T11:59:00Z" }, now, 3), false);
+  assert.equal(job.isRunnable({ ...base, status: "generating", startedAt: "2026-10-05T11:50:00Z" }, now, 3), true, "stale lease recovered");
+  assert.equal(job.isRunnable({ ...base, status: "drafted" }, now, 3), false);
+  const r0 = () => 0;
+  assert.equal(job.retryDelayMs(1, undefined, r0), 2000);
+  assert.equal(job.retryDelayMs(3, undefined, r0), 8000);
+  assert.equal(job.retryDelayMs(20, undefined, r0), 60000);
+  assert.equal(job.retryDelayMs(1, 15000, r0), 15000, "Retry-After honoured");
+  const items = [{ ...base, status: "drafted" }, { ...base, slug: "b", status: "failed", attempts: 3 }];
+  assert.equal(job.hasPendingWork(items, 3), false);
+  assert.equal(job.finalStatus(items), "completed_with_errors");
+  assert.equal(job.finalStatus([{ ...base, status: "drafted" }]), "completed");
+  assert.equal(job.nextRetryAtMs([{ ...base, status: "failed", attempts: 1, nextAttemptAt: "2026-10-05T12:05:00Z" }], 3), Date.parse("2026-10-05T12:05:00Z"));
+});
+
+test("job: RPM limiter + bounded concurrency pool", async () => {
+  let t = 0;
+  const slept = [];
+  const clock = { now: () => t, sleep: async (ms) => { slept.push(ms); t += ms; } };
+  const lim = job.createRateLimiter(3, clock);
+  for (let i = 0; i < 3; i += 1) await lim.acquire();
+  assert.equal(t, 0);
+  await lim.acquire();
+  assert.ok(t >= 60_000, `4th request waited for the window (t=${t})`);
+  lim.pause(10_000);
+  const before = t;
+  await lim.acquire();
+  assert.ok(t - before >= 10_000, "pause honoured");
+
+  let inFlight = 0;
+  let peak = 0;
+  const queue = Array.from({ length: 20 }, (_, i) => i);
+  const done = [];
+  const processed = await job.runPool(() => (queue.length ? queue.shift() : null), 4, async (n) => {
+    inFlight += 1;
+    peak = Math.max(peak, inFlight);
+    await new Promise((r) => setTimeout(r, 2));
+    done.push(n);
+    inFlight -= 1;
+  }, () => true);
+  assert.equal(processed, 20);
+  assert.equal(peak, 4);
+  let stopAfter = 5;
+  const q2 = Array.from({ length: 20 }, (_, i) => i);
+  const p2 = await job.runPool(() => (q2.length ? q2.shift() : null), 2, async () => { stopAfter -= 1; }, () => stopAfter > 0);
+  assert.ok(p2 <= 6 && p2 >= 5, "stops pulling when the budget is spent");
+});
+
+test("llm provider: names only, explicit missing-key state, priority order", () => {
+  const missing = llm.describeLlmProvider({});
+  assert.equal(missing.configured, false);
+  assert.match(missing.detail, /No LLM key configured/);
+  assert.ok(missing.checked.includes("CITY_LAUNCH_LLM_API_KEY") && missing.checked.includes("OPENROUTER_API_KEY"));
+  const secret = "sk-test-SECRET-should-never-appear";
+  const s = llm.describeLlmProvider({ EMERGENT_LLM_KEY: secret, OPENAI_API_KEY: "" });
+  assert.equal(s.configured, true);
+  assert.equal(s.envKey, "EMERGENT_LLM_KEY");
+  assert.ok(!JSON.stringify(s).includes(secret), "status never contains the key");
+  const p = llm.describeLlmProvider({ EMERGENT_LLM_KEY: "x", OPENROUTER_API_KEY: "y", CITY_LAUNCH_LLM_API_KEY: "z", CITY_LAUNCH_LLM_MODEL: "m1" });
+  assert.equal(p.envKey, "CITY_LAUNCH_LLM_API_KEY");
+  assert.equal(p.model, "m1");
+  assert.equal(llm.describeLlmProvider({ OPENROUTER_API_KEY: "y" }).baseUrl, "https://openrouter.ai/api/v1");
+});
+
+test("llm chatCompletion: classifies errors, retryable + Retry-After, never leaks the key", async () => {
+  const resolved = llm.resolveLlmProvider({ OPENAI_API_KEY: "sk-secret-123" });
+  const realFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => new Response("slow down", { status: 429, headers: { "retry-after": "7" } });
+    await assert.rejects(llm.chatCompletion(resolved, [{ role: "user", content: "hi" }]), (err) => {
+      assert.equal(err.kind, "rate_limit");
+      assert.equal(err.retryable, true);
+      assert.equal(err.retryAfterMs, 7000);
+      assert.ok(!String(err.message).includes("sk-secret-123"));
+      return true;
+    });
+    globalThis.fetch = async () => new Response("nope", { status: 401 });
+    await assert.rejects(llm.chatCompletion(resolved, [{ role: "user", content: "hi" }]), (err) => err.kind === "auth" && err.retryable === false);
+    let auth = "";
+    globalThis.fetch = async (_url, init) => {
+      auth = init.headers.Authorization || init.headers.authorization || "";
+      return Response.json({ model: "gpt-4o-mini", choices: [{ message: { content: "{\"ok\":1}" } }] });
+    };
+    const ok = await llm.chatCompletion(resolved, [{ role: "user", content: "hi" }], { jsonMode: true });
+    assert.equal(ok.content, "{\"ok\":1}");
+    assert.equal(auth, "Bearer sk-secret-123");
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});

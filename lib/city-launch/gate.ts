@@ -1,0 +1,106 @@
+/**
+ * City Launch quality gate (replaces the old blanket "no city doorway clones" rule).
+ * Multi-city pages are allowed only when each page is genuinely unique and locally specific:
+ *   - near-duplicate check across all of the client's city pages (masked shingle overlap, see similarity.ts)
+ *   - minimum substance (word count), the city actually named, no unfilled placeholders
+ *   - at least one local reference beyond the city name (county, a nearby city, or the business base)
+ * "block" = cannot be approved or published. "warn" = approval allowed, flagged for a closer read.
+ *
+ * Pure + erasable TypeScript so `node --test` can import it.
+ */
+import type { CityDraft, GateResult } from "./job";
+import { contentText, countWords } from "./prompts";
+import { checkUniqueness, DEFAULT_BLOCK_THRESHOLD, DEFAULT_WARN_THRESHOLD } from "./similarity";
+
+export const MIN_PUBLISH_WORDS = 300;
+
+export type GateOptions = {
+  blockThreshold?: number;
+  warnThreshold?: number;
+  minWords?: number;
+  baseCity?: string;
+  now?: string;
+};
+
+function countMentions(text: string, term: string): number {
+  if (!term) return 0;
+  const re = new RegExp(`\\b${term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "gi");
+  return (text.match(re) || []).length;
+}
+
+export function ownMaskTerms(draft: Pick<CityDraft, "city">): string[] {
+  const county = draft.city.county || "";
+  return [
+    draft.city.name,
+    draft.city.stateName,
+    county,
+    county.replace(/\s+(County|Parish|Borough|Municipality|City and Borough|Census Area)$/i, ""),
+  ].filter(Boolean);
+}
+
+export function evaluateGate(drafts: CityDraft[], opts: GateOptions = {}): Map<string, GateResult> {
+  const now = opts.now || new Date().toISOString();
+  const minWords = opts.minWords ?? MIN_PUBLISH_WORDS;
+  const live = drafts.filter((d) => d.status !== "rejected");
+  const globalTerms = new Set<string>();
+  for (const d of live) {
+    globalTerms.add(d.city.name);
+    for (const n of d.nearby || []) globalTerms.add(n.name);
+  }
+  if (opts.baseCity) globalTerms.add(opts.baseCity);
+  const sim = checkUniqueness(
+    live.map((d) => ({ slug: d.slug, text: contentText(d.content), maskTerms: ownMaskTerms(d) })),
+    {
+      blockThreshold: opts.blockThreshold ?? DEFAULT_BLOCK_THRESHOLD,
+      warnThreshold: opts.warnThreshold ?? DEFAULT_WARN_THRESHOLD,
+      globalMaskTerms: [...globalTerms],
+    }
+  );
+  const bySlug = new Map(sim.map((s) => [s.slug, s]));
+  const out = new Map<string, GateResult>();
+  for (const d of live) {
+    const s = bySlug.get(d.slug);
+    const text = contentText(d.content);
+    const reasons: string[] = [];
+    let status: GateResult["status"] = s?.status || "pass";
+    const words = countWords(text);
+    if (s?.status === "block") {
+      reasons.push(`Near-duplicate of ${s.nearestSlug} (overlap ${s.maxScore} >= ${opts.blockThreshold ?? DEFAULT_BLOCK_THRESHOLD}). Rewrite or regenerate.`);
+    } else if (s?.status === "warn") {
+      reasons.push(`Shares phrasing with ${s.nearestSlug} (overlap ${s.maxScore}). Read both before approving.`);
+    }
+    if (words < minWords) {
+      status = "block";
+      reasons.push(`Thin page: ${words} words (< ${minWords}).`);
+    }
+    if (countMentions(text, d.city.name) < 2) {
+      status = "block";
+      reasons.push(`${d.city.name} is named fewer than 2 times - not locally specific.`);
+    }
+    if (/\{(city|state|keyword)\}/i.test(text)) {
+      status = "block";
+      reasons.push("Unfilled {placeholder} in copy.");
+    }
+    const county = (d.city.county || "").replace(/\s+(County|Parish|Borough|Municipality|City and Borough|Census Area)$/i, "");
+    const localRefs =
+      (county ? countMentions(text, county) : 0) +
+      (d.nearby || []).reduce((acc, n) => acc + countMentions(text, n.name), 0) +
+      (opts.baseCity && opts.baseCity.toLowerCase() !== d.city.name.toLowerCase() ? countMentions(text, opts.baseCity) : 0);
+    if (localRefs === 0) {
+      if (status === "pass") status = "warn";
+      reasons.push("No local reference beyond the city name (county, nearby city, or base city).");
+    }
+    if (!d.content.metaDescription) {
+      status = "block";
+      reasons.push("Missing meta description.");
+    }
+    out.set(d.slug, {
+      status,
+      maxScore: s?.maxScore ?? 0,
+      nearestSlug: s?.nearestSlug ?? null,
+      reasons,
+      checkedAt: now,
+    });
+  }
+  return out;
+}
