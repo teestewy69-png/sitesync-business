@@ -65,7 +65,9 @@ export async function captureClientBaseline(opts: {
   hostOrigin?: string;
   /** Full preview origin override; defaults to {host}/demo/client/{projectId}. */
   origin?: string;
-}): Promise<ClientBaselineResult> {
+  /** Label for a reference crawl (an origin that is not this client's preview), e.g. "before (live site)". */
+  referenceLabel?: string;
+}): Promise<ClientBaselineResult & { reference: boolean }> {
   const projectId = String(opts.projectId || "").trim();
   if (!projectId) throw new Error("projectId required.");
   if (!isClientBaselineTarget(projectId)) {
@@ -109,6 +111,28 @@ export async function captureClientBaseline(opts: {
   const pagesOk = snapshot.pageInventory.filter((page) => page.statusCode === 200).length;
   const pagesTotal = snapshot.pageInventory.length;
   const limited = pagesTotal === 0 || pagesOk === 0;
+
+  // A crawl of anything other than this client's preview (e.g. their current live site) is a reference crawl:
+  // kept and labeled, but it never becomes the preview baseline or satisfies a pending recapture.
+  const previewOrigin = clientPreviewOrigin(projectId, opts.hostOrigin).replace(/\/$/, "");
+  const isPreview = origin === previewOrigin || origin.endsWith(`/demo/client/${projectId}`);
+  if (!isPreview) {
+    const reference = await updateClientWorkspace(projectId, (current) => {
+      current.clientReferenceBaselines = [
+        {
+          id: snapshot.id,
+          origin,
+          capturedAt: snapshot.capturedAt,
+          pagesOk,
+          pagesTotal,
+          label: (opts.referenceLabel || "Reference crawl").slice(0, 120),
+        },
+        ...(current.clientReferenceBaselines || []),
+      ].slice(0, 20);
+      return current;
+    });
+    return { snapshot, site, workspace: reference, pagesOk, pagesTotal, limited, reference: true };
+  }
 
   const next = await updateClientWorkspace(projectId, (current) => {
     current.latestBaselineId = snapshot.id;
@@ -165,7 +189,7 @@ export async function captureClientBaseline(opts: {
     return current;
   });
 
-  return { snapshot, site, workspace: next, pagesOk, pagesTotal, limited };
+  return { snapshot, site, workspace: next, pagesOk, pagesTotal, limited, reference: false };
 }
 
 /** List CRM client projects that should appear as SEO sites (initialized factory path). */

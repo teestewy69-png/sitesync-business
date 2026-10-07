@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import BaselineAutoRecapture from "@/components/factory/BaselineAutoRecapture";
 import CaptureButton from "@/components/factory/CaptureButton";
 import CityLaunchPanel from "@/components/factory/CityLaunchPanel";
 import ClientConfigForm from "@/components/factory/ClientConfigForm";
@@ -14,6 +15,7 @@ import { DESIGN_STYLES } from "@/lib/design-styles";
 import { findProjectById } from "@/lib/store";
 import { readBaseline } from "@/lib/factory/workspace";
 import { clientDomainSeedFromProject } from "@/lib/factory/domainiq";
+import { baselineNeedsRecapture } from "@/lib/factory/client-automation";
 import { cityLaunchContext, cityLaunchSummary } from "@/lib/factory/city-launch";
 import { defaultWebsiteContent } from "@/lib/city-launch/prompts";
 
@@ -162,7 +164,26 @@ export default async function ClientProjectDetailPage({
                 No client-owned baseline yet. Capture after the preview route is reachable on this host.
               </p>
             )}
+            {workspace?.clientReferenceBaselines?.length ? (
+              <div className="mt-3 text-xs text-slate-400">
+                <p className="uppercase tracking-wider text-slate-500">Reference crawls (not the preview baseline)</p>
+                <ul className="mt-1 space-y-1">
+                  {workspace.clientReferenceBaselines.map((ref) => (
+                    <li key={ref.id} className="break-all">
+                      {ref.label} · {ref.id} · {ref.capturedAt} · {ref.pagesOk}/{ref.pagesTotal} OK · {ref.origin}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
           </div>
+          {workspace ? (
+            <BaselineAutoRecapture
+              projectId={projectId}
+              needed={baselineNeedsRecapture(workspace.clientAutomation?.baseline)}
+              reason={workspace.clientAutomation?.baseline?.reason}
+            />
+          ) : null}
           {workspace ? (
             <CaptureButton
               origin={previewOrigin}

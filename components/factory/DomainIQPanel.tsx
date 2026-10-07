@@ -31,7 +31,7 @@ function bandTone(band: string) {
 
 export default function DomainIQPanel({
   projectId,
-  candidates,
+  candidates: allCandidates,
   selectedDomain,
   domainStatus,
   state,
@@ -65,6 +65,14 @@ export default function DomainIQPanel({
 
   const seed = state?.seed || seedPreview;
   const status = domainStatus || "not_run";
+  // Once the client owns a domain, suggestions generated before that point are obsolete - hide them
+  // (older projects may still have them stored). Suggestions generated afterwards via Generate are shown.
+  const staleSuggestions =
+    status === "client_owned" &&
+    allCandidates.length > 0 &&
+    Boolean(state?.selectedAt) &&
+    (!state?.generatedAt || state.generatedAt < (state.selectedAt as string));
+  const candidates = staleSuggestions ? [] : allCandidates;
 
   return (
     <section className="mt-6 rounded-2xl border border-white/10 p-5" id="domainiq">
@@ -216,7 +224,11 @@ export default function DomainIQPanel({
         </div>
       ) : (
         <p className="mt-4 text-sm text-amber-100">
-          {status === "pending"
+          {status === "client_owned"
+            ? staleSuggestions
+              ? "The client already owns their domain, so earlier suggestions are hidden. Generate if you want ideas."
+              : "The client already owns their domain - no suggestions needed. Generate if you want ideas."
+            : status === "pending"
             ? "Queued - DomainIQ candidates are generated automatically right after setup. Refresh in a moment."
             : status === "missing_input"
               ? "Needs client input: add a niche or business name, then Regenerate."

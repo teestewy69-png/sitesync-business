@@ -341,6 +341,15 @@ export type OperatorChecklist = {
 };
 
 
+export type ClientReferenceBaseline = {
+  id: string;
+  origin: string;
+  capturedAt: string;
+  pagesOk: number;
+  pagesTotal: number;
+  label: string;
+};
+
 export type ClientBaselineAutoStatus =
   | "pending"
   | "captured"
@@ -359,6 +368,8 @@ export type ClientBaselineAutomation = {
   stale?: boolean;
   lastAttemptAt?: string;
   hostOrigin?: string;
+  /** Set when drafts/design/details change. A capture newer than this clears the need to recapture. */
+  recaptureRequestedAt?: string;
 };
 
 export type ClientDraftsAutomation = {
@@ -433,6 +444,11 @@ export type FactoryWorkspace = {
   };
   /** Present on per-client workspaces; absent on Sitesinc growth case study. */
   clientContext?: ClientWorkspaceContext;
+  /**
+   * Reference crawls of sites other than the client preview (e.g. the client's current live site as a "before").
+   * Stored as normal baselines but never become latestBaselineId and never change preview baseline status.
+   */
+  clientReferenceBaselines?: ClientReferenceBaseline[];
   /** Automation status for operator UI (baseline/drafts/competitors/stages). */
   clientAutomation?: ClientAutomationState;
 };

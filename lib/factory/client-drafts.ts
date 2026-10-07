@@ -15,6 +15,60 @@ function lowerFirst(value: string): string {
   return value ? value.charAt(0).toLowerCase() + value.slice(1) : value;
 }
 
+const MISSING_LOCATION = "[Location not provided yet - add the client's city and state before review.]";
+
+/**
+ * Portfolio (artist) sections: each heading gets text that belongs under it. The location sits in a sentence
+ * about the artist (or under the "Based in ..." heading on About) - never under "Available originals".
+ */
+function portfolioSections(
+  slug: string,
+  headings: string[],
+  ctx: { config: ClientBuildConfig; offer: string; loc: string; contactLine: string; pricingLine: string }
+): [string, string[]][] {
+  const { config, offer, loc, contactLine, pricingLine } = ctx;
+  const name = config.businessName;
+  const goal = `Goal for this site: ${lowerFirst(config.primaryGoal)}.`;
+  const makes = `${name} makes ${lowerFirst(offer)}${loc ? ` in ${loc}` : ""}.`;
+  const h = (i: number, fallback: string) => headings[i] || fallback;
+  const pricingOrNote = pricingLine || "[Pricing not provided - say how pricing is shared (e.g. on request) only once the client confirms it.]";
+  switch (slug) {
+    case "about":
+      return [
+        [h(0, `About ${name}`), [PORTFOLIO_PAGE_NOTES.about]],
+        [h(1, "The work"), [`${name} makes ${lowerFirst(offer)}. ${goal}`, "[Client to supply: mediums, subjects and how the work is made.]"]],
+        [h(2, "Based in"), [loc ? `${name} is based in ${loc}.` : MISSING_LOCATION, contactLine]],
+      ];
+    case "portfolio":
+      return [
+        [h(0, "Selected work"), [makes, PORTFOLIO_PAGE_NOTES.portfolio, loc ? "" : MISSING_LOCATION]],
+        [
+          h(1, "Available originals"),
+          ["[Client to supply: which originals are currently available, with title, medium and size. Leave out sold work or mark it sold.]", pricingLine],
+        ],
+        [h(2, "How to inquire"), [contactLine]],
+      ];
+    case "exhibitions":
+      return [
+        [h(0, "Exhibitions"), [makes, PORTFOLIO_PAGE_NOTES.exhibitions, loc ? "" : MISSING_LOCATION]],
+        [h(1, "Upcoming"), ["[Upcoming shows only once confirmed: dates, venue, city. Leave this empty if none are confirmed.]"]],
+        [h(2, "Gallery and representation inquiries"), [contactLine]],
+      ];
+    case "contact":
+      return [
+        [h(0, `Contact ${name}`), [contactLine, loc ? `${name} is based in ${loc}.` : MISSING_LOCATION]],
+        [h(1, "Inquiries"), [PORTFOLIO_PAGE_NOTES.contact]],
+        [h(2, "Pricing and availability"), [pricingOrNote]],
+      ];
+    default:
+      return [
+        [h(0, name), [makes, goal, loc ? "" : MISSING_LOCATION]],
+        [h(1, "The work"), [PORTFOLIO_PAGE_NOTES[slug] || PORTFOLIO_PAGE_NOTES.home]],
+        [h(2, "How to inquire"), [contactLine, pricingLine]],
+      ];
+  }
+}
+
 /**
  * Honest structured draft from client config + brief.
  * Not LLM research - templated copy the operator must edit with real client facts.
@@ -44,32 +98,34 @@ export function draftFromClientBrief(
     ? portfolio
       ? `Based in ${loc}.`
       : `Serving ${loc}. Other cities only through City Launch (unique local copy per city; near-duplicates are blocked by the quality gate).`
-    : "[Location not provided yet - add the client's city and state before review.]";
+    : MISSING_LOCATION;
 
   const intro = portfolio
     ? `${config.businessName}: ${lowerFirst(offer)}${loc ? `, ${loc}` : ""}.`
     : `${config.businessName} offers ${lowerFirst(offer)}${loc ? ` in ${loc}` : ""}.`;
 
+  const sections: [string, string[]][] = portfolio
+    ? portfolioSections(brief.slug, headings, {
+        config,
+        offer,
+        loc,
+        contactLine,
+        pricingLine,
+      })
+    : [
+        [
+          headings[0],
+          [`${config.businessName} focuses on ${lowerFirst(offer)}. Goal for this site: ${lowerFirst(config.primaryGoal)}.`],
+        ],
+        [headings[1] || "Location", [locationLine]],
+        [headings[2] || "How to get started", [contactLine, pricingLine]],
+      ];
+
   const body = [
     intro,
     "This page is a factory draft seeded from intake. Replace bracketed notes with the client's real facts, photos and wording before approval.",
     "",
-    `## ${headings[0]}`,
-    "",
-    portfolio
-      ? `${config.businessName} makes ${lowerFirst(offer)}. Goal for this site: ${lowerFirst(config.primaryGoal)}.`
-      : `${config.businessName} focuses on ${lowerFirst(offer)}. Goal for this site: ${lowerFirst(config.primaryGoal)}.`,
-    portfolio ? PORTFOLIO_PAGE_NOTES[brief.slug] || "" : "",
-    "",
-    `## ${headings[1] || "Location"}`,
-    "",
-    locationLine,
-    "",
-    `## ${headings[2] || "How to get started"}`,
-    "",
-    contactLine,
-    pricingLine,
-    "",
+    ...sections.flatMap(([heading, lines]) => [`## ${heading}`, "", ...lines.filter(Boolean), ""]),
     "## What this draft is not",
     "",
     "Not published anywhere. Prices, ratings and other claims appear only if the client provides them. Competitor analysis belongs on the brief's competitorUrls field (analyze top 3). Rankings are not guaranteed.",

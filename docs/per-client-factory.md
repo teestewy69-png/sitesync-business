@@ -19,7 +19,7 @@ This note describes what is **fully wired** vs **still manual** after the per-cl
 | Stage progression: research, blueprint, content_briefs, content_drafting, technical_seo | **Automated** | When data/baseline exists (`applyAutoStageProgression`) |
 | Stage progression: human_approval, production_deployment | **Manual by design** | Operator only |
 | Client baseline capture after init / public intake | **Automated** | Background via Next `after()` / fire-and-forget; status `pending\|captured\|limited\|failed\|missing\|stale` |
-| Baseline recapture on draft / design change | **Automated** | Mark stale + debounced recapture |
+| Baseline recapture on draft / design / details change | **Automated** | Mark stale (persisted `recaptureRequestedAt`), then recapture inline in the same request (15s budget). If it does not finish, status stays `stale`/`pending` and the operator page (`/app/clients/<id>`) runs `recapture-client-baseline` on next load. No timers after the response. |
 | Legacy thin CRM projects → factory workspace | **Automated (on demand)** | Idempotent `backfill-client-factories` op + `scripts/backfill-client-factories.mjs` |
 | Analyze top 3 / `competitorUrls` fill | **Blocked on external setup** | No SERP/search API key in repo (`SERPER_API_KEY` / `BRAVE_SEARCH_API_KEY` / etc.). UI shows `needs_search_provider`. Manual `set-brief-competitors` only. |
 | Final client-approved copy polish | **Manual by design** | Seed drafts are templated placeholders, not LLM research |
@@ -54,7 +54,7 @@ If none resolve → baseline automation status **`missing`** with reason. Operat
 1. **Structured client config** on `ClientProject`: `businessName`, `email`, `niche`, `businessType`, `city`, `state`, `phone`, `primaryGoal`, `notes`, `monitoringInterest`, `designStyleId`, `templateId`, `seededPages[]`, `factoryWorkspaceId`.
 2. **Parsing helpers** in `lib/factory/client-config.ts`.
 3. **Template binding** via `lib/factory/client-templates.ts`.
-4. **Design binding** persists `designStyleId`; changes mark baseline stale + auto-recapture.
+4. **Design binding** persists `designStyleId`; changes mark baseline stale and recapture inline (on-load recovery if it does not finish).
 5. **Client-scoped research/blueprint/briefs/pages** + **auto draft seed** (`lib/factory/client-pipeline.ts`, `client-workspace.ts`, `client-drafts.ts`).
 6. **Analyze top 3** field exists (`competitorUrls` + `set-brief-competitors`); auto-fill **not** wired (no search provider).
 7. **Deliverable preview**: `/demo/client/[projectId]`. Operator: `/app/clients/[projectId]` (shows automation status).
@@ -70,7 +70,7 @@ If none resolve → baseline automation status **`missing`** with reason. Operat
    - `update-client-config` (the **Edit client details** form on `/app/clients/<projectId>`) changes any of those
      fields on an existing project, rebuilds the seed-derived workspace (research notes, blueprint, briefs, templated
      drafts) from the new details, keeps approved / staged / published pages, approved briefs, competitor URLs and
-     baselines, and queues a preview recapture. `init-client-factory` on an existing workspace does the same rebuild.
+     baselines, and recaptures the preview inline (on-load recovery if it does not finish). `init-client-factory` on an existing workspace does the same rebuild.
 9. **Client baseline / crawl** + **auto queue** (`lib/factory/client-baseline.ts`, `client-automation.ts`).
 10. **SEO Intelligence**: client projects with a factory workspace appear as their own site (`kind: client_preview`).
 

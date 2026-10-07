@@ -364,10 +364,13 @@ export async function recordClientOwnedDomain(
   } catch {
     return { ok: false, error: `Not a valid domain: ${domain}` };
   }
+  // Suggestions generated before the client said they own a domain are obsolete: clear them.
+  // (Generate still works afterwards if the operator wants ideas.)
   const updated = await updateProject(projectId, {
     ownedDomain: normalized,
     selectedDomain: normalized,
     domainStatus: "client_owned",
+    domainCandidates: [],
     domainIQ: {
       ...baseState(project),
       reason: `Client already owns ${normalized}. Domain suggestions are not auto-generated (Generate still works if you want ideas).`,

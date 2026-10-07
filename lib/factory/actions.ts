@@ -16,7 +16,7 @@ import {
 } from "./client-workspace";
 import {
   backfillClientFactories,
-  markStaleAndQueueRecapture,
+  markStaleAndRecapture,
   queueAutoClientBaseline,
 } from "./client-automation";
 import { recordIntakeProject } from "./record-intake";
@@ -559,6 +559,8 @@ export async function applyFactoryAction(
     const whatChanged =
       ("businessType" in fields && fields.businessType !== project.businessType) ||
       ("offer" in fields && fields.offer !== project.offer);
+    // Client-owned domain goes into the config used for the rebuild, so drafts / research notes carry it on the first save.
+    if ("domain" in fields) assign("ownedDomain", normalizeOwnedDomain(fields.domain) || undefined);
     if ("businessType" in fields) assign("businessType", fields.businessType);
     if ("offer" in fields) assign("offer", fields.offer);
     if ("templateId" in fields) assign("templateId", fields.templateId);
@@ -595,7 +597,8 @@ export async function applyFactoryAction(
         const owned = await recordClientOwnedDomain(projectId, domain, actor);
         if (!owned.ok) return { ok: false, error: owned.error };
       } else if (!domain && project.ownedDomain) {
-        await updateProject(projectId, { ownedDomain: undefined });
+        // Client no longer owns a domain: drop it and its selection (suggestions can be generated again).
+        await clearProjectDomainSelection(projectId);
       }
     }
     const hostHint = String(body.hostOrigin || body.origin || "").trim() || null;
@@ -605,9 +608,9 @@ export async function applyFactoryAction(
       queueAutoClientBaseline(projectId, hostHint);
       return { ok: true, created: init.created, projectId, workspace: init.workspace };
     }
-    const workspace = await markStaleAndQueueRecapture(
+    const workspace = await markStaleAndRecapture(
       projectId,
-      "Client details changed - drafts rebuilt, baseline marked stale for auto-recapture.",
+      "Client details changed - drafts rebuilt.",
       hostHint
     );
     return {
@@ -824,9 +827,9 @@ export async function applyFactoryAction(
         if (current.clientContext) current.clientContext.designStyleId = normalized;
         return current;
       });
-      const workspace = await markStaleAndQueueRecapture(
+      const workspace = await markStaleAndRecapture(
         projectId,
-        "Design binding changed - baseline marked stale for auto-recapture.",
+        "Design binding changed.",
         hostHint
       );
       return { ok: true, workspace: workspace || undefined };
@@ -835,6 +838,25 @@ export async function applyFactoryAction(
     }
   }
 
+
+  if (op === "recapture-client-baseline") {
+    // Durable recovery for a recapture that was requested but never finished (status from the store, not a timer).
+    const projectId = String(body.projectId || "");
+    if (!projectId) return { ok: false, error: "projectId required." };
+    const existing = await readClientWorkspace(projectId);
+    if (!existing) return { ok: false, error: "Client workspace not found." };
+    const { baselineNeedsRecapture, runAutoClientBaseline } = await import("./client-automation");
+    if (String(body.force || "") !== "1" && !baselineNeedsRecapture(existing.clientAutomation?.baseline)) {
+      return { ok: true, created: false, workspace: existing };
+    }
+    const hostHint =
+      String(body.hostOrigin || body.origin || "").trim() || existing.clientAutomation?.baseline?.hostOrigin || null;
+    const result = await runAutoClientBaseline(projectId, hostHint);
+    const workspace = (await readClientWorkspace(projectId)) || existing;
+    return result.status === "failed"
+      ? { ok: false, error: result.reason || "Recapture failed.", workspace }
+      : { ok: true, created: result.status === "captured" || result.status === "limited", workspace };
+  }
 
   if (op === "capture-client-baseline") {
     const projectId = String(body.projectId || "");
@@ -846,6 +868,7 @@ export async function applyFactoryAction(
         projectId,
         hostOrigin,
         origin: body.previewOrigin ? String(body.previewOrigin) : undefined,
+        referenceLabel: body.referenceLabel ? String(body.referenceLabel) : undefined,
       });
       return {
         ok: true,
@@ -890,9 +913,9 @@ export async function applyFactoryAction(
       return current;
     });
     const hostHint = String(body.hostOrigin || body.origin || "").trim() || null;
-    const refreshed = await markStaleAndQueueRecapture(
+    const refreshed = await markStaleAndRecapture(
       projectId,
-      `Page draft updated (${slug}) - baseline marked stale for auto-recapture.`,
+      `Page draft updated (${slug}).`,
       hostHint
     );
     return { ok: true, workspace: refreshed || workspace };

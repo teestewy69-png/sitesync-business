@@ -183,7 +183,35 @@ export function markBaselineStale(
     status: current?.status === "missing" ? "missing" : "stale",
     stale: true,
     reason,
+    recaptureRequestedAt: new Date().toISOString(),
   };
+}
+
+/** A capture that has been "pending" longer than this is treated as lost (e.g. the function was frozen). */
+export const BASELINE_PENDING_STALE_MS = 2 * 60 * 1000;
+
+/**
+ * Does this client still need a preview recapture? Durable: derived only from persisted status, so a capture
+ * that never ran (or died mid-run) is picked up again on the next operator load.
+ */
+export function baselineNeedsRecapture(
+  baseline: ClientBaselineAutomation | undefined,
+  now: number = Date.now()
+): boolean {
+  if (!baseline) return false;
+  // "missing" = no crawl host was known server-side; the operator page supplies its own origin.
+  if (baseline.status === "missing") return true;
+  if (baseline.status === "pending") {
+    const last = Date.parse(baseline.lastAttemptAt || "");
+    return !Number.isFinite(last) || now - last > BASELINE_PENDING_STALE_MS;
+  }
+  if (baseline.stale || baseline.status === "stale") return true;
+  if (baseline.recaptureRequestedAt) {
+    const requested = Date.parse(baseline.recaptureRequestedAt);
+    const captured = Date.parse(baseline.capturedAt || "");
+    return Number.isFinite(requested) && (!Number.isFinite(captured) || captured < requested);
+  }
+  return false;
 }
 
 const AUTO_COMPLETE_STAGES: StageKey[] = [
@@ -289,24 +317,13 @@ export function selectBackfillProjectIds(
   return projects.filter(projectNeedsFactoryBackfill).map((project) => project.id);
 }
 
-/** In-memory debounce for auto-recapture (at most one pending run per project). */
-const pendingRecapture = new Map<string, ReturnType<typeof setTimeout>>();
-const RECAPTURE_DEBOUNCE_MS = 1500;
-
-export function clearRecaptureDebounce(projectId?: string): void {
-  if (projectId) {
-    const handle = pendingRecapture.get(projectId);
-    if (handle) clearTimeout(handle);
-    pendingRecapture.delete(projectId);
-    return;
-  }
-  for (const handle of pendingRecapture.values()) clearTimeout(handle);
-  pendingRecapture.clear();
-}
+/** Default time budget for an inline recapture inside a request (Netlify sync functions stop at ~26s). */
+export const INLINE_RECAPTURE_BUDGET_MS = 15_000;
 
 /**
  * Schedule work after the HTTP response when Next `after()` is available;
  * otherwise fire-and-forget with error logging. Never throws to the caller.
+ * Only for work whose status is persisted first, so a lost run is visible and recoverable.
  */
 export function scheduleAfterResponse(label: string, task: () => Promise<void>): void {
   const run = () =>
@@ -325,21 +342,6 @@ export function scheduleAfterResponse(label: string, task: () => Promise<void>):
     // outside Next request / after unavailable
   }
   void run();
-}
-
-export function scheduleDebounced(
-  projectId: string,
-  label: string,
-  task: () => Promise<void>,
-  delayMs = RECAPTURE_DEBOUNCE_MS
-): void {
-  const existing = pendingRecapture.get(projectId);
-  if (existing) clearTimeout(existing);
-  const handle = setTimeout(() => {
-    pendingRecapture.delete(projectId);
-    scheduleAfterResponse(label, task);
-  }, delayMs);
-  pendingRecapture.set(projectId, handle);
 }
 
 export function syncAutomationOnWorkspace(
@@ -472,25 +474,43 @@ export function queueAutoClientBaseline(
 }
 
 /**
- * Mark baseline stale when drafts/design/template change, then debounce recapture.
+ * Mark baseline stale when drafts/design/details change, then recapture INLINE within a time budget.
+ * Nothing is left to a timer or after-response task: if the budget runs out (or the function is frozen) the
+ * persisted status stays "pending"/"stale" and baselineNeedsRecapture() picks it up on the next operator load
+ * (BaselineAutoRecapture on /app/clients/<id>) or a manual Capture.
  */
-export async function markStaleAndQueueRecapture(
+export async function markStaleAndRecapture(
   projectId: string,
   reason: string,
-  hostOriginHint?: string | null
+  hostOriginHint?: string | null,
+  opts: { budgetMs?: number } = {}
 ): Promise<FactoryWorkspace | null> {
   const { readClientWorkspace } = await import("./client-workspace");
   const existing = await readClientWorkspace(projectId);
   if (!existing) return null;
   const current = existing.clientAutomation?.baseline;
-  const stale = markBaselineStale(current, reason);
+  const stale = markBaselineStale(current, `${reason} Recapture requested.`);
   const workspace = await persistBaselineAutomation(projectId, stale, { refreshStages: true });
   const hint = hostOriginHint || stale.hostOrigin || current?.hostOrigin || null;
-  scheduleDebounced(projectId, `auto-recapture:${projectId}`, () =>
-    runAutoClientBaseline(projectId, hint).then(() => undefined)
-  );
-  return workspace;
+  const budgetMs = opts.budgetMs ?? INLINE_RECAPTURE_BUDGET_MS;
+  if (budgetMs <= 0) return workspace;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timedOut = new Promise<"timeout">((resolve) => {
+    timer = setTimeout(() => resolve("timeout"), budgetMs);
+  });
+  try {
+    const outcome = await Promise.race([runAutoClientBaseline(projectId, hint), timedOut]);
+    if (outcome === "timeout") {
+      console.warn(`[client-automation] inline recapture for ${projectId} exceeded ${budgetMs}ms; status stays pending.`);
+    }
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+  return (await readClientWorkspace(projectId)) || workspace;
 }
+
+/** @deprecated Kept for older imports; recapture now runs inline (see markStaleAndRecapture). */
+export const markStaleAndQueueRecapture = markStaleAndRecapture;
 
 export type BackfillResult = {
   scanned: number;

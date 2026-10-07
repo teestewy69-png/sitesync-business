@@ -24,6 +24,8 @@ const { applyFactoryAction } = await import("../lib/factory/actions.ts");
 const { readClientWorkspace, updateClientWorkspace } = await import("../lib/factory/client-workspace.ts");
 const { findProjectById } = await import("../lib/store.ts");
 const { generateDomainCandidatesForProject } = await import("../lib/factory/domainiq.ts");
+const { baselineNeedsRecapture, BASELINE_PENDING_STALE_MS, markBaselineStale } = await import("../lib/factory/client-automation.ts");
+const { createServer } = await import("node:http");
 const { buildPreviewContent } = await import("../lib/design-styles.ts");
 
 const KURTIS = {
@@ -143,6 +145,7 @@ test("record-intake: full client details map to the right fields; owned domain s
   const res = await applyFactoryAction("record-intake", { source: "factory_intake", ...KURTIS });
   assert.equal(res.ok, true, res.error);
   assert.ok(res.projectId);
+  await settle();
   const project = await findProjectById(res.projectId);
   assert.equal(project.businessName, "Kurtis Wells");
   assert.equal(project.contactName, "Kurtis Wells");
@@ -224,4 +227,180 @@ test("init-client-factory on an existing workspace rebuilds drafts from the proj
   const ws = await readClientWorkspace(id);
   assert.equal(ws.clientContext.city, "Walnut");
   for (const page of ws.pages) assert.doesNotMatch(page.body, /your area/, page.slug);
+});
+
+/** Split a draft body into { heading: text } for its "## " sections. */
+function sectionsOf(body) {
+  const out = {};
+  for (const chunk of body.split(/^## /m).slice(1)) {
+    const [heading, ...rest] = chunk.split("\n");
+    out[heading.trim()] = rest.join("\n").trim();
+  }
+  return out;
+}
+
+test("portfolio drafts: each heading gets its own text; location never sits under 'Available originals'", () => {
+  const config = buildClientConfig(KURTIS);
+  const briefs = seedClientBriefs(config);
+  const portfolio = draftFromClientBrief(briefs.find((b) => b.slug === "portfolio"), config);
+  const sections = sectionsOf(portfolio.body);
+  assert.ok(sections["Available originals"] !== undefined, "has Available originals");
+  assert.doesNotMatch(sections["Available originals"], /Walnut|Based in|\bCA\b/);
+  assert.match(sections["Available originals"], /originals/i);
+  assert.match(sections["Available originals"], /Pricing: Available on request/);
+  assert.match(sections["Selected work"], /Kurtis Wells makes original artwork and paintings in Walnut, CA\./);
+  assert.match(sections["How to inquire"], /kurtis@example\.com/);
+
+  for (const brief of briefs) {
+    const draft = draftFromClientBrief(brief, config);
+    for (const [heading, text] of Object.entries(sectionsOf(draft.body))) {
+      assert.ok(text.length > 0, `${brief.slug}: empty section ${heading}`);
+      if (/originals|upcoming|inquiries$|pricing/i.test(heading)) {
+        assert.doesNotMatch(text, /^Based in /m, `${brief.slug}: location line under ${heading}`);
+      }
+    }
+  }
+  const about = sectionsOf(draftFromClientBrief(briefs.find((b) => b.slug === "about"), config).body);
+  assert.match(about["Based in Walnut, CA"], /Kurtis Wells is based in Walnut, CA\./);
+});
+
+test("update-client-config: a domain saved with other fields reaches research notes + context on the FIRST save; old suggestions are cleared", async () => {
+  const created = await applyFactoryAction("record-intake", { source: "factory_intake", label: "Kurtis Wells, Artist" });
+  assert.equal(created.ok, true, created.error);
+  const id = created.projectId;
+  await settle();
+  const gen = await generateDomainCandidatesForProject(id, { force: true });
+  assert.equal(gen.ok, true, gen.error);
+  assert.ok((await findProjectById(id)).domainCandidates.length > 0, "suggestions exist before the client domain");
+
+  // One save: domain together with the other fields (what the operator form sends).
+  const res = await applyFactoryAction("update-client-config", { projectId: id, ...KURTIS, approvedBy: "Tony" });
+  assert.equal(res.ok, true, res.error);
+  await settle();
+
+  const ws = await readClientWorkspace(id);
+  assert.equal(ws.clientContext.domain, "kurtisart.example");
+  assert.match(ws.stages.find((s) => s.key === "research").notes, /Client-owned domain: kurtisart\.example/);
+  const project = await findProjectById(id);
+  assert.equal(project.ownedDomain, "kurtisart.example");
+  assert.equal(project.domainStatus, "client_owned");
+  assert.equal(project.domainCandidates.length, 0, "pre-ownership suggestions cleared");
+
+  // Clearing the domain drops the ownership + selection (Generate is available again).
+  const cleared = await applyFactoryAction("update-client-config", { projectId: id, domain: "" });
+  assert.equal(cleared.ok, true, cleared.error);
+  await settle();
+  const after = await findProjectById(id);
+  assert.ok(!after.ownedDomain);
+  assert.ok(!after.selectedDomain);
+  assert.notEqual(after.domainStatus, "client_owned");
+  const wsAfter = await readClientWorkspace(id);
+  assert.doesNotMatch(wsAfter.stages.find((s) => s.key === "research").notes, /Client-owned domain/);
+});
+
+test("baselineNeedsRecapture: derived from persisted status only", () => {
+  const now = Date.parse("2026-10-07T12:00:00Z");
+  const iso = (ms) => new Date(ms).toISOString();
+  assert.equal(baselineNeedsRecapture(undefined, now), false);
+  assert.equal(baselineNeedsRecapture({ status: "captured", stale: false, capturedAt: iso(now - 1000) }, now), false);
+  assert.equal(baselineNeedsRecapture({ status: "failed", stale: false }, now), false, "failures are shown, not retried in a loop");
+  assert.equal(baselineNeedsRecapture({ status: "missing", stale: false }, now), true, "page supplies the host");
+  assert.equal(baselineNeedsRecapture({ status: "stale", stale: true }, now), true);
+  assert.equal(baselineNeedsRecapture({ status: "pending", stale: false, lastAttemptAt: iso(now - 5000) }, now), false, "a run in progress");
+  assert.equal(
+    baselineNeedsRecapture({ status: "pending", stale: false, lastAttemptAt: iso(now - BASELINE_PENDING_STALE_MS - 1) }, now),
+    true,
+    "a pending run that never finished (frozen function) is picked up again"
+  );
+  assert.equal(
+    baselineNeedsRecapture({ status: "captured", stale: false, capturedAt: iso(now - 9000), recaptureRequestedAt: iso(now - 5000) }, now),
+    true
+  );
+  const stale = markBaselineStale({ status: "captured", stale: false, capturedAt: iso(now - 9000), hostOrigin: "https://x.example" }, "edit");
+  assert.equal(stale.status, "stale");
+  assert.ok(stale.recaptureRequestedAt);
+  assert.equal(baselineNeedsRecapture(stale, now), true);
+});
+
+test("edit / design change: preview recapture runs INLINE (no timers) and recovery op picks up a lost one", async () => {
+  const hits = [];
+  const server = createServer((req, res) => {
+    hits.push(req.url);
+    if (req.url === "/robots.txt") {
+      res.writeHead(200, { "content-type": "text/plain" });
+      return res.end("User-agent: *\nAllow: /\n");
+    }
+    if (req.url === "/sitemap.xml") {
+      res.writeHead(404);
+      return res.end();
+    }
+    res.writeHead(200, { "content-type": "text/html" });
+    res.end(`<!doctype html><html><head><title>Kurtis Wells</title><meta name="description" content="Original artwork."></head><body><h1>Kurtis Wells</h1><p>Original artwork and paintings in Walnut, CA.</p></body></html>`);
+  });
+  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const host = `http://127.0.0.1:${server.address().port}`;
+  try {
+    const created = await applyFactoryAction("record-intake", { source: "factory_intake", ...KURTIS });
+    assert.equal(created.ok, true, created.error);
+    const id = created.projectId;
+    await settle();
+
+    hits.length = 0;
+    const res = await applyFactoryAction("update-client-config", { projectId: id, offer: "Original paintings", hostOrigin: host });
+    assert.equal(res.ok, true, res.error);
+    // No settle(): the recapture must already be done when the action returns.
+    const ws = await readClientWorkspace(id);
+    const baseline = ws.clientAutomation.baseline;
+    assert.equal(baseline.status, "captured", baseline.reason);
+    assert.equal(baseline.stale, false);
+    assert.equal(baseline.hostOrigin, host);
+    assert.equal(baselineNeedsRecapture(baseline), false);
+    assert.ok(hits.some((url) => url.startsWith(`/demo/client/${id}`)), "crawled this client's preview");
+    assert.equal(ws.latestBaselineBySite[id], baseline.baselineId);
+
+    // Design change: same inline behaviour.
+    hits.length = 0;
+    const design = await applyFactoryAction("bind-client-design", { projectId: id, designStyleId: "editorial", hostOrigin: host });
+    assert.equal(design.ok, true, design.error);
+    const afterDesign = (await readClientWorkspace(id)).clientAutomation.baseline;
+    assert.equal(afterDesign.status, "captured", afterDesign.reason);
+    assert.ok(hits.length > 0, "design change recaptured inline");
+
+    // Simulate a recapture lost to a frozen function: stale + requested, never captured.
+    await updateClientWorkspace(id, (current) => {
+      current.clientAutomation.baseline = markBaselineStale(current.clientAutomation.baseline, "lost");
+      return current;
+    });
+    assert.equal(baselineNeedsRecapture((await readClientWorkspace(id)).clientAutomation.baseline), true);
+    hits.length = 0;
+    const recovered = await applyFactoryAction("recapture-client-baseline", { projectId: id, hostOrigin: host });
+    assert.equal(recovered.ok, true, recovered.error);
+    const healed = (await readClientWorkspace(id)).clientAutomation.baseline;
+    assert.equal(healed.status, "captured");
+    assert.equal(baselineNeedsRecapture(healed), false);
+    assert.ok(hits.length > 0);
+
+    // Not needed -> no crawl.
+    hits.length = 0;
+    const noop = await applyFactoryAction("recapture-client-baseline", { projectId: id, hostOrigin: host });
+    assert.equal(noop.ok, true);
+    assert.equal(noop.created, false);
+    assert.equal(hits.length, 0);
+
+    // A crawl of another origin (e.g. the client's live site) is a labeled reference, not the preview baseline.
+    const before = (await readClientWorkspace(id)).latestBaselineBySite[id];
+    const ref = await applyFactoryAction("capture-client-baseline", {
+      projectId: id,
+      hostOrigin: host,
+      previewOrigin: `${host}/live-site`,
+      referenceLabel: "before (live site)",
+    });
+    assert.equal(ref.ok, true, ref.error);
+    const wsRef = await readClientWorkspace(id);
+    assert.equal(wsRef.latestBaselineBySite[id], before, "reference crawl does not replace the preview baseline");
+    assert.equal(wsRef.clientReferenceBaselines[0].label, "before (live site)");
+    assert.equal(wsRef.clientReferenceBaselines[0].origin, `${host}/live-site`);
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+  }
 });
