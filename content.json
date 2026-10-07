@@ -94,7 +94,7 @@
       "detail": "Completely optional — your site works without it. Cancel anytime. No long-term contract.",
       "features": [
         "Technical updates and security",
-        "Uptime/monitoring and basic fixes",
+        "Uptime and SEO monitoring, plus basic fixes",
         "2-3 small text/image updates per month"
       ],
       "cta": {
@@ -105,7 +105,7 @@
   },
   "outcomes": {
     "title": "What your finished website does for you",
-    "subtitle": "Once your site is launched on your domain, here is what it is set up to do. No ranking or lead guarantees, just a solid site built to be found and easy to contact.",
+    "subtitle": "Once your site is launched on your domain, here is what it is set up to do.",
     "items": [
       {
         "title": "Looks right and loads fast on phones",
@@ -113,7 +113,7 @@
       },
       {
         "title": "Ready for Google from day one",
-        "text": "Search-friendly page titles and descriptions, a sitemap, Google Search Console verification, and Google Analytics (GA4) so you can see your visits."
+        "text": "Search-friendly page titles and descriptions and a sitemap, so Google can find and understand your pages."
       },
       {
         "title": "Sends inquiries straight to you",
