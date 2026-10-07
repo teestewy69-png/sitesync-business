@@ -1,4 +1,12 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "What a Real Small Business Website Actually Needs | Sitesinc",
+  description: "The sections and technical basics every small business website needs: clear hero, offer, proof, booking flow, FAQ, speed and security.",
+  alternates: { canonical: "/blog/real-small-business-website-needs" },
+  openGraph: { title: "What a Real Small Business Website Actually Needs | Sitesinc", description: "The sections and technical basics every small business website needs: clear hero, offer, proof, booking flow, FAQ, speed and security.", url: "/blog/real-small-business-website-needs" },
+};
 
 export default function RealSmallBusinessWebsiteNeeds() {
   return (

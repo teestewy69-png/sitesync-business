@@ -1,5 +1,13 @@
 import Link from "next/link";
 import { posts } from "@/data/posts";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Sitesinc Blog | Small Business Website Guides",
+  description: "Straightforward guides on websites, SEO, and getting more from your small business site.",
+  alternates: { canonical: "/blog" },
+  openGraph: { title: "Sitesinc Blog | Small Business Website Guides", description: "Straightforward guides on websites, SEO, and getting more from your small business site.", url: "/blog" },
+};
 
 export default function BlogIndex() {
   const sorted = [...posts].sort((a, b) => (a.date < b.date ? 1 : -1));

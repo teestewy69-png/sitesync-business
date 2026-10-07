@@ -1,4 +1,12 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "DIY Website Builders vs. Done-For-You: What Actually Costs You More | Sitesinc",
+  description: "An honest comparison of DIY website builders and done-for-you builds for small businesses: time, lost leads, and long-term cost.",
+  alternates: { canonical: "/blog/diy-vs-done-for-you-websites" },
+  openGraph: { title: "DIY Website Builders vs. Done-For-You: What Actually Costs You More | Sitesinc", description: "An honest comparison of DIY website builders and done-for-you builds for small businesses: time, lost leads, and long-term cost.", url: "/blog/diy-vs-done-for-you-websites" },
+};
 
 export default function DiyVsDoneForYouWebsites() {
   return (

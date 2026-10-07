@@ -1,4 +1,12 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy | Sitesinc",
+  description: "How Sitesinc collects, uses, and protects your information.",
+  alternates: { canonical: "/privacy" },
+  openGraph: { title: "Privacy Policy | Sitesinc", description: "How Sitesinc collects, uses, and protects your information.", url: "/privacy" },
+};
 
 export default function PrivacyPage() {
   return (

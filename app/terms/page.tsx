@@ -1,4 +1,12 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Terms of Service | Sitesinc",
+  description: "The terms that apply to Sitesinc website builds, payments, and optional monitoring.",
+  alternates: { canonical: "/terms" },
+  openGraph: { title: "Terms of Service | Sitesinc", description: "The terms that apply to Sitesinc website builds, payments, and optional monitoring.", url: "/terms" },
+};
 
 export default function TermsPage() {
   return (
