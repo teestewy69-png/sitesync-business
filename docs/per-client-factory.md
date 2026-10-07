@@ -27,6 +27,7 @@ This note describes what is **fully wired** vs **still manual** after the per-cl
 | DomainIQ domain candidates (generate + score) on client setup | **Automated** | Background via `after()` on intake / `init-client-factory` / backfill (`queueAutoDomainCandidates`). In-process engine, no server/key |
 | Domain availability check (top 12 candidates) | **Automated** | Keyless public RDAP (Verisign .com/.net) + Cloudflare DNS NS, same sources as DomainIQ. `DOMAINIQ_AVAILABILITY=off` leaves them `unchecked` |
 | Domain pick | **Manual by design** | Operator picks on `/app/clients/<projectId>` (or types a client-owned domain - it gets DomainIQ-scored) |
+| Client already owns a domain | **Automated** | `domain` on intake / edit → `selectedDomain` + `domainStatus: client_owned`; no auto suggestions, no purchase sign-off (Generate still works on demand) |
 | Domain purchase | **Manual by design** | Tony signs off (`domainiq-approve-purchase` records who/when). Sitesinc never buys, reserves, or registers a domain |
 | City Launch: city picking (radius / top N in states / CSV paste) | **Automated** | Census dataset in-process (`lib/city-launch`), no key |
 | City Launch: LLM writing of up to 500 city pages per batch | **Automated** (needs an LLM key) | Queued → ticks via `after()`; concurrency + RPM limited, retries with backoff, resumable. Missing key = UI says so, nothing is written |
@@ -57,7 +58,19 @@ If none resolve → baseline automation status **`missing`** with reason. Operat
 5. **Client-scoped research/blueprint/briefs/pages** + **auto draft seed** (`lib/factory/client-pipeline.ts`, `client-workspace.ts`, `client-drafts.ts`).
 6. **Analyze top 3** field exists (`competitorUrls` + `set-brief-competitors`); auto-fill **not** wired (no search provider).
 7. **Deliverable preview**: `/demo/client/[projectId]`. Operator: `/app/clients/[projectId]` (shows automation status).
-8. **Ops actions**: `init-client-factory`, `bind-client-design`, `set-brief-competitors`, `draft-client-page`, `capture-client-baseline`, **`backfill-client-factories`**.
+   Built only from the client's own details (`lib/factory/client-preview.ts`): template-appropriate sections, bracketed
+   "[client to supply]" placeholders, the client's pricing note or no prices at all. Never the marketing showcase
+   (`MiniSiteFrame` sample prices / testimonials / "Live at sitesinc.co"). Guarded by `scripts/client-intake.test.mjs`.
+8. **Ops actions**: `record-intake`, `init-client-factory`, **`update-client-config`**, `bind-client-design`, `set-brief-competitors`, `draft-client-page`, `capture-client-baseline`, **`backfill-client-factories`**.
+   - `record-intake` (and the **New client project** form on `/app`) takes full client details: `businessName`,
+     `contactName`, `email`, `phone`, `city`, `state`, `businessType`, `offer` (what they sell), `primaryGoal`,
+     `pricingNote`, `domain`, `notes` (optional `templateId`, `designStyleId`). Returns `projectId`. No email is sent.
+     The template is picked from business type / offer (never from the name or label). The goal is never the
+     business or contact name; it falls back to a template default.
+   - `update-client-config` (the **Edit client details** form on `/app/clients/<projectId>`) changes any of those
+     fields on an existing project, rebuilds the seed-derived workspace (research notes, blueprint, briefs, templated
+     drafts) from the new details, keeps approved / staged / published pages, approved briefs, competitor URLs and
+     baselines, and queues a preview recapture. `init-client-factory` on an existing workspace does the same rebuild.
 9. **Client baseline / crawl** + **auto queue** (`lib/factory/client-baseline.ts`, `client-automation.ts`).
 10. **SEO Intelligence**: client projects with a factory workspace appear as their own site (`kind: client_preview`).
 

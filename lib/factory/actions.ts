@@ -1,6 +1,19 @@
 import { newId } from "@/lib/store";
-import { applyConfigToProject, buildClientConfig, normalizeDesignStyleId } from "./client-config";
-import { initClientWorkspace, setClientBriefCompetitors, updateClientWorkspace, readClientWorkspace } from "./client-workspace";
+import {
+  applyConfigToProject,
+  buildClientConfig,
+  configFromProject,
+  normalizeDesignStyleId,
+  normalizeOwnedDomain,
+  type IntakeConfigInput,
+} from "./client-config";
+import {
+  initClientWorkspace,
+  refreshClientWorkspace,
+  setClientBriefCompetitors,
+  updateClientWorkspace,
+  readClientWorkspace,
+} from "./client-workspace";
 import {
   backfillClientFactories,
   markStaleAndQueueRecapture,
@@ -70,7 +83,7 @@ function nowIso() {
 export async function applyFactoryAction(
   op: string,
   body: Record<string, string | string[] | undefined>
-): Promise<{ ok: boolean; error?: string; workspace?: FactoryWorkspace; created?: boolean; backfill?: import("./client-automation").BackfillResult; domainBackfill?: import("./domainiq").DomainBackfillResult }> {
+): Promise<{ ok: boolean; error?: string; workspace?: FactoryWorkspace; created?: boolean; projectId?: string; refreshed?: string[]; kept?: string[]; backfill?: import("./client-automation").BackfillResult; domainBackfill?: import("./domainiq").DomainBackfillResult }> {
   const actor = String(body.approvedBy || "operator");
   const when = nowIso();
 
@@ -501,12 +514,109 @@ export async function applyFactoryAction(
   }
 
   if (op === "record-intake") {
-    await recordIntakeProject({
+    const fields = clientFieldsFromBody(body);
+    const hasClientDetails = Object.keys(fields).some((key) => key !== "monitoringInterest");
+    const project = await recordIntakeProject({
+      ...fields,
       source: (String(body.source || "factory_intake") as IntakeProject["source"]),
-      label: String(body.label || "Factory intake (no PII stored)"),
+      label: String(body.label || fields.businessName || "Factory intake (no PII stored)"),
+      hostOrigin: String(body.hostOrigin || body.origin || "").trim() || null,
     });
+    if (hasClientDetails) {
+      const workspace = (await readClientWorkspace(project.id)) || undefined;
+      return { ok: true, created: true, projectId: project.id, workspace };
+    }
     const { readWorkspace } = await import("./workspace");
-    return { ok: true, workspace: await readWorkspace() };
+    return { ok: true, projectId: project.id, workspace: await readWorkspace() };
+  }
+
+  if (op === "update-client-config") {
+    const projectId = String(body.projectId || "");
+    if (!projectId) return { ok: false, error: "projectId required." };
+    const { findProjectById, updateProject } = await import("@/lib/store");
+    const project = await findProjectById(projectId);
+    if (!project) return { ok: false, error: "Client project not found." };
+    const fields = clientFieldsFromBody(body);
+    if (!Object.keys(fields).length) return { ok: false, error: "No client fields to update." };
+    if ("domain" in fields && fields.domain && !normalizeOwnedDomain(fields.domain)) {
+      return { ok: false, error: `Not a valid domain: ${fields.domain}` };
+    }
+    const merged = { ...project };
+    const assign = <K extends keyof typeof merged>(key: K, value: (typeof merged)[K]) => {
+      merged[key] = value;
+    };
+    if ("businessName" in fields) assign("businessName", fields.businessName || project.businessName);
+    if ("contactName" in fields) assign("contactName", fields.contactName);
+    if ("email" in fields) assign("email", fields.email);
+    if ("phone" in fields) assign("phone", fields.phone);
+    if ("city" in fields) assign("city", fields.city);
+    if ("state" in fields) assign("state", fields.state);
+    if ("primaryGoal" in fields) assign("primaryGoal", fields.primaryGoal);
+    if ("notes" in fields) assign("notes", fields.notes);
+    if ("pricingNote" in fields) assign("pricingNote", fields.pricingNote);
+    if ("niche" in fields) assign("niche", fields.niche);
+    if ("designStyleId" in fields) assign("designStyleId", fields.designStyleId);
+    const whatChanged =
+      ("businessType" in fields && fields.businessType !== project.businessType) ||
+      ("offer" in fields && fields.offer !== project.offer);
+    if ("businessType" in fields) assign("businessType", fields.businessType);
+    if ("offer" in fields) assign("offer", fields.offer);
+    if ("templateId" in fields) assign("templateId", fields.templateId);
+    else if (whatChanged) {
+      // Business type / offer changed and no explicit template: re-pick the template (and niche) from them.
+      assign("templateId", undefined);
+      if (!("niche" in fields)) assign("niche", undefined);
+    }
+    // Legacy bug guard: a goal equal to the business name is dropped so the template default applies.
+    const config = configFromProject(merged);
+    const patched = applyConfigToProject(merged, config);
+    await updateProject(projectId, {
+      businessName: patched.businessName,
+      contactName: config.contactName || undefined,
+      email: patched.email,
+      niche: patched.niche,
+      businessType: patched.businessType,
+      offer: config.offer || undefined,
+      pricingNote: config.pricingNote || undefined,
+      city: patched.city,
+      state: patched.state,
+      phone: patched.phone,
+      primaryGoal: patched.primaryGoal,
+      notes: patched.notes,
+      designStyleId: patched.designStyleId,
+      templateId: patched.templateId,
+      seededPages: patched.seededPages,
+      factoryWorkspaceId: project.factoryWorkspaceId || project.id,
+    });
+    if ("domain" in fields) {
+      const domain = normalizeOwnedDomain(fields.domain);
+      if (domain && domain !== project.ownedDomain) {
+        const { recordClientOwnedDomain } = await import("./domainiq");
+        const owned = await recordClientOwnedDomain(projectId, domain, actor);
+        if (!owned.ok) return { ok: false, error: owned.error };
+      } else if (!domain && project.ownedDomain) {
+        await updateProject(projectId, { ownedDomain: undefined });
+      }
+    }
+    const hostHint = String(body.hostOrigin || body.origin || "").trim() || null;
+    const refresh = await refreshClientWorkspace(projectId, config, { hostOrigin: hostHint });
+    if (!refresh) {
+      const init = await initClientWorkspace(projectId, config, { hostOrigin: hostHint });
+      queueAutoClientBaseline(projectId, hostHint);
+      return { ok: true, created: init.created, projectId, workspace: init.workspace };
+    }
+    const workspace = await markStaleAndQueueRecapture(
+      projectId,
+      "Client details changed - drafts rebuilt, baseline marked stale for auto-recapture.",
+      hostHint
+    );
+    return {
+      ok: true,
+      projectId,
+      refreshed: refresh.refreshed,
+      kept: refresh.kept,
+      workspace: workspace || refresh.workspace,
+    };
   }
 
   if (op === "advance-research") {
@@ -552,8 +662,14 @@ export async function applyFactoryAction(
     const { findProjectById, updateProject } = await import("@/lib/store");
     const project = await findProjectById(projectId);
     if (!project) return { ok: false, error: "Client project not found." };
+    const extra = clientFieldsFromBody(body);
     const config = buildClientConfig({
+      businessName: project.businessName || extra.businessName,
       name: project.businessName || String(body.businessName || project.label),
+      contactName: project.contactName || extra.contactName,
+      offer: project.offer || extra.offer,
+      pricingNote: project.pricingNote || extra.pricingNote,
+      domain: project.ownedDomain || extra.domain,
       email: project.email || String(body.email || ""),
       niche: project.niche || String(body.niche || ""),
       businessType: project.businessType || String(body.businessType || ""),
@@ -572,6 +688,9 @@ export async function applyFactoryAction(
     const patched = applyConfigToProject(project, config);
     await updateProject(project.id, {
       businessName: patched.businessName,
+      contactName: config.contactName || undefined,
+      offer: config.offer || undefined,
+      pricingNote: config.pricingNote || undefined,
       email: patched.email,
       niche: patched.niche,
       businessType: patched.businessType,
@@ -587,13 +706,25 @@ export async function applyFactoryAction(
       monitoringInterest: patched.monitoringInterest,
     });
     const hostHint = String(body.hostOrigin || body.origin || "").trim() || null;
+    if (config.domain && !project.ownedDomain) {
+      const { recordClientOwnedDomain } = await import("./domainiq");
+      await recordClientOwnedDomain(project.id, config.domain, actor);
+    }
     const result = await initClientWorkspace(project.id, config, { hostOrigin: hostHint });
+    let workspace = result.workspace;
+    if (!result.created) {
+      // Existing workspace: rebuild the templated drafts from the current details (keeps approved work).
+      const refresh = await refreshClientWorkspace(project.id, config, { hostOrigin: hostHint });
+      if (refresh) workspace = refresh.workspace;
+    }
     // Auto baseline: never block the action response.
     queueAutoClientBaseline(project.id, hostHint);
-    // Auto DomainIQ candidates (idempotent: skips when candidates already exist).
-    await markDomainCandidatesPending(project.id);
-    queueAutoDomainCandidates(project.id);
-    return { ok: true, created: result.created, workspace: result.workspace };
+    // Auto DomainIQ candidates (idempotent; skipped when candidates exist or the client owns a domain).
+    if (!config.domain) {
+      await markDomainCandidatesPending(project.id);
+      queueAutoDomainCandidates(project.id);
+    }
+    return { ok: true, created: result.created, projectId: project.id, workspace };
   }
 
   // DomainIQ bay. Generation/scoring run in-process; availability uses keyless
@@ -781,4 +912,38 @@ export async function applyFactoryAction(
   }
 
   return { ok: false, error: `Unknown action: ${op}` };
+}
+
+const CLIENT_TEXT_FIELDS = [
+  "businessName",
+  "contactName",
+  "email",
+  "phone",
+  "city",
+  "state",
+  "businessType",
+  "offer",
+  "niche",
+  "primaryGoal",
+  "domain",
+  "notes",
+  "pricingNote",
+  "templateId",
+  "designStyleId",
+] as const;
+
+/** Client detail fields present on an action body (trimmed). Absent keys stay absent; "" means clear. */
+export function clientFieldsFromBody(
+  body: Record<string, string | string[] | undefined>
+): Partial<Pick<IntakeConfigInput, (typeof CLIENT_TEXT_FIELDS)[number]>> & { monitoringInterest?: boolean } {
+  const out: Partial<Record<(typeof CLIENT_TEXT_FIELDS)[number], string>> & { monitoringInterest?: boolean } = {};
+  for (const key of CLIENT_TEXT_FIELDS) {
+    const raw = body[key];
+    if (raw === undefined) continue;
+    out[key] = String(Array.isArray(raw) ? raw[0] ?? "" : raw).trim();
+  }
+  if (body.monitoringInterest !== undefined) {
+    out.monitoringInterest = ["1", "true", "yes", "on"].includes(String(body.monitoringInterest).toLowerCase());
+  }
+  return out;
 }

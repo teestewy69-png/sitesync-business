@@ -54,6 +54,27 @@ export function seedClientStages(): FactoryStage[] {
 export function seedClientClusters(config: ClientBuildConfig): TopicCluster[] {
   const loc = place([config.city, config.state]) || "service area";
   const niche = config.niche || "services";
+  const offer = config.offer || niche;
+  if (config.templateId === "portfolio") {
+    return [
+      {
+        id: "offer",
+        topic: `${offer}`,
+        intent: `See ${config.businessName}'s work and what is available.`,
+        hubPath: "/",
+        supporting: ["/portfolio", "/contact"],
+        notes: `Work by ${config.businessName}${config.city ? ` (${loc})` : ""}. Real images and titles only.`,
+      },
+      {
+        id: "trust",
+        topic: `${config.businessName} background`,
+        intent: "Learn about the artist, shows and how to inquire.",
+        hubPath: "/about",
+        supporting: ["/exhibitions", "/contact"],
+        notes: "Bio, confirmed exhibitions only, inquiry path. No invented shows, press or reviews.",
+      },
+    ];
+  }
   return [
     {
       id: "offer",
@@ -61,12 +82,12 @@ export function seedClientClusters(config: ClientBuildConfig): TopicCluster[] {
       intent: `Understand what ${config.businessName} sells and who it is for.`,
       hubPath: "/",
       supporting: ["/services", "/contact"],
-      notes: `Client hub for ${niche} in ${loc}.`,
+      notes: `Client hub for ${offer} in ${loc}.`,
     },
     {
       id: "services",
       topic: `${niche} services`,
-      intent: "Compare service options and from-prices.",
+      intent: "Compare service options (prices only if the client provides them).",
       hubPath: "/services",
       supporting: ["/", "/contact"],
       notes: "One services page. City pages come from City Launch (quality-gated, unique per city).",
@@ -74,10 +95,10 @@ export function seedClientClusters(config: ClientBuildConfig): TopicCluster[] {
     {
       id: "trust",
       topic: `${config.businessName} trust`,
-      intent: "Decide whether to call / book.",
+      intent: "Decide whether to get in touch.",
       hubPath: "/contact",
       supporting: ["/", "/about", "/services"],
-      notes: "Proof, hours, phone, form.",
+      notes: "Real proof only, hours, phone, form.",
     },
   ];
 }
@@ -119,6 +140,20 @@ function briefShell(
   };
 }
 
+/** Template-appropriate brief headings. Portfolio pages never get service-area / booking headings. */
+export function clientBriefHeadings(config: ClientBuildConfig, slug: string, loc: string): string[] {
+  if (config.templateId === "portfolio") {
+    const bySlug: Record<string, string[]> = {
+      about: [`About ${config.businessName}`, "The work", `Based in ${loc}`],
+      portfolio: ["Selected work", "Available originals", "How to inquire"],
+      exhibitions: ["Exhibitions", "Upcoming", "Gallery and representation inquiries"],
+      contact: [`Contact ${config.businessName}`, "Inquiries", "Pricing and availability"],
+    };
+    return [...(bySlug[slug] || [`${config.businessName}`, "The work", "How to inquire"]), "What this page is not"];
+  }
+  return [`What ${config.businessName} offers`, `Who this helps in ${loc}`, "How to get started", "What this page is not"];
+}
+
 export function seedClientBriefs(config: ClientBuildConfig): ContentBrief[] {
   const loc = place([config.city, config.state]) || "the service area";
   const niche = config.niche || "services";
@@ -138,12 +173,7 @@ export function seedClientBriefs(config: ClientBuildConfig): ContentBrief[] {
           max: 1100,
           note: "Guidance only. Completeness beats hitting a number. No ranking promises.",
         },
-        headings: [
-          `What ${config.businessName} offers`,
-          `Who this helps in ${loc}`,
-          "How to get started",
-          "What this page is not",
-        ],
+        headings: clientBriefHeadings(config, page.slug, loc),
         recurringTopics: [
           config.businessName,
           niche,
@@ -155,9 +185,11 @@ export function seedClientBriefs(config: ClientBuildConfig): ContentBrief[] {
           "Do not invent rankings, reviews, or licenses the client has not confirmed.",
         ],
         outline: [
-          `Open with ${config.businessName} and the ${niche} offer`,
-          `Local context for ${loc} (city pages via City Launch quality gate)`,
-          "CTA: call / form / book",
+          `Open with ${config.businessName} and ${config.offer ? `what they sell (${config.offer})` : `the ${niche} offer`}`,
+          config.templateId === "portfolio"
+            ? `Where the work is made (${loc})`
+            : `Local context for ${loc} (city pages via City Launch quality gate)`,
+          config.templateId === "portfolio" ? "CTA: inquire about a work" : "CTA: call / form / book",
         ],
         citations: [
           "Client intake config (business name, niche, city/state, goal)",
@@ -196,14 +228,20 @@ export function seedClientResearchNotes(config: ClientBuildConfig): string {
   const loc = place([config.city, config.state]) || "(location not provided)";
   return [
     `Client: ${config.businessName}`,
+    config.contactName ? `Contact: ${config.contactName}` : null,
     `Niche / type: ${config.niche} / ${config.businessType}`,
+    config.offer ? `Sells: ${config.offer}` : null,
     `Location: ${loc}`,
     `Primary goal: ${config.primaryGoal || "(not set)"}`,
     `Phone: ${config.phone || "(not set)"}`,
+    `Pricing: ${config.pricingNote || "(no pricing provided - previews show no prices)"}`,
+    config.domain ? `Client-owned domain: ${config.domain}` : null,
     `Design: ${config.designStyleId} · Template: ${config.templateId}`,
     "",
     "Research stage is seeded from intake config only.",
     "No automated LLM competitor crawl. Attach real competitor URLs on each content brief (competitorUrls).",
     "Baseline crawl is optional and operator-triggered — not invented.",
-  ].join("\n");
+  ]
+    .filter((line): line is string => line !== null)
+    .join("\n");
 }

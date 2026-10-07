@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import ClientConfigForm from "@/components/factory/ClientConfigForm";
 import ActionForm from "@/components/factory/ActionForm";
 import CityLaunchBay from "@/components/factory/CityLaunchBay";
 import DomainIQBay from "@/components/factory/DomainIQBay";
@@ -79,6 +80,8 @@ export default async function FactoryHome() {
           fields={{ source: "factory_intake", label: "Operator factory intake (no PII)" }}
         />
       </div>
+
+      <ClientConfigForm />
 
       <DomainIQBay summary={domainBay} siteflowEnabled={siteflowOn} />
 

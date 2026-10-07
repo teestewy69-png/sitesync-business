@@ -119,7 +119,12 @@ export default function DomainIQPanel({
             {state?.selectedAt ? ` · ${state.selectedAt}` : ""}
           </p>
           {state?.selectionWarning ? <p className="mt-1 text-xs text-amber-100">{state.selectionWarning}</p> : null}
-          {status === "purchase_approved" ? (
+          {status === "client_owned" ? (
+            <p className="mt-1 text-xs text-emerald-200">
+              The client already owns this domain. No purchase or purchase sign-off needed; suggestions are not
+              auto-generated.
+            </p>
+          ) : status === "purchase_approved" ? (
             <p className="mt-1 text-xs text-emerald-200">
               Purchase signed off by {state?.purchaseApprovedBy} at {state?.purchaseApprovedAt}. Buy it manually at a
               registrar - nothing was purchased by Sitesinc.

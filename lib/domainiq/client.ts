@@ -16,7 +16,9 @@ export type ClientDomainStatus =
   | "missing_input"
   | "failed"
   | "selected"
-  | "purchase_approved";
+  | "purchase_approved"
+  /** The client already owns this domain: no suggestions, no purchase step. */
+  | "client_owned";
 
 export type ClientDomainCandidate = {
   domain: string;

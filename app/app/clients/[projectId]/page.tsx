@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import CaptureButton from "@/components/factory/CaptureButton";
 import CityLaunchPanel from "@/components/factory/CityLaunchPanel";
+import ClientConfigForm from "@/components/factory/ClientConfigForm";
 import DomainIQPanel from "@/components/factory/DomainIQPanel";
 import FactoryShell, { Pill } from "@/components/factory/Shell";
 import { configFromProject } from "@/lib/factory/client-config";
@@ -270,9 +271,13 @@ export default async function ClientProjectDetailPage({
       <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
         {[
           ["Business", config.businessName],
+          ["Contact", config.contactName || "-"],
           ["Email", config.email || project.email || "-"],
           ["Niche", config.niche],
           ["Type", config.businessType],
+          ["Sells", config.offer || "-"],
+          ["Pricing", config.pricingNote || "- (no prices shown)"],
+          ["Client-owned domain", project.ownedDomain || "-"],
           ["City", config.city || "-"],
           ["State", config.state || "-"],
           ["Phone", config.phone || "-"],
@@ -292,6 +297,23 @@ export default async function ClientProjectDetailPage({
           Notes: {config.notes}
         </p>
       ) : null}
+      <ClientConfigForm
+        projectId={project.id}
+        initial={{
+          businessName: config.businessName,
+          contactName: config.contactName,
+          email: config.email,
+          phone: config.phone,
+          city: config.city,
+          state: config.state,
+          businessType: project.businessType || "",
+          offer: config.offer,
+          primaryGoal: config.primaryGoal,
+          pricingNote: config.pricingNote,
+          domain: project.ownedDomain || "",
+          notes: config.notes,
+        }}
+      />
 
       <h2 className="mt-8 text-lg font-semibold">Seeded pages</h2>
       <ul className="mt-3 space-y-2 text-sm">

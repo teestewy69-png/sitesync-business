@@ -75,8 +75,16 @@ export type ClientProject = {
   stageUpdatedAt?: string;
   /** Structured client build config (optional on legacy thin projects). */
   businessName?: string;
+  /** Person to talk to (may differ from the business name). */
+  contactName?: string;
   email?: string;
   niche?: string;
+  /** What the client sells, in their words (e.g. "Original artwork and paintings"). */
+  offer?: string;
+  /** Client's own pricing note (e.g. "Available on request"). Empty = previews show no prices. */
+  pricingNote?: string;
+  /** Domain the client already owns (no DomainIQ suggestions, no purchase sign-off needed). */
+  ownedDomain?: string;
   businessType?: string;
   city?: string;
   state?: string;

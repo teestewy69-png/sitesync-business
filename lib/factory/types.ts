@@ -390,6 +390,10 @@ export type ClientWorkspaceContext = {
   email?: string;
   phone?: string;
   primaryGoal?: string;
+  contactName?: string;
+  offer?: string;
+  pricingNote?: string;
+  domain?: string;
 };
 
 export type FactoryWorkspace = {

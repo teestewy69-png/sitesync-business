@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import MiniSiteFrame from "@/components/MiniSiteFrame";
-import { DESIGN_STYLES, buildPreviewContent, type DesignStyleId } from "@/lib/design-styles";
+import { DESIGN_STYLES, type DesignStyleId } from "@/lib/design-styles";
+import { buildClientPreviewModel } from "@/lib/factory/client-preview";
 import { configFromProject } from "@/lib/factory/client-config";
 import { readClientWorkspace } from "@/lib/factory/client-workspace";
 import { readCityIndex } from "@/lib/factory/city-launch";
@@ -38,19 +38,8 @@ export default async function ClientDeliverableHome({
   const config = configFromProject(project);
   const styleId = (project.designStyleId || config.designStyleId) as DesignStyleId;
   const style = DESIGN_STYLES.find((item) => item.id === styleId) || DESIGN_STYLES[0];
-  const content = buildPreviewContent(
-    config.businessName,
-    [config.niche, config.city].filter(Boolean).join(" in ") || config.niche
-  );
-  if (config.phone) content.phone = config.phone;
-  content.footerNote = [
-    config.email || null,
-    [config.city, config.state].filter(Boolean).join(", ") || null,
-    `Template ${config.templateId}`,
-    `Design ${style.name}`,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  // Built only from the client's own details: no showcase prices, testimonials or Sitesinc branding.
+  const preview = buildClientPreviewModel(config);
 
   const workspace = await readClientWorkspace(projectId);
   const cityPages = approvedEntries(await readCityIndex(projectId).catch(() => null));
@@ -66,10 +55,7 @@ export default async function ClientDeliverableHome({
       <header className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-6 py-5">
         <div>
           <p className="text-lg font-semibold">{config.businessName}</p>
-          <p className="text-xs text-zinc-400">
-            {config.niche}
-            {config.city ? ` · ${config.city}${config.state ? `, ${config.state}` : ""}` : ""}
-          </p>
+          <p className="text-xs text-zinc-400">{preview.tagline}</p>
         </div>
         <nav className="flex flex-wrap gap-3 text-sm text-zinc-300">
           {pages.map((page) => (
@@ -93,7 +79,39 @@ export default async function ClientDeliverableHome({
         </nav>
       </header>
       <main className="mx-auto max-w-5xl space-y-8 px-6 pb-16">
-        <MiniSiteFrame style={style} content={content} />
+        <section
+          className="overflow-hidden rounded-3xl border border-white/10 bg-black/40"
+          style={{ boxShadow: `0 0 0 1px ${style.accent}22` }}
+        >
+          <div className="px-6 py-12 sm:px-10" style={{ background: `linear-gradient(135deg, ${style.accent}26, transparent 60%)` }}>
+            <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">{preview.businessName}</h1>
+            {preview.tagline ? <p className="mt-3 max-w-2xl text-base text-zinc-300">{preview.tagline}</p> : null}
+            {preview.cta ? (
+              <a
+                href={preview.cta.href}
+                className="mt-6 inline-flex rounded-xl px-5 py-2.5 text-sm font-semibold text-zinc-950"
+                style={{ backgroundColor: style.accent }}
+              >
+                {preview.cta.label}
+              </a>
+            ) : null}
+          </div>
+          <div className="grid gap-4 border-t border-white/10 p-6 sm:grid-cols-2 sm:p-8">
+            {preview.sections.map((section) => (
+              <div key={section.slug} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                <h2 className="text-sm font-semibold text-white">{section.title}</h2>
+                <p className={`mt-2 text-sm ${section.placeholder ? "italic text-amber-200/80" : "text-zinc-300"}`}>
+                  {section.text}
+                </p>
+              </div>
+            ))}
+          </div>
+          <footer className="border-t border-white/10 px-6 py-4 text-xs text-zinc-400 sm:px-8">
+            {preview.contactLines.join(" · ")}
+            {preview.pricingNote ? ` · Pricing: ${preview.pricingNote}` : ""}
+            {` · Template ${config.templateId} · Design ${style.name}`}
+          </footer>
+        </section>
         {cityPages.length ? (
           <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm text-zinc-300">
             <h2 className="text-base font-semibold text-white">

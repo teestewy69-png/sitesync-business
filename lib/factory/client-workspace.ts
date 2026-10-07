@@ -14,6 +14,7 @@ import {
   resolveAutomationHostOrigin,
 } from "./client-automation";
 import {
+  clientBriefHeadings,
   createClientFactoryProject,
   seedClientBlueprint,
   seedClientBriefs,
@@ -22,7 +23,7 @@ import {
   seedClientResearchNotes,
   seedClientStages,
 } from "./client-pipeline";
-import type { ContentBrief, FactoryPage, FactoryWorkspace, VisibleGap } from "./types";
+import type { ContentBrief, FactoryPage, FactoryWorkspace, PageStatus, StageKey, VisibleGap } from "./types";
 
 const SAFE_PROJECT_ID = /^[a-z0-9_-]{1,80}$/i;
 const MAX_UPDATE_ATTEMPTS = 30;
@@ -76,7 +77,7 @@ function seedClientGaps(config: ClientBuildConfig): VisibleGap[] {
       area: "Assets",
       owner: "operator",
       status: "open",
-      detail: `Collect real photos / logo for ${config.businessName}. Preview may use placeholder trust copy until then.`,
+      detail: `Collect real photos / logo for ${config.businessName}. Previews show no placeholder reviews, testimonials or prices.`,
     },
   ];
 }
@@ -104,7 +105,11 @@ export function autoSeedClientDraftPages(
         wordCountGuidance: { min: 400, max: 900, note: "Guidance only." },
         headings: page.headings.length
           ? page.headings
-          : [`What ${config.businessName} offers`, "Local context", "How to get started"],
+          : clientBriefHeadings(
+              config,
+              page.slug,
+              [config.city, config.state].filter(Boolean).join(", ") || "the service area"
+            ),
         recurringTopics: [config.businessName, config.niche].filter(Boolean),
         gaps: [],
         outline: [],
@@ -264,6 +269,10 @@ export function seedClientWorkspace(
       email: config.email,
       phone: config.phone,
       primaryGoal: config.primaryGoal,
+      contactName: config.contactName,
+      offer: config.offer,
+      pricingNote: config.pricingNote,
+      domain: config.domain,
     },
     clientAutomation: {
       baseline: baselineAuto,
@@ -398,3 +407,101 @@ export async function setClientBriefCompetitors(
   });
 }
 
+
+/** Pages an operator has signed off or shipped. A config refresh never rewrites these. */
+const PROTECTED_PAGE_STATUSES: PageStatus[] = ["approved", "staged", "published", "rolled_back"];
+/** Seed-derived stages a config refresh may re-seed (unless an operator approved them). */
+const RESEEDABLE_STAGES: StageKey[] = ["research", "blueprint", "content_briefs", "content_drafting"];
+
+export type ClientWorkspaceRefresh = {
+  workspace: FactoryWorkspace;
+  /** Slugs whose templated draft was rebuilt from the new config. */
+  refreshed: string[];
+  /** Slugs kept as-is because an operator approved / staged / published them. */
+  kept: string[];
+};
+
+/**
+ * Rebuild the seed-derived parts of an existing client workspace from the current client config
+ * (name, location, offer, contact, pricing note, template). Keeps baselines, automation state,
+ * study, deployments, competitor URLs, approved briefs and approved / shipped pages untouched.
+ * Returns null when the client has no workspace yet (call initClientWorkspace instead).
+ */
+export async function refreshClientWorkspace(
+  projectId: string,
+  config: ClientBuildConfig,
+  opts?: { hostOrigin?: string | null }
+): Promise<ClientWorkspaceRefresh | null> {
+  if (!(await readClientWorkspace(projectId))) return null;
+  let refreshed: string[] = [];
+  let kept: string[] = [];
+  const workspace = await updateClientWorkspace(projectId, (current) => {
+    const fresh = seedClientWorkspace(projectId, config, {
+      hostOrigin: opts?.hostOrigin || current.clientAutomation?.baseline?.hostOrigin || null,
+    });
+
+    const briefs: ContentBrief[] = fresh.briefs.map((brief) => {
+      const old = current.briefs.find((item) => item.slug === brief.slug);
+      if (!old) return brief;
+      if (old.status === "approved") return old;
+      return { ...brief, competitorUrls: old.competitorUrls || [], notes: old.notes || brief.notes };
+    });
+    const { pages: seededPages } = autoSeedClientDraftPages(
+      seedClientPages(briefs, fresh.blueprint),
+      briefs,
+      config
+    );
+
+    const isProtected = (page: FactoryPage) =>
+      PROTECTED_PAGE_STATUSES.includes(page.status) || Boolean(page.approvedBy);
+    refreshed = [];
+    kept = [];
+    const pages = seededPages.map((page) => {
+      const old = current.pages.find((item) => item.slug === page.slug);
+      if (old && isProtected(old)) {
+        kept.push(old.slug);
+        return old;
+      }
+      refreshed.push(page.slug);
+      return page;
+    });
+    // Template change: keep any shipped/approved page that the new template no longer lists.
+    for (const old of current.pages) {
+      if (isProtected(old) && !pages.some((page) => page.slug === old.slug)) {
+        kept.push(old.slug);
+        pages.push(old);
+      }
+    }
+
+    const stages = current.stages.map((stage) => {
+      if (!RESEEDABLE_STAGES.includes(stage.key)) return stage;
+      if (stage.operatorApproval && stage.approvedBy) return stage;
+      return fresh.stages.find((item) => item.key === stage.key) || stage;
+    });
+
+    const now = new Date().toISOString();
+    return {
+      ...current,
+      project: { ...fresh.project, createdAt: current.project.createdAt },
+      stages,
+      clusters: fresh.clusters,
+      blueprint: fresh.blueprint,
+      briefs,
+      pages,
+      indexing: fresh.indexing.map(
+        (row) => current.indexing.find((item) => item.path === row.path) || row
+      ),
+      visibleGaps: fresh.visibleGaps.map(
+        (gap) => current.visibleGaps.find((item) => item.id === gap.id && item.status === "done") || gap
+      ),
+      clientContext: fresh.clientContext,
+      clientAutomation: {
+        ...(current.clientAutomation || fresh.clientAutomation!),
+        drafts: { seeded: true, seededAt: now, pageCount: countDraftedPages(pages) },
+        competitors: competitorAutomationStatus(briefs),
+        stagesAutoAppliedAt: now,
+      },
+    };
+  });
+  return { workspace, refreshed, kept };
+}

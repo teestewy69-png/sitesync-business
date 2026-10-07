@@ -106,6 +106,9 @@ export async function generateDomainCandidatesForProject(
   if (!opts.force && project.domainCandidates?.length) {
     return { ok: true, skipped: "Candidates already exist (pass force to regenerate).", project };
   }
+  if (!opts.force && project.domainStatus === "client_owned") {
+    return { ok: true, skipped: `Client already owns ${project.selectedDomain || project.ownedDomain}; no suggestions needed.`, project };
+  }
 
   const seed = clientDomainSeedFromProject(project);
   const state = baseState(project);
@@ -304,6 +307,7 @@ export async function clearProjectDomainSelection(projectId: string): Promise<Do
   if (!project) return { ok: false, error: "Client project not found." };
   const updated = await updateProject(projectId, {
     selectedDomain: undefined,
+    ownedDomain: undefined,
     domainStatus: project.domainCandidates?.length ? "candidates_ready" : "pending",
     domainIQ: {
       ...baseState(project),
@@ -342,10 +346,45 @@ export function queueAutoDomainCandidates(projectId: string): void {
   });
 }
 
+/**
+ * Record a domain the client already owns: it becomes the selected domain with status client_owned,
+ * no purchase sign-off is needed, and automatic DomainIQ suggestions are skipped.
+ * Never touches DNS, Netlify or a registrar.
+ */
+export async function recordClientOwnedDomain(
+  projectId: string,
+  domain: string,
+  actor: string
+): Promise<DomainRunResult> {
+  const project = await findProjectById(projectId);
+  if (!project) return { ok: false, error: "Client project not found." };
+  let normalized: string;
+  try {
+    normalized = normalizeFullName(domain).replace(/^www\./, "");
+  } catch {
+    return { ok: false, error: `Not a valid domain: ${domain}` };
+  }
+  const updated = await updateProject(projectId, {
+    ownedDomain: normalized,
+    selectedDomain: normalized,
+    domainStatus: "client_owned",
+    domainIQ: {
+      ...baseState(project),
+      reason: `Client already owns ${normalized}. Domain suggestions are not auto-generated (Generate still works if you want ideas).`,
+      selectedBy: actor || "client intake",
+      selectedAt: nowIso(),
+      selectionWarning: undefined,
+      purchaseApprovedBy: undefined,
+      purchaseApprovedAt: undefined,
+    },
+  });
+  return { ok: true, project: updated };
+}
+
 /** Mark pending synchronously so the operator page shows the queued state honestly. */
 export async function markDomainCandidatesPending(projectId: string): Promise<void> {
   const project = await findProjectById(projectId);
-  if (!project || project.domainCandidates?.length || project.selectedDomain) return;
+  if (!project || project.domainCandidates?.length || project.selectedDomain || project.ownedDomain) return;
   await updateProject(projectId, {
     domainStatus: "pending",
     domainIQ: { ...baseState(project), reason: "Queued for automatic DomainIQ generation." },
@@ -402,7 +441,7 @@ export function summarizeDomainBay(projects: ClientProject[]): DomainBaySummary 
     clients: projects.length,
     withCandidates: projects.filter((p) => p.domainCandidates?.length).length,
     pending: count("pending") + projects.filter((p) => !p.domainStatus).length,
-    selected: count("selected"),
+    selected: count("selected") + count("client_owned"),
     purchaseApproved: count("purchase_approved"),
     needsInput: count("missing_input"),
     failed: count("failed"),

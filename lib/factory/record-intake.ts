@@ -4,6 +4,7 @@ import { applyConfigToProject, buildClientConfig } from "./client-config";
 import type { IntakeConfigInput } from "./client-config";
 import { initClientWorkspace } from "./client-workspace";
 import { queueAutoClientBaseline } from "./client-automation";
+import { DOMAINIQ_ENGINE_VERSION } from "@/lib/domainiq";
 import { queueAutoDomainCandidates } from "./domainiq";
 import type { IntakeProject } from "./types";
 import { updateExistingWorkspace } from "./workspace";
@@ -58,8 +59,23 @@ export async function recordIntakeProject(
   };
   const stored = await appendProject({
     ...applyConfigToProject(base, config),
-    // DomainIQ candidates are generated right after the response (see below).
-    domainStatus: "pending",
+    ...(config.domain
+      ? {
+          // The client already owns a domain: record it, skip DomainIQ suggestions and the purchase step.
+          ownedDomain: config.domain,
+          selectedDomain: config.domain,
+          domainStatus: "client_owned" as const,
+          domainIQ: {
+            engine: DOMAINIQ_ENGINE_VERSION,
+            mode: "in-process" as const,
+            purchase: "manual" as const,
+            reason: `Client already owns ${config.domain}. Domain suggestions are not auto-generated (Generate still works if you want ideas).`,
+            selectedBy: "client intake",
+            selectedAt: nowIso(),
+          },
+        }
+      : // DomainIQ candidates are generated right after the response (see below).
+        { domainStatus: "pending" as const }),
   });
 
   try {
@@ -74,7 +90,8 @@ export async function recordIntakeProject(
     console.error("Client factory workspace init FAILED (CRM project is saved):", err);
   }
   // Domain candidates only need the CRM project fields, so queue them even if workspace init failed.
-  queueAutoDomainCandidates(stored.id);
+  // Skipped when the client already owns a domain.
+  if (!config.domain) queueAutoDomainCandidates(stored.id);
 
   const project: IntakeProject = {
     id: stored.id,
