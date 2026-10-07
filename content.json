@@ -103,6 +103,45 @@
       }
     }
   },
+  "outcomes": {
+    "title": "What your finished website does for you",
+    "subtitle": "Once your site is launched on your domain, here is what it is set up to do. No ranking or lead guarantees, just a solid site built to be found and easy to contact.",
+    "items": [
+      {
+        "title": "Looks right and loads fast on phones",
+        "text": "A custom site built for your business, designed mobile-first so customers can read it and reach you from any phone."
+      },
+      {
+        "title": "Ready for Google from day one",
+        "text": "Search-friendly page titles and descriptions, a sitemap, Google Search Console verification, and Google Analytics (GA4) so you can see your visits."
+      },
+      {
+        "title": "Sends inquiries straight to you",
+        "text": "A contact form that emails each new inquiry to you, so leads don't sit in an inbox you never check."
+      },
+      {
+        "title": "Pages for the areas you serve",
+        "text": "Local service-area pages for the cities you work in, written for your business and checked so each one is unique."
+      },
+      {
+        "title": "A starting SEO report at launch",
+        "text": "A baseline SEO check of your site at launch, so you know where it stands and what to work on next."
+      },
+      {
+        "title": "Optional $129/mo monitoring",
+        "text": "If you want it: uptime and SEO monitoring, technical updates and security, basic fixes, and 2-3 small text or image updates each month. Cancel anytime."
+      }
+    ],
+    "comingSoon": {
+      "title": "Coming soon",
+      "note": "Not available yet. We'll share details when they're ready.",
+      "items": [
+        "Posting to your social media",
+        "A 500-city local SEO campaign",
+        "Ways to monetize your site"
+      ]
+    }
+  },
   "onboarding": {
     "title": "What we need from you to start",
     "items": [

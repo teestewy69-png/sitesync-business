@@ -1,6 +1,7 @@
 import dynamic from "next/dynamic";
 import Hero from "@/components/Hero";
 import Pricing from "@/components/Pricing";
+import Outcomes from "@/components/Outcomes";
 import Process from "@/components/Process";
 import About from "@/components/About";
 import ContentEngine from "@/components/ContentEngine";
@@ -45,6 +46,7 @@ export default function Home() {
       <DesignShowcase />
       <PickYourDesign />
       <Pricing />
+      <Outcomes />
       <Process />
       <About />
       <ContentEngine />
