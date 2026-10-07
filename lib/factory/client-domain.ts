@@ -8,7 +8,7 @@
  * Lookup: the host index written at sign-off (factory/client-domains/<host>), then a cached scan of projects as a
  * fallback (covers sign-offs recorded before the index existed). Results are re-verified on every request.
  */
-import { domainHosts, normalizeDomain, normalizeHost, sameClientDomain } from "@/lib/client-domain/host";
+import { domainHosts, isLocalDevHost, isPublicHostname, isSitesincHost, normalizeDomain, normalizeHost, sameClientDomain } from "@/lib/client-domain/host";
 import type { CityLaunchIndex } from "@/lib/city-launch/job";
 import { readDoc, writeDoc } from "@/lib/persistence";
 import { findProjectById, listProjects, type ClientProject } from "@/lib/store";
@@ -17,6 +17,22 @@ import { readCityIndex } from "./city-launch";
 type DomainDoc = { projectId: string; domain: string; recordedAt: string };
 
 const domainKey = (host: string) => `factory/client-domains/${host}`;
+
+/**
+ * Public Host the client-domain pages should treat as the client domain.
+ * Prefer the middleware-stamped Host (survives local rewrites where nextUrl.host becomes localhost).
+ * Returns "" when only a local/Sitesinc Host is present — callers then trust the routed [host] param
+ * (middleware already 404s direct /client-domain/* on Sitesinc hosts).
+ */
+function requestClientHost(headerHost: string | null | undefined, stampedHost?: string | null): string {
+  const stamped = normalizeHost(stampedHost);
+  if (stamped && isPublicHostname(stamped) && !isSitesincHost(stamped, process.env)) return stamped;
+  const actual = normalizeHost(headerHost);
+  if (actual && isPublicHostname(actual) && !isSitesincHost(actual, process.env)) return actual;
+  return "";
+}
+
+
 
 export type ResolvedClientDomain = {
   project: ClientProject;
@@ -83,9 +99,14 @@ export async function requireClientSite(hostParam: string, path: string): Promis
   // Lazy next/* imports: city-launch (shared with the background function) imports this module.
   const [{ headers }, { notFound, permanentRedirect }] = await Promise.all([import("next/headers"), import("next/navigation")]);
   const h = await headers();
-  const actual = normalizeHost(h.get("host") || h.get("x-forwarded-host"));
+  const hHost = h.get("host") || h.get("x-forwarded-host");
+  const actual = requestClientHost(hHost, h.get("x-sitesinc-client-host"));
   const routed = normalizeHost(decodeURIComponent(hostParam));
-  if (!actual || actual !== routed) return notFound();
+  // Production: public Host must be this client domain (apex/www). Local Host-header tests: after a
+  // cross-host rewrite follow-up, Host is localhost — trust the routed param only on local-dev hosts.
+  if (!routed) return notFound();
+  if (actual && !sameClientDomain(actual, routed)) return notFound();
+  if (!actual && !isLocalDevHost(hHost)) return notFound();
   const site = await resolveClientDomain(routed);
   if (!site) return notFound();
   if (routed !== site.domain) return permanentRedirect(`https://${site.domain}${path}`);
@@ -145,11 +166,14 @@ ${urls.map((u) => `  <url><loc>${esc(u.loc)}</loc>${u.lastmod ? `<lastmod>${u.la
 /** Route handlers (sitemap/robots) cannot use notFound(): same checks as requireClientSite, as a result. */
 export async function resolveClientRequest(
   hostParam: string,
-  headerHost: string | null
+  headerHost: string | null,
+  stampedHost?: string | null
 ): Promise<{ kind: "ok"; site: ClientSite } | { kind: "redirect"; to: string } | { kind: "not_found" }> {
-  const actual = normalizeHost(headerHost);
+  const actual = requestClientHost(headerHost, stampedHost);
   const routed = normalizeHost(decodeURIComponent(hostParam));
-  if (!actual || actual !== routed) return { kind: "not_found" };
+  if (!routed) return { kind: "not_found" };
+  if (actual && !sameClientDomain(actual, routed)) return { kind: "not_found" };
+  if (!actual && !isLocalDevHost(headerHost)) return { kind: "not_found" };
   const site = await resolveClientDomain(routed);
   if (!site) return { kind: "not_found" };
   if (routed !== site.domain) return { kind: "redirect", to: `https://${site.domain}` };

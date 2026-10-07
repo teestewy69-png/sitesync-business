@@ -55,6 +55,16 @@ export function isIpHost(host: string): boolean {
   return /^\d{1,3}(\.\d{1,3}){3}$/.test(host) || host.startsWith("[") || host.includes(":");
 }
 
+/** Local-only hosts used when developing with Host-header overrides (never production Sitesinc hosts). */
+export function isLocalDevHost(rawHost: string | null | undefined): boolean {
+  const host = normalizeHost(rawHost);
+  if (!host) return true;
+  if (isIpHost(host)) return true;
+  if (host === "localhost" || host.endsWith(".localhost")) return true;
+  return false;
+}
+
+
 /** example.com <-> www.example.com: the two hosts a client domain is served on. */
 export function apexOf(host: string): string {
   return host.startsWith("www.") ? host.slice(4) : host;

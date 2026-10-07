@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { FACTORY_COOKIE, isPublicFactoryPath, isValidSession } from "@/lib/factory/auth";
-import { CLIENT_DOMAIN_PREFIX, clientDomainRoute, isSitesincHost } from "@/lib/client-domain/host";
+import { CLIENT_DOMAIN_PREFIX, clientDomainRoute, isLocalDevHost, isSitesincHost } from "@/lib/client-domain/host";
 import { isSiteflowPath, siteflowEnabled } from "@/lib/siteflow/flag";
 import { shouldCaptureRef, stripRefParam } from "@/lib/siteflow/ref";
 
@@ -36,7 +36,12 @@ export function isRemovedShopPath(pathname: string): boolean {
 }
 
 function isFactoryPath(pathname: string) {
-  return pathname === "/app" || pathname.startsWith("/app/") || pathname.startsWith("/api/factory/");
+  return (
+    pathname === "/app" ||
+    pathname.startsWith("/app/") ||
+    pathname === "/api/factory" ||
+    pathname.startsWith("/api/factory/")
+  );
 }
 
 export async function middleware(req: NextRequest) {
@@ -57,11 +62,22 @@ export async function middleware(req: NextRequest) {
     if (route.kind === "not_found") return notFound();
     const url = req.nextUrl.clone();
     url.pathname = route.pathname;
-    return NextResponse.rewrite(url);
+    // Preserve the public Host across the rewrite. Locally nextUrl.host is often localhost /
+    // 127.0.0.1 while the browser/curl Host is the client domain; without this header the
+    // /client-domain pages see Host=localhost and 404 (requireClientSite requires a match).
+    const headers = new Headers(req.headers);
+    headers.set("x-sitesinc-client-host", host);
+    return NextResponse.rewrite(url, { request: { headers } });
   }
 
-  // Sitesinc hosts: the internal client-domain routes are never reachable directly.
-  if (pathname === CLIENT_DOMAIN_PREFIX || pathname.startsWith(`${CLIENT_DOMAIN_PREFIX}/`)) return notFound();
+  // Sitesinc hosts: the internal client-domain routes are never reachable on real Sitesinc
+  // hosts (sitesinc.co, Netlify). On local-dev hosts they must pass through: a Host-header
+  // test rewrites to http://localhost/client-domain/... which Next may fetch as a same-box
+  // follow-up with Host=localhost — blocking that follow-up 404s every client-domain request.
+  if (pathname === CLIENT_DOMAIN_PREFIX || pathname.startsWith(`${CLIENT_DOMAIN_PREFIX}/`)) {
+    if (!isLocalDevHost(host)) return notFound();
+    return NextResponse.next();
+  }
 
   // Removed shop: /shop and /shop/* (old product pages, "Other inquiries") permanently redirect to the homepage.
   if (isRemovedShopPath(pathname)) {

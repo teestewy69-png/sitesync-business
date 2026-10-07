@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest, { params }: { params: Promise<{ host: string }> }) {
   ensureBlobsFromRequest(req);
   const { host } = await params;
-  const r = await resolveClientRequest(host, req.headers.get("host") || req.headers.get("x-forwarded-host"));
+  const r = await resolveClientRequest(host, req.headers.get("host") || req.headers.get("x-forwarded-host"), req.headers.get("x-sitesinc-client-host"));
   if (r.kind === "not_found") return new Response("Not found", { status: 404 });
   if (r.kind === "redirect") return Response.redirect(`${r.to}/robots.txt`, 308);
   const body = `User-agent: *\nAllow: /\n\nSitemap: ${r.site.origin}/sitemap.xml\n`;

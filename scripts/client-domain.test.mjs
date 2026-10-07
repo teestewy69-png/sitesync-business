@@ -96,11 +96,19 @@ test("middleware: client host rewrites, Sitesinc host unchanged", async () => {
   assert.match(res.headers.get("location"), /\/app\/login\?next=%2Fapp%2Fclients$/);
   res = await run("https://sitesinc.co/api/factory/city-launch");
   assert.equal(res.status, 401);
+  res = await run("https://sitesinc.co/api/factory");
+  assert.equal(res.status, 401, "bare /api/factory must also require auth");
   res = await run("https://sitesinc.co/app/login");
   assert.equal(res.headers.get("x-middleware-next"), "1");
-  // the internal prefix is not reachable directly on Sitesinc hosts
+  // the internal prefix is not reachable directly on real Sitesinc hosts
   res = await run("https://sitesinc.co/client-domain/desertflow.com/locations");
   assert.equal(res.status, 404);
+  res = await run("https://deploy-preview-3--sitesinc.netlify.app/client-domain/desertflow.com");
+  assert.equal(res.status, 404);
+  // local-dev follow-up after a Host-header rewrite must reach the page (not middleware 404)
+  res = await run("http://localhost:3000/client-domain/desertflow.com/locations");
+  assert.equal(res.headers.get("x-middleware-next"), "1");
+  assert.equal(res.status, 200); // next() — page decides the real status
   // kill switch
   process.env.CLIENT_DOMAIN_ROUTING = "off";
   res = await run("https://desertflow.com/locations");
@@ -136,4 +144,12 @@ test("the client domain publishes only approved, non-seed pages; sitemap matches
   assert.deepEqual(urls.map((u) => u.loc), ["https://desertflow.com/", "https://desertflow.com/contact", "https://desertflow.com/locations", "https://desertflow.com/locations/mesa-az"]);
   assert.equal(domain.clientSitemapUrls("https://desertflow.com", [], []).length, 1, "no locations entry without approved city pages");
   assert.match(domain.sitemapXml(urls), /<lastmod>2026-10-05<\/lastmod>/);
+});
+
+
+test("client Host matching allows www/apex pair (used after rewrite)", () => {
+  assert.ok(host.sameClientDomain("drainphoenix.com", "www.drainphoenix.com"));
+  assert.ok(host.sameClientDomain("www.drainphoenix.com", "drainphoenix.com"));
+  assert.ok(!host.sameClientDomain("drainphoenix.com", "localhost"));
+  assert.ok(!host.sameClientDomain("drainphoenix.com", "other.com"));
 });
