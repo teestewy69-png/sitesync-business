@@ -27,6 +27,19 @@ export default function Outcomes() {
             </div>
           ))}
         </div>
+        <div className="mt-8 rounded-2xl border border-dashed border-white/15 bg-white/[0.03] p-5">
+          <span className="inline-flex items-center rounded-full bg-black/40 px-3 py-1 text-xs uppercase tracking-wider text-brand-300">
+            {outcomes.comingSoon.title}
+          </span>
+          <ul className="mt-4 grid gap-3 sm:grid-cols-3">
+            {outcomes.comingSoon.items.map((item) => (
+              <li key={item} className="text-base text-slate-300">
+                {item}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-4 text-sm text-slate-400">{outcomes.comingSoon.note}</p>
+        </div>
       </div>
     </section>
   );
