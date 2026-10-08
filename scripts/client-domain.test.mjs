@@ -153,3 +153,12 @@ test("client Host matching allows www/apex pair (used after rewrite)", () => {
   assert.ok(!host.sameClientDomain("drainphoenix.com", "localhost"));
   assert.ok(!host.sameClientDomain("drainphoenix.com", "other.com"));
 });
+
+test("preview nav prefixes client page paths so Contact stays off Sitesinc /contact", async () => {
+  const { previewLinks, productionLinks, clientPageHref } = await import("../lib/factory/city-launch-public.ts");
+  const preview = previewLinks("proj_muzp5ru1dpygbw", { contactPath: "/demo/client/proj_muzp5ru1dpygbw/contact" }, "http://localhost:3000");
+  assert.equal(clientPageHref(preview, "/contact"), "/demo/client/proj_muzp5ru1dpygbw/contact");
+  assert.equal(clientPageHref(preview, "/"), "/demo/client/proj_muzp5ru1dpygbw");
+  const live = productionLinks("kurtisart.com", { contactPath: "/contact" });
+  assert.equal(clientPageHref(live, "/contact"), "/contact");
+});
