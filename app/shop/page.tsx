@@ -18,8 +18,9 @@ export default function ShopPage() {
           Featured Products
         </h1>
         <p className="text-sm text-slate-400 sm:text-base">
-          Digital kits, affiliate bundles, and contact-only services. Browse
-          the catalog, open a product, or add purchasable items to your cart.
+          The Website Design Digital Product Bundle — website design,
+          performance, SEO, and online business foundations. Open the product
+          or add it to your cart.
         </p>
       </div>
 

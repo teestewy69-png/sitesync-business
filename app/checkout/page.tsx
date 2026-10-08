@@ -5,8 +5,7 @@ export default function CheckoutPage() {
         Checkout
       </h1>
       <p className="mt-3 text-sm text-slate-300">
-        Sample checkout page for product sales, affiliate-ready offers, and
-        digital product transactions.
+        Sample checkout for the Website Design Digital Product Bundle.
       </p>
       <div className="mt-10 grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
         <div className="space-y-5 rounded-3xl border border-white/10 bg-white/5 p-6">
@@ -80,13 +79,9 @@ export default function CheckoutPage() {
               <span>Website Design Digital Product Bundle</span>
               <span>$24.99</span>
             </div>
-            <div className="flex justify-between">
-              <span>Mack Makeup Bundle</span>
-              <span>$75.00</span>
-            </div>
             <div className="flex justify-between border-t border-white/10 pt-3 font-semibold text-slate-50">
               <span>Total</span>
-              <span>$99.99</span>
+              <span>$24.99</span>
             </div>
           </div>
           <button
