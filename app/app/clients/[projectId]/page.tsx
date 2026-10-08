@@ -9,6 +9,8 @@ import ClientContentPanel from "@/components/factory/ClientContentPanel";
 import { pricingAllowsListedPrices } from "@/lib/factory/client-content";
 import DomainIQPanel from "@/components/factory/DomainIQPanel";
 import FactoryShell, { Pill } from "@/components/factory/Shell";
+import LeadStageSelect from "@/components/factory/LeadStageSelect";
+import { stageLabel, stageOf } from "@/lib/lead-stage";
 import { configFromProject } from "@/lib/factory/client-config";
 import { getClientTemplate, plannedPagePurpose } from "@/lib/factory/client-templates";
 import { readClientWorkspace } from "@/lib/factory/client-workspace";
@@ -67,7 +69,19 @@ export default async function ClientProjectDetailPage({
         client.
       </p>
 
+      {stageOf(project) === "done" ? (
+        <p className="mt-6 rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-100">
+          This client build is done. The preview stays on /demo/client/{projectId}. That is not a live publish
+          to {project.selectedDomain || "the client domain"}.
+        </p>
+      ) : null}
+
+      <div className="mt-6">
+        <LeadStageSelect id={project.id} stage={stageOf(project)} who={config.businessName} />
+      </div>
+
       <div className="mt-6 flex flex-wrap gap-2">
+        <Pill tone={stageOf(project) === "done" ? "ok" : "muted"}>{stageLabel(stageOf(project))}</Pill>
         <Pill tone="ok">template {template.id}</Pill>
         <Pill>design {style.id}</Pill>
         <Pill tone={workspace ? "ok" : "warn"}>

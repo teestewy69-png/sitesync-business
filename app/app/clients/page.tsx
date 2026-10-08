@@ -1,6 +1,8 @@
 import { headers } from "next/headers";
 import Link from "next/link";
 import FactoryShell, { Pill } from "@/components/factory/Shell";
+import LeadStageSelect from "@/components/factory/LeadStageSelect";
+import { stageLabel, stageOf } from "@/lib/lead-stage";
 import { ensureBlobsFromRequest, listProjects } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
@@ -35,12 +37,16 @@ export default async function SiteGrowClientsPage() {
                     {item.email ? ` · ${item.email}` : ""}
                   </p>
                   <div className="mt-2 flex flex-wrap gap-2">
+                    <Pill tone={stageOf(item) === "done" ? "ok" : stageOf(item) === "closed" ? "muted" : "warn"}>
+                      {stageLabel(stageOf(item))}
+                    </Pill>
                     <Pill>{item.templateId || "no template"}</Pill>
                     <Pill>{item.designStyleId || "no design"}</Pill>
                     <Pill tone={item.factoryWorkspaceId ? "ok" : "warn"}>
                       {item.factoryWorkspaceId ? "workspace" : "no workspace"}
                     </Pill>
                   </div>
+                  <LeadStageSelect id={item.id} stage={stageOf(item)} who={item.businessName || item.label} />
                 </div>
                 <span className="flex flex-wrap gap-3 text-sm">
                   <Link href={`/app/clients/${item.id}`} className="text-brand-300 hover:underline">
