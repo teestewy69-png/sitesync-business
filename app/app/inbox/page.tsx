@@ -51,6 +51,11 @@ export default async function InboxPage() {
                 {lead.details ? ` · details saved` : ""}
                 {lead.env === "staging" ? " · env staging" : ""} · {lead.createdAt}
               </span>
+              {lead.projectId ? (
+                <a className="mt-2 inline-block text-xs text-brand-300 hover:underline" href={`/app/clients/${lead.projectId}`}>
+                  Open in SiteGrow
+                </a>
+              ) : null}
               <LeadStageSelect id={lead.id} stage={stageOf(lead)} who={lead.name} />
             </li>
           ))

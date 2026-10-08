@@ -3,6 +3,7 @@ import ClientConfigForm from "@/components/factory/ClientConfigForm";
 import ActionForm from "@/components/factory/ActionForm";
 import CityLaunchBay from "@/components/factory/CityLaunchBay";
 import DomainIQBay from "@/components/factory/DomainIQBay";
+import SiteGrowBay from "@/components/factory/SiteGrowBay";
 import SiteFlowBay from "@/components/factory/SiteFlowBay";
 import CaptureButton from "@/components/factory/CaptureButton";
 import FactoryShell, { Pill } from "@/components/factory/Shell";
@@ -82,6 +83,8 @@ export default async function FactoryHome() {
       </div>
 
       <ClientConfigForm />
+
+      <SiteGrowBay projects={clientProjects} />
 
       <DomainIQBay summary={domainBay} siteflowEnabled={siteflowOn} />
 

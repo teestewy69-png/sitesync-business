@@ -8,11 +8,12 @@ export default function CityLaunchBay({ summary }: { summary: CityLaunchBaySumma
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-brand-300">Factory bay</p>
-          <h2 className="text-xl font-semibold">City Launch</h2>
+          <h2 className="text-xl font-semibold">ScaleQuan · City Launch</h2>
           <p className="mt-1 max-w-3xl text-sm text-slate-400">
-            Up to 500 animated city landing pages per client per batch. Real cities ({dataset.count.toLocaleString()} U.S. places,
-            Census {dataset.populationYear} population + Gazetteer coordinates), LLM-written per city, blocked by the uniqueness gate
-            if near-duplicate, human-approved, then live on the client preview automatically. Real-domain publish = Tony&apos;s sign-off + manual production deploy.
+            ScaleQuan Content Studio, in this workshop. Up to 500 animated city landing pages per client per batch.
+            Real cities ({dataset.count.toLocaleString()} U.S. places, Census {dataset.populationYear} population + Gazetteer
+            coordinates), LLM-written per city, blocked by the uniqueness gate if near-duplicate, human-approved, then live
+            on the client preview automatically. Real-domain publish = Tony&apos;s sign-off + manual production deploy.
           </p>
         </div>
         <div className="text-right text-xs">

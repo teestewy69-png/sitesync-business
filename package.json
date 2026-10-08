@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "node --test --test-reporter=spec scripts/backlink-actions.test.mjs scripts/baseline-pick.test.mjs scripts/city-launch-background.test.mjs scripts/city-launch.test.mjs scripts/client-automation.test.mjs scripts/client-baseline.test.mjs scripts/client-content.test.mjs scripts/client-domain.test.mjs scripts/client-intake.test.mjs scripts/domainiq.test.mjs scripts/migrate-factory-state.test.mjs scripts/offer-copy.test.mjs scripts/revisioned-docs.test.mjs scripts/siteflow.test.mjs scripts/workshop-bays.test.mjs"
   },
   "dependencies": {
     "@netlify/blobs": "^11.1.0",

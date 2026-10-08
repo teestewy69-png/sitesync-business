@@ -2,6 +2,9 @@ import Link from "next/link";
 
 const NAV = [
   { href: "/app", label: "Pipeline" },
+  { href: "/app/clients", label: "SiteGrow" },
+  { href: "/app#domainiq-bay", label: "DomainIQ" },
+  { href: "/app#city-launch-bay", label: "ScaleQuan" },
   { href: "/app/baseline", label: "Baseline" },
   { href: "/app/content", label: "Briefs & drafts" },
   { href: "/app/staging", label: "Staging" },

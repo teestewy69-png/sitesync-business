@@ -326,7 +326,7 @@ export default function CityLaunchPanel({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-brand-300">Factory bay</p>
-          <h2 className="text-lg font-semibold">City Launch · animated city landing pages</h2>
+          <h2 className="text-lg font-semibold">ScaleQuan · City Launch · animated city landing pages</h2>
           <p className="mt-1 max-w-3xl text-sm text-slate-400">
             Pick real U.S. cities (Census data), queue up to 500 per batch, and the factory writes a unique, locally grounded
             landing page for each with an LLM (rate-limited, retried, resumable). Every page must pass the quality gate
