@@ -79,10 +79,11 @@ export function clientDomainSeedFromProject(project: ClientProject) {
     config = null;
   }
   return {
-    businessName: project.businessName || config?.businessName || project.label || "",
-    niche: project.niche || config?.niche || "",
-    city: project.city || config?.city || "",
-    state: project.state || config?.state || "",
+    // Current client config first (normalized, never the raw intake label when a real name exists).
+    businessName: config?.businessName || project.businessName || project.label || "",
+    niche: config?.niche || project.niche || "",
+    city: config?.city || project.city || "",
+    state: config?.state || project.state || "",
   };
 }
 

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { plannedPagePurpose } from "@/lib/factory/client-templates";
 import { notFound } from "next/navigation";
 import { DESIGN_STYLES, type DesignStyleId } from "@/lib/design-styles";
 import { buildClientPreviewModel } from "@/lib/factory/client-preview";
@@ -151,7 +152,7 @@ export default async function ClientDeliverableHome({
                     >
                       {page.path}
                     </Link>{" "}
-                    — {page.purpose}
+                    — {plannedPagePurpose(config.templateId, page)}
                   </span>
                   <span className="text-xs text-zinc-500">
                     {drafted?.status || "planned"}

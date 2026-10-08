@@ -98,7 +98,7 @@ export const CLIENT_TEMPLATES: ClientTemplate[] = [
         slug: "contact",
         path: "/contact",
         title: "Contact",
-        purpose: "Inquiries and booking.",
+        purpose: "Inquiries.",
         keywordPattern: "contact {businessName}",
       },
     ],
@@ -202,4 +202,26 @@ export function seedPagesForTemplate(
       targetKeywords: [keyword].filter(Boolean),
     };
   });
+}
+
+/** Templates that sell appointments/jobs; only these may talk about booking. */
+const BOOKING_TEMPLATES: ReadonlySet<ClientTemplateId> = new Set(["local-service"]);
+
+/**
+ * Label for a planned page, from the CURRENT template definition (stored seededPages can carry older wording).
+ * Non-service templates (portfolio/artist, general) never mention booking.
+ */
+export function plannedPagePurpose(
+  templateId: string | undefined,
+  page: { slug: string; purpose?: string }
+): string {
+  const template = getClientTemplate(templateId);
+  const purpose = template.pages.find((def) => def.slug === page.slug)?.purpose || page.purpose || "";
+  if (BOOKING_TEMPLATES.has(template.id)) return purpose;
+  const cleaned = purpose
+    .replace(/\s*(?:,|and|&|\/)\s*\bbook(?:ing|ings|ed)?\b/gi, "")
+    .replace(/\bbook(?:ing|ings|ed)?\b\s*(?:,|and|&|\/)\s*/gi, "")
+    .replace(/\bbook(?:ing|ings|ed)?\b/gi, "inquiries")
+    .trim();
+  return cleaned || (page.slug === "contact" ? "Inquiries." : purpose);
 }

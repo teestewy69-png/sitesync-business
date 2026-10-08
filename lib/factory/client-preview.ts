@@ -4,7 +4,7 @@
  * Anything the client still has to supply is shown as a clearly bracketed placeholder.
  */
 import type { ClientBuildConfig } from "./client-config";
-import { getClientTemplate } from "./client-templates";
+import { getClientTemplate, plannedPagePurpose } from "./client-templates";
 
 export type ClientPreviewSection = {
   slug: string;
@@ -114,7 +114,7 @@ export function buildClientPreviewModel(config: ClientBuildConfig): ClientPrevie
       return {
         slug: page.slug,
         title: page.title,
-        text: `[${page.purpose} Client to supply the details.]`,
+        text: `[${plannedPagePurpose(template.id, page)} Client to supply the details.]`,
         placeholder: true,
       };
     });

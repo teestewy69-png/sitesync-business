@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import DraftBody from "@/components/factory/DraftBody";
 import { configFromProject } from "@/lib/factory/client-config";
 import { draftFromClientBrief } from "@/lib/factory/client-drafts";
+import { plannedPagePurpose } from "@/lib/factory/client-templates";
 import { readClientWorkspace } from "@/lib/factory/client-workspace";
 import { findProjectById } from "@/lib/store";
 
@@ -47,7 +49,7 @@ export default async function ClientDeliverablePage({
     body = [
       `# ${title}`,
       "",
-      seeded.purpose,
+      plannedPagePurpose(config.templateId, seeded),
       "",
       `Business: ${config.businessName}. Niche: ${config.niche}.`,
       config.city ? `Location: ${config.city}${config.state ? `, ${config.state}` : ""}.` : "",
@@ -78,7 +80,7 @@ export default async function ClientDeliverablePage({
             ))}
           </ul>
         ) : null}
-        <article className="whitespace-pre-wrap text-base leading-relaxed text-zinc-200">{body}</article>
+        <DraftBody body={body} />
         {brief ? (
           <p className="text-xs text-zinc-500">
             Brief {brief.id} · competitorUrls:{" "}

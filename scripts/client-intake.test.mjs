@@ -26,6 +26,10 @@ const { findProjectById } = await import("../lib/store.ts");
 const { generateDomainCandidatesForProject } = await import("../lib/factory/domainiq.ts");
 const { baselineNeedsRecapture, BASELINE_PENDING_STALE_MS, markBaselineStale } = await import("../lib/factory/client-automation.ts");
 const { createServer } = await import("node:http");
+const { parseDraftBlocks } = await import("../lib/factory/draft-blocks.ts");
+const { plannedPagePurpose, seedPagesForTemplate, CLIENT_TEMPLATES } = await import("../lib/factory/client-templates.ts");
+const { seedClientResearchNotes } = await import("../lib/factory/client-pipeline.ts");
+const { clientDomainSeedFromProject } = await import("../lib/factory/domainiq.ts");
 const { buildPreviewContent } = await import("../lib/design-styles.ts");
 
 const KURTIS = {
@@ -403,4 +407,59 @@ test("edit / design change: preview recapture runs INLINE (no timers) and recove
   } finally {
     await new Promise((resolve) => server.close(resolve));
   }
+});
+
+test("draft preview: headings render as headings, never as raw '## ' text", () => {
+  const config = buildClientConfig(KURTIS);
+  const brief = seedClientBriefs(config).find((b) => b.slug === "portfolio");
+  const blocks = parseDraftBlocks(draftFromClientBrief(brief, config).body);
+  const headings = blocks.filter((b) => b.type === "heading").map((b) => b.text);
+  assert.deepEqual(headings.slice(0, 3), ["Selected work", "Available originals", "How to inquire"]);
+  for (const block of blocks) {
+    const lines = block.type === "paragraph" ? block.lines : block.type === "list" ? block.items : [block.text];
+    for (const line of lines) assert.doesNotMatch(line, /^#/, "no raw markdown heading markers");
+  }
+  assert.deepEqual(parseDraftBlocks("Intro\n\n- one\n- two\nAfter"), [
+    { type: "paragraph", lines: ["Intro"] },
+    { type: "list", items: ["one", "two"] },
+    { type: "paragraph", lines: ["After"] },
+  ]);
+  const src = readFileSync(path.join(ROOT, "app/demo/client/[projectId]/[slug]/page.tsx"), "utf8");
+  assert.match(src, /<DraftBody body=\{body\}/);
+  assert.doesNotMatch(src, /whitespace-pre-wrap[^>]*>\{body\}/);
+});
+
+test("planned-page labels are template-aware: no booking wording outside service templates", () => {
+  assert.equal(plannedPagePurpose("portfolio", { slug: "contact", purpose: "Inquiries and booking." }), "Inquiries.");
+  assert.doesNotMatch(plannedPagePurpose("portfolio", { slug: "extra", purpose: "Commissions and booking." }), /book/i);
+  assert.doesNotMatch(plannedPagePurpose("general", { slug: "extra", purpose: "Booking and quotes." }), /book/i);
+  for (const template of CLIENT_TEMPLATES.filter((t) => t.id !== "local-service")) {
+    for (const page of seedPagesForTemplate(template.id, { businessName: "Kurtis Wells", niche: "art", city: "Walnut", state: "CA" })) {
+      assert.doesNotMatch(plannedPagePurpose(template.id, page), /\bbook/i, `${template.id}/${page.slug}`);
+    }
+  }
+  // Service templates keep their own wording.
+  const service = CLIENT_TEMPLATES.find((t) => t.id === "local-service").pages[0];
+  assert.equal(plannedPagePurpose("local-service", service), service.purpose);
+  const artist = buildClientPreviewModel(buildClientConfig(KURTIS));
+  assert.doesNotMatch(allText(artist), /\bbook/i);
+});
+
+test("research notes describe automatic baseline capture", () => {
+  const notes = seedClientResearchNotes(buildClientConfig(KURTIS));
+  assert.doesNotMatch(notes, /operator-triggered/);
+  assert.match(notes, /crawled automatically/);
+  assert.match(notes, /never invented/);
+});
+
+test("domain panel seed comes from the current client config, not the intake label", () => {
+  const seed = clientDomainSeedFromProject({
+    id: "proj_seed", source: "factory_intake", createdAt: "2026-10-07T00:00:00Z", label: "Kurtis Wells, Artist",
+    businessName: "Kurtis Wells", businessType: "Artist", offer: "Original artwork and paintings", city: "Walnut", state: "CA",
+  });
+  assert.equal(seed.businessName, "Kurtis Wells");
+  assert.equal(seed.city, "Walnut");
+  assert.equal(seed.state, "CA");
+  const src = readFileSync(path.join(ROOT, "components/factory/DomainIQPanel.tsx"), "utf8");
+  assert.match(src, /const seed = seedPreview;/);
 });

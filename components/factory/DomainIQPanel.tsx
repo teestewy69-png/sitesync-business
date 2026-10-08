@@ -63,7 +63,14 @@ export default function DomainIQPanel({
     }
   }
 
-  const seed = state?.seed || seedPreview;
+  // Header always reflects the CURRENT client config; the stored seed is only what old suggestions were built from.
+  const seed = seedPreview;
+  const storedSeed = state?.seed;
+  const seedChanged =
+    Boolean(storedSeed) &&
+    (["businessName", "niche", "city", "state"] as const).some(
+      (key) => (storedSeed?.[key] || "").trim() !== (seedPreview[key] || "").trim()
+    );
   const status = domainStatus || "not_run";
   // Once the client owns a domain, suggestions generated before that point are obsolete - hide them
   // (older projects may still have them stored). Suggestions generated afterwards via Generate are shown.
@@ -110,6 +117,13 @@ export default function DomainIQPanel({
       </div>
 
       {state?.reason ? <p className="mt-3 text-xs text-slate-400">{state.reason}</p> : null}
+      {seedChanged && candidates.length ? (
+        <p className="mt-1 text-xs text-amber-100">
+          These suggestions were generated from older details ({storedSeed?.businessName || "-"},{" "}
+          {[storedSeed?.city, storedSeed?.state].filter(Boolean).join(", ") || "no city"}). Regenerate to use the
+          current client details.
+        </p>
+      ) : null}
       <p className="mt-1 text-xs text-slate-500">
         engine {state?.engine || "-"} · generated {state?.generatedAt || "-"} · availability{" "}
         {state?.availability?.enabled === false

@@ -8,7 +8,7 @@ import ClientConfigForm from "@/components/factory/ClientConfigForm";
 import DomainIQPanel from "@/components/factory/DomainIQPanel";
 import FactoryShell, { Pill } from "@/components/factory/Shell";
 import { configFromProject } from "@/lib/factory/client-config";
-import { getClientTemplate } from "@/lib/factory/client-templates";
+import { getClientTemplate, plannedPagePurpose } from "@/lib/factory/client-templates";
 import { readClientWorkspace } from "@/lib/factory/client-workspace";
 import { clientPreviewOrigin, hostOriginFrom } from "@/lib/factory/seo-sites";
 import { DESIGN_STYLES } from "@/lib/design-styles";
@@ -348,7 +348,7 @@ export default async function ClientProjectDetailPage({
               <div>
                 <p className="font-medium text-white">{page.title}</p>
                 <p className="text-slate-400">
-                  {page.path} - {page.purpose}
+                  {page.path} - {plannedPagePurpose(template.id, page)}
                 </p>
                 {page.targetKeywords?.length ? (
                   <p className="text-xs text-slate-500">keywords: {page.targetKeywords.join(", ")}</p>

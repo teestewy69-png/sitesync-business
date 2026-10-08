@@ -240,7 +240,7 @@ export function seedClientResearchNotes(config: ClientBuildConfig): string {
     "",
     "Research stage is seeded from intake config only.",
     "No automated LLM competitor crawl. Attach real competitor URLs on each content brief (competitorUrls).",
-    "Baseline crawl is optional and operator-triggered — not invented.",
+    "Baseline: the client preview is crawled automatically at setup and again after every edit, design or draft change (status on the client page; Capture re-runs it). Results are real crawl data, never invented.",
   ]
     .filter((line): line is string => line !== null)
     .join("\n");
