@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import SitePage from "@/components/SitePage";
 
 export const metadata: Metadata = {
   title: "What a Real Small Business Website Actually Needs | Sitesinc",
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function RealSmallBusinessWebsiteNeeds() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <SitePage>
       <article className="mx-auto max-w-3xl px-6 py-16">
         <Link
           href="/blog"
@@ -199,6 +200,6 @@ export default function RealSmallBusinessWebsiteNeeds() {
           </section>
         </div>
       </article>
-    </main>
+    </SitePage>
   );
 }

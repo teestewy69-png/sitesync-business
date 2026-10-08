@@ -179,15 +179,34 @@ test("DomainIQ bay registrar links while paused are plain registrar URLs (no /go
 
 /* ------------------------------ sitemap / nav ------------------------------ */
 
-test("sitemap and public paths: no /cart, /checkout or /shop", () => {
+test("sitemap and public paths: no /cart, /checkout or /shop", async () => {
   for (const p of PUBLIC_PATHS) assert.doesNotMatch(p, /^\/(cart|checkout|shop)(\/|$)/, p);
-  const urls = withEnv(undefined, () => sitemap()).map((e) => e.url);
+  const urls = (await withEnvAsync(undefined, () => sitemap())).map((e) => e.url);
   assert.ok(urls.includes("https://sitesinc.co"));
   for (const u of urls) assert.doesNotMatch(u, /\/(cart|checkout|shop|tools|go)(\/|$)/, u);
+  for (const pathName of ["/services", "/about", "/contact"]) {
+    assert.ok(PUBLIC_PATHS.includes(pathName), pathName);
+    assert.ok(urls.includes(`https://sitesinc.co${pathName}`), pathName);
+  }
   const footer = readFileSync(path.join(ROOT, "components/Footer.tsx"), "utf8");
   assert.doesNotMatch(footer, /href="\/(shop|cart|checkout)"/);
   const robots = readFileSync(path.join(ROOT, "app/robots.ts"), "utf8");
   assert.doesNotMatch(robots, /\/shop/, "robots must not block /shop: crawlers need to see the 301");
+});
+
+test("Sitesinc public site has the same page types as the general client template", async () => {
+  const { CLIENT_TEMPLATES } = await import("../lib/factory/client-templates.ts");
+  const general = CLIENT_TEMPLATES.find((t) => t.id === "general");
+  assert.ok(general, "general template");
+  for (const page of general.pages) {
+    const route = page.path === "/" ? "app/page.tsx" : `app${page.path}/page.tsx`;
+    assert.ok(existsSync(path.join(ROOT, route)), route);
+    if (page.path !== "/") assert.ok(PUBLIC_PATHS.includes(page.path), page.path);
+  }
+  const contact = readFileSync(path.join(ROOT, "app/contact/page.tsx"), "utf8");
+  assert.match(contact, /EmailCapture/);
+  const form = readFileSync(path.join(ROOT, "components/EmailCapture.tsx"), "utf8");
+  assert.match(form, /\/api\/subscribe/);
 });
 
 /* ------------------------------- public copy ------------------------------- */
@@ -209,6 +228,9 @@ const PUBLIC_SOURCES = [
   "data/process.ts",
   "data/posts.ts",
   "app/page.tsx",
+  "app/about/page.tsx",
+  "app/services/page.tsx",
+  "app/contact/page.tsx",
   "app/terms/page.tsx",
   "app/privacy/page.tsx",
   "lib/factory/drafts.ts",

@@ -85,7 +85,7 @@
       "detail": "Starting at $1,995. $997.50 to start, $997.50 at launch. Submitting this form is a request, not a purchase. If we accept the project, you receive a $997.50 start invoice manually. The remaining $997.50 is due at launch. No long-term contract.",
       "cta": {
         "label": "Request a website build",
-        "href": "#checklist"
+        "href": "/#checklist"
       }
     },
     "maintenance": {
@@ -99,7 +99,7 @@
       ],
       "cta": {
         "label": "Ask about $129/mo monitoring",
-        "href": "#checklist"
+        "href": "/#checklist"
       }
     }
   },
@@ -195,6 +195,12 @@
       "note": "Demo of our per-client workflow using the same stack and content.json system we ship to paying customers."
     },
     "cta": { "label": "See pricing & start a build", "target": "pricing" }
+  },
+  "contact": {
+    "title": "Contact Sitesinc",
+    "subtitle": "Questions about a website build? Send a request or email us. Submitting this form is a request, not a purchase.",
+    "messagePlaceholder": "Tell us about your business and what you need",
+    "messageLabel": "Message (optional)"
   },
   "emailCapture": {
     "overline": "Free download",

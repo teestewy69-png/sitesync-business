@@ -1,10 +1,10 @@
-import Image from "next/image";
 import content from "@/content.json";
 import { SITESINC_SITE } from "@/lib/design-styles";
 import HeroScrollButton from "@/components/HeroScrollButton";
+import SiteHeader from "@/components/SiteHeader";
 
 export default function Hero() {
-  const { hero, site, pricing } = content;
+  const { hero, pricing } = content;
   const startHref = pricing.build.cta.href;
 
   return (
@@ -12,26 +12,7 @@ export default function Hero() {
       <div className="pointer-events-none absolute -top-40 -right-40 h-80 w-80 rounded-full bg-brand-500/20 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-brand-800/25 blur-3xl" />
 
-      <nav className="relative mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
-        <a href="#" className="flex items-center">
-          <Image
-            src="/logo.png"
-            alt={`${site.name} logo`}
-            width={192}
-            height={96}
-            priority
-            className="h-20 w-auto rounded-lg ring-1 ring-white/10 sm:h-24"
-          />
-        </a>
-        <a
-          href="#pricing"
-          data-analytics-cta="see_pricing"
-          data-analytics-location="hero_nav"
-          className="rounded-lg bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 ring-1 ring-white/10 transition hover:bg-white/10"
-        >
-          See pricing
-        </a>
-      </nav>
+      <SiteHeader variant="hero" />
 
       <div className="relative mx-auto flex max-w-6xl flex-col gap-12 px-6 py-16 md:flex-row md:items-center md:py-24">
         <div className="max-w-xl space-y-6">

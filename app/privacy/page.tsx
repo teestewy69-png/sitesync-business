@@ -1,5 +1,5 @@
-import Link from "next/link";
 import type { Metadata } from "next";
+import SitePage from "@/components/SitePage";
 
 export const metadata: Metadata = {
   title: "Privacy Policy | Sitesinc",
@@ -10,15 +10,8 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <SitePage>
       <div className="mx-auto max-w-4xl px-6 py-16">
-        <Link
-          href="/"
-          className="mb-4 inline-flex text-xs text-brand-300 hover:underline"
-        >
-          ← Back to home
-        </Link>
-
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
           Privacy Policy
         </h1>
@@ -261,6 +254,6 @@ export default function PrivacyPage() {
           </section>
         </div>
       </div>
-    </main>
+    </SitePage>
   );
 }

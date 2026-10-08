@@ -1,7 +1,5 @@
-"use client";
-
 import content from "@/content.json";
-import { scrollToId } from "@/lib/scroll";
+import { SITE_HASH_LINKS, SITE_NAV } from "@/lib/site-nav";
 
 export default function Footer() {
   const { site, footer } = content;
@@ -11,7 +9,6 @@ export default function Footer() {
       <div className="pointer-events-none absolute inset-x-0 -top-10 h-10 bg-gradient-to-b from-surface-elevated/60 via-transparent to-transparent" />
 
       <div className="relative mx-auto flex max-w-6xl flex-col gap-6 px-6 text-sm text-slate-400 sm:flex-row sm:items-center sm:justify-between sm:text-base">
-        {/* Left: brand & rights */}
         <div className="space-y-2">
           {/* The logo lockup already contains the Sitesinc wordmark */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -35,27 +32,22 @@ export default function Footer() {
           </p>
         </div>
 
-        {/* Middle: trust / security */}
         <div className="space-y-1 text-sm text-slate-400 sm:text-base">
           <p className="font-medium text-slate-200">{footer.trustTitle}</p>
           <p>{footer.trustLine}</p>
         </div>
 
-        {/* Right: quick links */}
         <div className="flex flex-wrap items-center gap-3 text-sm text-slate-400 sm:justify-end sm:text-base">
-          {footer.scrollLinks.map((link) => (
-            <button
-              key={link.target}
-              type="button"
-              className="transition hover:text-brand-300"
-              onClick={() => scrollToId(link.target)}
-            >
+          {SITE_NAV.map((link) => (
+            <a key={link.href} href={link.href} className="transition hover:text-brand-300">
               {link.label}
-            </button>
+            </a>
           ))}
-          <a href="/blog" className="transition hover:text-brand-300">
-            Blog
-          </a>
+          {SITE_HASH_LINKS.map((link) => (
+            <a key={link.href} href={link.href} className="transition hover:text-brand-300">
+              {link.label}
+            </a>
+          ))}
           {footer.legalLinks.map((link) => (
             <a
               key={link.href}
