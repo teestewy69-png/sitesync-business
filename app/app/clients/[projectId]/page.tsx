@@ -5,6 +5,8 @@ import BaselineAutoRecapture from "@/components/factory/BaselineAutoRecapture";
 import CaptureButton from "@/components/factory/CaptureButton";
 import CityLaunchPanel from "@/components/factory/CityLaunchPanel";
 import ClientConfigForm from "@/components/factory/ClientConfigForm";
+import ClientContentPanel from "@/components/factory/ClientContentPanel";
+import { pricingAllowsListedPrices } from "@/lib/factory/client-content";
 import DomainIQPanel from "@/components/factory/DomainIQPanel";
 import FactoryShell, { Pill } from "@/components/factory/Shell";
 import { configFromProject } from "@/lib/factory/client-config";
@@ -336,6 +338,24 @@ export default async function ClientProjectDetailPage({
         }}
       />
 
+      {workspace ? (
+        <ClientContentPanel
+          projectId={project.id}
+          templateId={template.id}
+          pages={workspace.pages.map((page) => ({
+            slug: page.slug,
+            title: page.title,
+            status: page.status,
+            source: page.source === "operator" ? "operator" : "template",
+            body: page.source === "operator" ? page.body : "",
+          }))}
+          assets={workspace.clientContent?.assets || []}
+          artworks={workspace.clientContent?.artworks || []}
+          pricingNote={config.pricingNote}
+          pricesAllowed={pricingAllowsListedPrices(config.pricingNote)}
+        />
+      ) : null}
+
       <h2 className="mt-8 text-lg font-semibold">Seeded pages</h2>
       <ul className="mt-3 space-y-2 text-sm">
         {pages.map((page) => {
@@ -355,6 +375,7 @@ export default async function ClientProjectDetailPage({
                 ) : null}
               </div>
               <div className="flex items-center gap-2">
+                {row?.source === "operator" ? <Pill tone="ok">client copy</Pill> : null}
                 <Pill>{row?.status || "planned"}</Pill>
                 <Link
                   href={

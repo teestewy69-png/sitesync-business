@@ -4,7 +4,16 @@
  * Anything the client still has to supply is shown as a clearly bracketed placeholder.
  */
 import type { ClientBuildConfig } from "./client-config";
+import {
+  assetByRole,
+  clientAssetUrl,
+  copyExcerpt,
+  isOperatorCopy,
+  previewWorks,
+  type PreviewWork,
+} from "./client-content";
 import { getClientTemplate, plannedPagePurpose } from "./client-templates";
+import type { ClientContent, FactoryPage } from "./types";
 
 export type ClientPreviewSection = {
   slug: string;
@@ -24,7 +33,25 @@ export type ClientPreviewModel = {
   /** Client-provided pricing note, or "" (no price is shown at all). */
   pricingNote: string;
   sections: ClientPreviewSection[];
+  /** Excerpt of operator-supplied home copy, or "". */
+  intro: string;
+  /** Supplied works for the home "Selected work" grid (featured first), [] when none are supplied. */
+  selectedWorks: PreviewWork[];
+  /** Total supplied works (the grid shows at most a few). */
+  workCount: number;
+  heroImage: { src: string; alt: string } | null;
+  artistPhoto: { src: string; alt: string } | null;
+  logo: { src: string; alt: string } | null;
 };
+
+/** Client-supplied content the preview shows before any placeholder. All optional. */
+export type ClientPreviewSupplied = {
+  projectId: string;
+  content?: ClientContent | null;
+  pages?: Pick<FactoryPage, "slug" | "body" | "source">[];
+};
+
+export const HOME_SELECTED_WORKS = 6;
 
 const PORTFOLIO_SECTIONS: Record<string, { title: string; text: string; placeholder: boolean }> = {
   portfolio: {
@@ -48,8 +75,20 @@ function lowerFirst(value: string): string {
   return value ? value.charAt(0).toLowerCase() + value.slice(1) : value;
 }
 
-export function buildClientPreviewModel(config: ClientBuildConfig): ClientPreviewModel {
+export function buildClientPreviewModel(config: ClientBuildConfig, supplied?: ClientPreviewSupplied): ClientPreviewModel {
   const template = getClientTemplate(config.templateId);
+  const operatorPages = new Map(
+    (supplied?.pages || []).filter((p) => isOperatorCopy(p) && p.body?.trim()).map((p) => [p.slug, p.body])
+  );
+  const copyFor = (slug: string) => {
+    const body = operatorPages.get(slug);
+    return body ? copyExcerpt(body) : "";
+  };
+  const allWorks = supplied ? previewWorks(supplied.projectId, supplied.content, config.pricingNote) : [];
+  const imageOf = (role: "artist-photo" | "logo") => {
+    const asset = supplied ? assetByRole(supplied.content, role) : null;
+    return asset && supplied ? { src: clientAssetUrl(supplied.projectId, asset.filename), alt: asset.alt } : null;
+  };
   const portfolio = template.id === "portfolio";
   const location = [config.city, config.state].filter(Boolean).join(", ");
   const offer = config.offer || config.niche || "";
@@ -75,6 +114,22 @@ export function buildClientPreviewModel(config: ClientBuildConfig): ClientPrevie
   const sections: ClientPreviewSection[] = template.pages
     .filter((page) => page.slug !== "home")
     .map((page) => {
+      const copy = copyFor(page.slug);
+      if (portfolio && page.slug === "portfolio" && allWorks.length) {
+        const series = [...new Set(allWorks.map((w) => w.series).filter(Boolean))];
+        return {
+          slug: page.slug,
+          title: "Selected work",
+          text: [copy, `${allWorks.length} work${allWorks.length === 1 ? "" : "s"}${series.length ? ` · series: ${series.join(", ")}` : ""}.`]
+            .filter(Boolean)
+            .join(" "),
+          placeholder: false,
+        };
+      }
+      if (copy) {
+        const base = portfolio && PORTFOLIO_SECTIONS[page.slug] ? PORTFOLIO_SECTIONS[page.slug].title : page.slug === "contact" ? (portfolio ? "Inquiries" : "Contact") : page.title;
+        return { slug: page.slug, title: base, text: copy, placeholder: false };
+      }
       if (portfolio && PORTFOLIO_SECTIONS[page.slug]) {
         return { slug: page.slug, ...PORTFOLIO_SECTIONS[page.slug] };
       }
@@ -128,6 +183,12 @@ export function buildClientPreviewModel(config: ClientBuildConfig): ClientPrevie
     contactLines,
     pricingNote: config.pricingNote,
     sections,
+    intro: copyFor("home"),
+    selectedWorks: portfolio ? allWorks.slice(0, HOME_SELECTED_WORKS) : [],
+    workCount: portfolio ? allWorks.length : 0,
+    heroImage: portfolio ? allWorks.find((w) => w.image)?.image || null : null,
+    artistPhoto: imageOf("artist-photo"),
+    logo: imageOf("logo"),
   };
 }
 

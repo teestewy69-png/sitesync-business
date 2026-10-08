@@ -23,7 +23,8 @@ export async function POST(req: NextRequest) {
     }
     const result = await applyFactoryAction(op, body);
     if (!result.ok) {
-      return NextResponse.json(result, { status: 400 });
+      const status = result.status && result.status >= 400 && result.status < 500 ? result.status : 400;
+      return NextResponse.json(result, { status });
     }
     return NextResponse.json(result);
   } catch (err) {

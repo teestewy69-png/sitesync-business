@@ -83,7 +83,7 @@ function nowIso() {
 export async function applyFactoryAction(
   op: string,
   body: Record<string, string | string[] | undefined>
-): Promise<{ ok: boolean; error?: string; workspace?: FactoryWorkspace; created?: boolean; projectId?: string; refreshed?: string[]; kept?: string[]; backfill?: import("./client-automation").BackfillResult; domainBackfill?: import("./domainiq").DomainBackfillResult }> {
+): Promise<{ ok: boolean; error?: string; status?: number; workspace?: FactoryWorkspace; created?: boolean; projectId?: string; refreshed?: string[]; kept?: string[]; operatorKept?: string[]; warnings?: string[]; count?: number; clientContent?: import("./types").ClientContent; backfill?: import("./client-automation").BackfillResult; domainBackfill?: import("./domainiq").DomainBackfillResult }> {
   const actor = String(body.approvedBy || "operator");
   const when = nowIso();
 
@@ -618,6 +618,7 @@ export async function applyFactoryAction(
       projectId,
       refreshed: refresh.refreshed,
       kept: refresh.kept,
+      operatorKept: refresh.operatorKept,
       workspace: workspace || refresh.workspace,
     };
   }
@@ -889,6 +890,7 @@ export async function applyFactoryAction(
     if (!projectId || !slug) return { ok: false, error: "projectId and slug required." };
     const { findProjectById } = await import("@/lib/store");
     const { draftFromClientBrief, wordCount: clientWordCount } = await import("./client-drafts");
+    const { suppliedContentFrom } = await import("./client-content");
     const { configFromProject } = await import("./client-config");
     const project = await findProjectById(projectId);
     if (!project) return { ok: false, error: "Client project not found." };
@@ -896,13 +898,17 @@ export async function applyFactoryAction(
     const workspace = await updateClientWorkspace(projectId, (current) => {
       const brief = current.briefs.find((item) => item.slug === slug);
       if (!brief) throw new Error("No brief for that slug.");
+      if (current.pages.find((page) => page.slug === slug)?.source === "operator") {
+        throw new Error("This page has operator-supplied client copy. Clear it (clear-client-page-copy) before re-drafting from the template.");
+      }
       if (brief.status !== "approved") throw new Error("Approve the content brief before drafting.");
-      const draft = draftFromClientBrief(brief, config);
+      const draft = draftFromClientBrief(brief, config, suppliedContentFrom(current.clientContent));
       current.pages = current.pages.map((page) =>
         page.slug === slug
           ? {
               ...page,
               ...draft,
+              source: "template" as const,
               wordCount: clientWordCount(draft.body),
               status: "ready_for_review",
               briefId: brief.id,
@@ -921,6 +927,10 @@ export async function applyFactoryAction(
     return { ok: true, workspace: refreshed || workspace };
   }
 
+  if (CLIENT_CONTENT_OPS.has(op)) {
+    return applyClientContentAction(op, body, actor);
+  }
+
   if (op === "backfill-client-factories") {
     const hostHint = String(body.hostOrigin || body.origin || "").trim() || null;
     const rawIds = body.projectIds;
@@ -934,6 +944,104 @@ export async function applyFactoryAction(
     return { ok: true, created: result.initialized > 0, backfill: result };
   }
 
+  return { ok: false, error: `Unknown action: ${op}` };
+}
+
+const CLIENT_CONTENT_OPS = new Set([
+  "get-client-content",
+  "set-client-page-copy",
+  "clear-client-page-copy",
+  "set-client-artworks",
+  "update-client-asset",
+  "delete-client-asset",
+]);
+
+/**
+ * Operator-supplied client content (page copy, artwork list, image metadata). Uploads themselves go through
+ * POST /api/factory/client-assets (multipart). Nothing here approves or publishes a page.
+ */
+async function applyClientContentAction(
+  op: string,
+  body: Record<string, string | string[] | undefined>,
+  actor: string
+): Promise<{ ok: boolean; error?: string; status?: number; workspace?: FactoryWorkspace; warnings?: string[]; count?: number; clientContent?: import("./types").ClientContent; refreshed?: string[]; operatorKept?: string[] }> {
+  const projectId = String(body.projectId || "");
+  if (!projectId) return { ok: false, error: "projectId required." };
+  const { findProjectById } = await import("@/lib/store");
+  const project = await findProjectById(projectId);
+  if (!project) return { ok: false, error: "Client project not found." };
+  const config = configFromProject(project);
+  const store = await import("./client-content-store");
+  const hostHint = String(body.hostOrigin || body.origin || "").trim() || null;
+  const raw = body as unknown as Record<string, unknown>;
+  const defer = raw.deferRecapture === true || raw.deferRecapture === "true" || raw.deferRecapture === "1";
+  const recapture = (reason: string) =>
+    markStaleAndRecapture(projectId, reason, hostHint, defer ? { budgetMs: 0 } : undefined);
+  try {
+    if (op === "get-client-content") {
+      const ws = await readClientWorkspace(projectId);
+      if (!ws) return { ok: false, error: "Client workspace not initialized yet.", status: 404 };
+      return {
+        ok: true,
+        clientContent: ws.clientContent || { assets: [], artworks: [], updatedAt: "" },
+        workspace: ws,
+      };
+    }
+    if (op === "set-client-page-copy") {
+      const slug = String(body.slug || "");
+      if (!slug) return { ok: false, error: "slug required." };
+      await store.setClientPageCopy(
+        projectId,
+        slug,
+        { body: String(raw.body ?? ""), title: String(raw.title ?? ""), metaDescription: String(raw.metaDescription ?? "") },
+        { actor, pricingNote: config.pricingNote }
+      );
+      const workspace = await recapture(`Operator copy saved (${slug}).`);
+      return { ok: true, workspace: workspace || undefined };
+    }
+    if (op === "clear-client-page-copy") {
+      const slug = String(body.slug || "");
+      if (!slug) return { ok: false, error: "slug required." };
+      await store.clearClientPageCopy(projectId, slug, config);
+      const workspace = await recapture(`Operator copy cleared (${slug}).`);
+      return { ok: true, workspace: workspace || undefined };
+    }
+    if (op === "set-client-artworks") {
+      const saved = await store.setClientArtworks(projectId, raw.artworks, config.pricingNote);
+      // Template drafts list the supplied works instead of placeholders; operator copy and approved pages are kept.
+      const refresh = await refreshClientWorkspace(projectId, config, { hostOrigin: hostHint });
+      const workspace = await recapture("Artwork list updated - template drafts rebuilt.");
+      return {
+        ok: true,
+        count: saved.count,
+        warnings: saved.warnings,
+        refreshed: refresh?.refreshed,
+        operatorKept: refresh?.operatorKept,
+        workspace: workspace || refresh?.workspace || saved.workspace,
+      };
+    }
+    if (op === "update-client-asset") {
+      const assetId = String(body.assetId || "");
+      if (!assetId) return { ok: false, error: "assetId required." };
+      await store.updateClientAsset(projectId, assetId, {
+        alt: raw.alt === undefined ? undefined : String(raw.alt),
+        role: raw.role === undefined ? undefined : String(raw.role),
+      });
+      const workspace = await recapture("Image details updated.");
+      return { ok: true, workspace: workspace || undefined };
+    }
+    if (op === "delete-client-asset") {
+      const assetId = String(body.assetId || "");
+      if (!assetId) return { ok: false, error: "assetId required." };
+      await store.deleteClientAsset(projectId, assetId);
+      await refreshClientWorkspace(projectId, config, { hostOrigin: hostHint });
+      const workspace = await recapture("Image deleted.");
+      return { ok: true, workspace: workspace || undefined };
+    }
+  } catch (err) {
+    if (err instanceof store.ClientContentError) return { ok: false, error: err.message, status: err.status };
+    throw err;
+  }
   return { ok: false, error: `Unknown action: ${op}` };
 }
 

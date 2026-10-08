@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { connectLambda, getStore, type Store } from "@netlify/blobs";
 import { rethrowNextControlFlow } from "@/lib/next-runtime";
@@ -484,6 +484,25 @@ export async function writeBinary(key: string, bytes: Uint8Array, contentType?: 
   } catch (err) {
     console.error(`Netlify Blobs set failed for ${key}: ${errDetail(err)}`);
     throw new StoreError("write", `Netlify Blobs write failed for ${key} (${errDetail(err)}).`);
+  }
+}
+
+/** Delete a binary object. Missing keys are fine; any other failure throws. */
+export async function deleteBinary(key: string): Promise<void> {
+  assertDocKey(key);
+  await ensureBlobsContext();
+  if (storeBackend() !== "netlify-blobs") {
+    try {
+      await rm(localBinaryFile(key), { force: true });
+      return;
+    } catch (err) {
+      throw new StoreError("write", `Local store delete failed for ${key} (${errDetail(err)}).`);
+    }
+  }
+  try {
+    await getCrmStore().delete(key);
+  } catch (err) {
+    throw new StoreError("write", `Netlify Blobs delete failed for ${key} (${errDetail(err)}).`);
   }
 }
 

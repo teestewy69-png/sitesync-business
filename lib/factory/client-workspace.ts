@@ -6,6 +6,7 @@
 } from "@/lib/persistence";
 import type { ClientBuildConfig } from "./client-config";
 import { draftFromClientBrief, wordCount as clientWordCount } from "./client-drafts";
+import { isOperatorCopy, suppliedContentFrom, type SuppliedContent } from "./client-content";
 import {
   applyAutoStageProgression,
   competitorAutomationStatus,
@@ -86,7 +87,8 @@ function seedClientGaps(config: ClientBuildConfig): VisibleGap[] {
 export function autoSeedClientDraftPages(
   pages: FactoryPage[],
   briefs: ContentBrief[],
-  config: ClientBuildConfig
+  config: ClientBuildConfig,
+  supplied?: SuppliedContent
 ): { pages: FactoryPage[]; seededCount: number } {
   const draftBanner =
     "[FACTORY DRAFT - auto-seeded from intake config. Replace with real client facts before approve/publish. noindex.]";
@@ -118,7 +120,7 @@ export function autoSeedClientDraftPages(
         approvedBy: "",
         approvedAt: "",
       } satisfies ContentBrief);
-    const draft = draftFromClientBrief(brief, config);
+    const draft = draftFromClientBrief(brief, config, supplied);
     const body = `${draftBanner}\n\n${draft.body}`;
     seededCount += 1;
     return {
@@ -131,6 +133,7 @@ export function autoSeedClientDraftPages(
       status: "ready_for_review" as const,
       briefId: brief.id,
       noindex: true,
+      source: "template" as const,
     };
   });
   return { pages: next, seededCount };
@@ -139,7 +142,7 @@ export function autoSeedClientDraftPages(
 export function seedClientWorkspace(
   projectId: string,
   config: ClientBuildConfig,
-  opts?: { hostOrigin?: string | null }
+  opts?: { hostOrigin?: string | null; supplied?: SuppliedContent }
 ): FactoryWorkspace {
   const startedAt = new Date().toISOString();
   const blueprint = seedClientBlueprint(config);
@@ -167,7 +170,7 @@ export function seedClientWorkspace(
   };
 
   const basePages = seedClientPages(briefs, blueprint);
-  const { pages, seededCount } = autoSeedClientDraftPages(basePages, briefs, config);
+  const { pages, seededCount } = autoSeedClientDraftPages(basePages, briefs, config, opts?.supplied);
   const hostResolved = resolveAutomationHostOrigin(opts?.hostOrigin);
   const baselineAuto = initialBaselineAutomation(hostResolved.hostOrigin, hostResolved.reason);
 
@@ -419,6 +422,8 @@ export type ClientWorkspaceRefresh = {
   refreshed: string[];
   /** Slugs kept as-is because an operator approved / staged / published them. */
   kept: string[];
+  /** Slugs kept because they carry operator-supplied client copy (never overwritten by a template rebuild). */
+  operatorKept: string[];
 };
 
 /**
@@ -435,9 +440,12 @@ export async function refreshClientWorkspace(
   if (!(await readClientWorkspace(projectId))) return null;
   let refreshed: string[] = [];
   let kept: string[] = [];
+  let operatorKept: string[] = [];
   const workspace = await updateClientWorkspace(projectId, (current) => {
+    const supplied = suppliedContentFrom(current.clientContent);
     const fresh = seedClientWorkspace(projectId, config, {
       hostOrigin: opts?.hostOrigin || current.clientAutomation?.baseline?.hostOrigin || null,
+      supplied,
     });
 
     const briefs: ContentBrief[] = fresh.briefs.map((brief) => {
@@ -449,27 +457,30 @@ export async function refreshClientWorkspace(
     const { pages: seededPages } = autoSeedClientDraftPages(
       seedClientPages(briefs, fresh.blueprint),
       briefs,
-      config
+      config,
+      supplied
     );
 
     const isProtected = (page: FactoryPage) =>
       PROTECTED_PAGE_STATUSES.includes(page.status) || Boolean(page.approvedBy);
     refreshed = [];
     kept = [];
+    operatorKept = [];
+    const keep = (old: FactoryPage) => {
+      if (isProtected(old)) kept.push(old.slug);
+      else operatorKept.push(old.slug);
+      return old;
+    };
     const pages = seededPages.map((page) => {
       const old = current.pages.find((item) => item.slug === page.slug);
-      if (old && isProtected(old)) {
-        kept.push(old.slug);
-        return old;
-      }
+      if (old && (isProtected(old) || isOperatorCopy(old))) return keep(old);
       refreshed.push(page.slug);
       return page;
     });
-    // Template change: keep any shipped/approved page that the new template no longer lists.
+    // Template change: keep any shipped/approved or operator-copy page that the new template no longer lists.
     for (const old of current.pages) {
-      if (isProtected(old) && !pages.some((page) => page.slug === old.slug)) {
-        kept.push(old.slug);
-        pages.push(old);
+      if ((isProtected(old) || isOperatorCopy(old)) && !pages.some((page) => page.slug === old.slug)) {
+        pages.push(keep(old));
       }
     }
 
@@ -503,5 +514,5 @@ export async function refreshClientWorkspace(
       },
     };
   });
-  return { workspace, refreshed, kept };
+  return { workspace, refreshed, kept, operatorKept };
 }

@@ -200,6 +200,14 @@ export type FactoryPage = {
   approvedBy: string;
   approvedAt: string;
   publishedAt: string;
+  /**
+   * Client workspaces only. "operator" = client copy supplied by an operator (set-client-page-copy):
+   * template rebuilds never overwrite it; it still needs approval like any draft. Absent = template draft.
+   */
+  source?: "template" | "operator";
+  /** When / by whom the operator copy was last saved. */
+  copyUpdatedAt?: string;
+  copyUpdatedBy?: string;
 };
 
 export type IndexingRecord = {
@@ -451,4 +459,55 @@ export type FactoryWorkspace = {
   clientReferenceBaselines?: ClientReferenceBaseline[];
   /** Automation status for operator UI (baseline/drafts/competitors/stages). */
   clientAutomation?: ClientAutomationState;
+  /** Client-supplied assets (uploaded images) and the structured artwork list (client workspaces only). */
+  clientContent?: ClientContent;
+};
+
+export type ClientAssetRole = "work" | "artist-photo" | "logo" | "other";
+
+/** Metadata of an uploaded client image. Bytes live in the store at `key` (Blobs on Netlify, ./data locally). */
+export type ClientAsset = {
+  id: string;
+  /** Store file name: <id>.<ext> */
+  filename: string;
+  key: string;
+  contentType: string;
+  bytes: number;
+  sha256: string;
+  /** Original upload name (used by the importer to skip re-uploads). */
+  sourceName: string;
+  alt: string;
+  role: ClientAssetRole;
+  uploadedAt: string;
+  uploadedBy: string;
+};
+
+export type ArtworkAvailability =
+  | "available"
+  | "reserved"
+  | "sold"
+  | "private_collection"
+  | "not_for_sale"
+  | "unknown";
+
+/** One work in the artist template's structured list. Every field is optional except the id. */
+export type ClientArtwork = {
+  id: string;
+  title?: string;
+  series?: string;
+  medium?: string;
+  year?: string;
+  size?: string;
+  availability?: ArtworkAvailability;
+  /** ClientAsset id. */
+  imageId?: string;
+  featured?: boolean;
+  /** Only kept / shown when the client's pricing note says prices are listed publicly. */
+  price?: string;
+};
+
+export type ClientContent = {
+  assets: ClientAsset[];
+  artworks: ClientArtwork[];
+  updatedAt: string;
 };

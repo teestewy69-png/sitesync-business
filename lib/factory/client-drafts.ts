@@ -1,5 +1,7 @@
 import type { ContentBrief, FactoryPage } from "./types";
 import type { ClientBuildConfig } from "./client-config";
+import { artworkCaption, orderedArtworks, type SuppliedContent } from "./client-content";
+import type { ClientArtwork } from "./types";
 
 type Draft = Pick<FactoryPage, "title" | "metaDescription" | "headings" | "body">;
 
@@ -15,6 +17,39 @@ function lowerFirst(value: string): string {
   return value ? value.charAt(0).toLowerCase() + value.slice(1) : value;
 }
 
+/** "- Title (Series) — medium · size · year · availability" lines for supplied works. */
+function workLines(works: ClientArtwork[], pricingNote: string, limit = 60): string[] {
+  const lines = works.slice(0, limit).map((work) => {
+    const caption = artworkCaption(work, pricingNote);
+    const title = `${work.title || "Untitled"}${work.series ? ` (${work.series})` : ""}`;
+    return `- ${title}${caption ? ` — ${caption}` : ""}`;
+  });
+  if (works.length > limit) lines.push(`- …and ${works.length - limit} more in the full list.`);
+  return lines;
+}
+
+/** One honest bracketed note naming only the fields the client still has to confirm. */
+function missingWorkFieldsNote(works: ClientArtwork[]): string {
+  if (!works.length) return "";
+  const missing = (
+    [
+      ["image", (w: ClientArtwork) => !w.imageId],
+      ["medium", (w: ClientArtwork) => !w.medium],
+      ["size", (w: ClientArtwork) => !w.size],
+      ["year", (w: ClientArtwork) => !w.year],
+      ["availability", (w: ClientArtwork) => !w.availability || w.availability === "unknown"],
+    ] as Array<[string, (w: ClientArtwork) => boolean]>
+  )
+    .map(([label, test]) => [label, works.filter(test).length] as const)
+    .filter(([, count]) => count > 0)
+    .map(([label, count]) => `${label} for ${count === works.length ? "all" : count} of ${works.length} works`);
+  return missing.length ? `[Client to confirm: ${missing.join("; ")}.]` : "";
+}
+
+function uniq(values: Array<string | undefined>): string[] {
+  return [...new Set(values.map((v) => (v || "").trim()).filter(Boolean))];
+}
+
 const MISSING_LOCATION = "[Location not provided yet - add the client's city and state before review.]";
 
 /**
@@ -24,9 +59,20 @@ const MISSING_LOCATION = "[Location not provided yet - add the client's city and
 function portfolioSections(
   slug: string,
   headings: string[],
-  ctx: { config: ClientBuildConfig; offer: string; loc: string; contactLine: string; pricingLine: string }
+  ctx: {
+    config: ClientBuildConfig;
+    offer: string;
+    loc: string;
+    contactLine: string;
+    pricingLine: string;
+    supplied?: SuppliedContent;
+  }
 ): [string, string[]][] {
   const { config, offer, loc, contactLine, pricingLine } = ctx;
+  const works = orderedArtworks(ctx.supplied?.artworks || []);
+  const available = works.filter((w) => w.availability === "available");
+  const series = uniq(works.map((w) => w.series));
+  const mediums = uniq(works.map((w) => w.medium));
   const name = config.businessName;
   const goal = `Goal for this site: ${lowerFirst(config.primaryGoal)}.`;
   const makes = `${name} makes ${lowerFirst(offer)}${loc ? ` in ${loc}` : ""}.`;
@@ -36,15 +82,32 @@ function portfolioSections(
     case "about":
       return [
         [h(0, `About ${name}`), [PORTFOLIO_PAGE_NOTES.about]],
-        [h(1, "The work"), [`${name} makes ${lowerFirst(offer)}. ${goal}`, "[Client to supply: mediums, subjects and how the work is made.]"]],
+        [
+          h(1, "The work"),
+          [
+            `${name} makes ${lowerFirst(offer)}. ${goal}`,
+            series.length ? `Series: ${series.join(", ")}.` : "",
+            mediums.length ? `Mediums: ${mediums.join("; ")}.` : "",
+            mediums.length ? "" : "[Client to supply: mediums, subjects and how the work is made.]",
+          ],
+        ],
         [h(2, "Based in"), [loc ? `${name} is based in ${loc}.` : MISSING_LOCATION, contactLine]],
       ];
     case "portfolio":
       return [
-        [h(0, "Selected work"), [makes, PORTFOLIO_PAGE_NOTES.portfolio, loc ? "" : MISSING_LOCATION]],
+        [
+          h(0, "Selected work"),
+          works.length
+            ? [makes, ...workLines(works, config.pricingNote), "", missingWorkFieldsNote(works), loc ? "" : MISSING_LOCATION]
+            : [makes, PORTFOLIO_PAGE_NOTES.portfolio, loc ? "" : MISSING_LOCATION],
+        ],
         [
           h(1, "Available originals"),
-          ["[Client to supply: which originals are currently available, with title, medium and size. Leave out sold work or mark it sold.]", pricingLine],
+          available.length
+            ? [...workLines(available, config.pricingNote), "", pricingLine]
+            : works.length
+              ? ["[Client to confirm which of these originals are currently available.]", pricingLine]
+              : ["[Client to supply: which originals are currently available, with title, medium and size. Leave out sold work or mark it sold.]", pricingLine],
         ],
         [h(2, "How to inquire"), [contactLine]],
       ];
@@ -63,7 +126,12 @@ function portfolioSections(
     default:
       return [
         [h(0, name), [makes, goal, loc ? "" : MISSING_LOCATION]],
-        [h(1, "The work"), [PORTFOLIO_PAGE_NOTES[slug] || PORTFOLIO_PAGE_NOTES.home]],
+        [
+          h(1, "The work"),
+          works.length
+            ? workLines(works, config.pricingNote, 12)
+            : [PORTFOLIO_PAGE_NOTES[slug] || PORTFOLIO_PAGE_NOTES.home],
+        ],
         [h(2, "How to inquire"), [contactLine, pricingLine]],
       ];
   }
@@ -76,7 +144,8 @@ function portfolioSections(
  */
 export function draftFromClientBrief(
   brief: ContentBrief,
-  config: ClientBuildConfig
+  config: ClientBuildConfig,
+  supplied?: SuppliedContent
 ): Draft {
   const loc = [config.city, config.state].filter(Boolean).join(", ");
   const niche = config.niche || "services";
@@ -111,6 +180,7 @@ export function draftFromClientBrief(
         loc,
         contactLine,
         pricingLine,
+        supplied,
       })
     : [
         [

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { plannedPagePurpose } from "@/lib/factory/client-templates";
 import { notFound } from "next/navigation";
 import { DESIGN_STYLES, type DesignStyleId } from "@/lib/design-styles";
+import ClientWorksGrid from "@/components/factory/ClientWorksGrid";
 import { buildClientPreviewModel } from "@/lib/factory/client-preview";
 import { configFromProject } from "@/lib/factory/client-config";
 import { readClientWorkspace } from "@/lib/factory/client-workspace";
@@ -39,10 +40,14 @@ export default async function ClientDeliverableHome({
   const config = configFromProject(project);
   const styleId = (project.designStyleId || config.designStyleId) as DesignStyleId;
   const style = DESIGN_STYLES.find((item) => item.id === styleId) || DESIGN_STYLES[0];
-  // Built only from the client's own details: no showcase prices, testimonials or Sitesinc branding.
-  const preview = buildClientPreviewModel(config);
-
   const workspace = await readClientWorkspace(projectId);
+  // Built only from the client's own details and supplied content (operator copy, uploads, artwork list):
+  // no showcase prices, testimonials or Sitesinc branding. Placeholders only where nothing is supplied.
+  const preview = buildClientPreviewModel(config, {
+    projectId,
+    content: workspace?.clientContent,
+    pages: workspace?.pages,
+  });
   const cityPages = approvedEntries(await readCityIndex(projectId).catch(() => null));
   const pages = project.seededPages?.length
     ? project.seededPages
@@ -54,9 +59,15 @@ export default async function ClientDeliverableHome({
         Client deliverable preview · project {projectId} · noindex · not Netlify-published
       </p>
       <header className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-6 py-5">
-        <div>
-          <p className="text-lg font-semibold">{config.businessName}</p>
-          <p className="text-xs text-zinc-400">{preview.tagline}</p>
+        <div className="flex items-center gap-3">
+          {preview.logo ? (
+            // eslint-disable-next-line @next/next/no-img-element -- client upload served from the factory store
+            <img src={preview.logo.src} alt={preview.logo.alt} className="h-10 w-auto" />
+          ) : null}
+          <div>
+            <p className="text-lg font-semibold">{config.businessName}</p>
+            <p className="text-xs text-zinc-400">{preview.tagline}</p>
+          </div>
         </div>
         <nav className="flex flex-wrap gap-3 text-sm text-zinc-300">
           {pages.map((page) => (
@@ -84,9 +95,14 @@ export default async function ClientDeliverableHome({
           className="overflow-hidden rounded-3xl border border-white/10 bg-black/40"
           style={{ boxShadow: `0 0 0 1px ${style.accent}22` }}
         >
-          <div className="px-6 py-12 sm:px-10" style={{ background: `linear-gradient(135deg, ${style.accent}26, transparent 60%)` }}>
+          <div
+            className={`px-6 py-12 sm:px-10 ${preview.heroImage ? "grid items-center gap-8 sm:grid-cols-[1fr_minmax(0,320px)]" : ""}`}
+            style={{ background: `linear-gradient(135deg, ${style.accent}26, transparent 60%)` }}
+          >
+            <div>
             <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">{preview.businessName}</h1>
             {preview.tagline ? <p className="mt-3 max-w-2xl text-base text-zinc-300">{preview.tagline}</p> : null}
+            {preview.intro ? <p className="mt-4 max-w-2xl text-sm leading-relaxed text-zinc-200">{preview.intro}</p> : null}
             {preview.cta ? (
               <a
                 href={preview.cta.href}
@@ -96,10 +112,32 @@ export default async function ClientDeliverableHome({
                 {preview.cta.label}
               </a>
             ) : null}
+            </div>
+            {preview.heroImage ? (
+              // eslint-disable-next-line @next/next/no-img-element -- client upload served from the factory store
+              <img src={preview.heroImage.src} alt={preview.heroImage.alt} className="w-full rounded-2xl object-cover" />
+            ) : null}
           </div>
+          {preview.selectedWorks.length ? (
+            <div className="border-t border-white/10 p-6 sm:p-8">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <h2 className="text-base font-semibold text-white">Selected work</h2>
+                {preview.workCount > preview.selectedWorks.length ? (
+                  <Link href={`/demo/client/${projectId}/portfolio`} className="text-xs text-emerald-300 hover:underline">
+                    All {preview.workCount} works →
+                  </Link>
+                ) : null}
+              </div>
+              <ClientWorksGrid works={preview.selectedWorks} className="mt-4" />
+            </div>
+          ) : null}
           <div className="grid gap-4 border-t border-white/10 p-6 sm:grid-cols-2 sm:p-8">
             {preview.sections.map((section) => (
               <div key={section.slug} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                {section.slug === "about" && preview.artistPhoto ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- client upload served from the factory store
+                  <img src={preview.artistPhoto.src} alt={preview.artistPhoto.alt} className="mb-3 h-24 w-24 rounded-xl object-cover" />
+                ) : null}
                 <h2 className="text-sm font-semibold text-white">{section.title}</h2>
                 <p className={`mt-2 text-sm ${section.placeholder ? "italic text-amber-200/80" : "text-zinc-300"}`}>
                   {section.text}
