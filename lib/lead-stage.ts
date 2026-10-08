@@ -1,5 +1,5 @@
 /** Operator-only pipeline stage for leads, inquiries and projects. Never shown on public pages. */
-export const LEAD_STAGES = ["new", "in_progress", "paid", "closed"] as const;
+export const LEAD_STAGES = ["new", "in_progress", "paid", "done", "closed"] as const;
 
 export type LeadStage = (typeof LEAD_STAGES)[number];
 
@@ -9,6 +9,7 @@ const LABELS: Record<LeadStage, string> = {
   new: "New",
   in_progress: "In progress",
   paid: "Paid",
+  done: "Done",
   closed: "Closed",
 };
 
