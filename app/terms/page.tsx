@@ -89,7 +89,7 @@ export default function TermsPage() {
               3. Pricing
             </h2>
             <p className="mt-2">
-              Website builds are $1,995 — a flat fee, no quotes, no negotiation.
+              Website builds are $1,995 — a flat fee. No negotiation.
               Optional monitoring is $129/month. We may change published prices
               for future projects; the $1,995 fee for an accepted project does
               not change after you accept it.

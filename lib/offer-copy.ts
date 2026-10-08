@@ -34,6 +34,9 @@ export const RETIRED_OFFER_PATTERNS: RegExp[] = [
   /start(ing)? at \$/i,
   /from \$1,?995/i,
   /\bstarting price\b/i,
+  /\bno quotes\b/i,
+  /\b(get|request|ask for) (a )?quote\b/i,
+  /\bfree quotes?\b/i,
 ];
 
 /** The first retired-offer phrase found in `text`, or null. */

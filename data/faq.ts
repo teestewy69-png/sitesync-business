@@ -37,7 +37,7 @@ export const faqItems: FaqItem[] = [
   {
     question: "How much does it cost? Are there any subscriptions?",
     answer:
-      "Website builds are $1,995 — a flat fee, no quotes, no negotiation. You pay 50% ($997.50) to start and 50% at launch. There is no required subscription or builder lock-in. Optional monitoring is $129/month if you want us to handle ongoing tech updates and small content changes. You can skip it. There is no long-term contract.",
+      "Website builds are $1,995 — a flat fee. No negotiation. You pay 50% ($997.50) to start and 50% at launch. There is no required subscription or builder lock-in. Optional monitoring is $129/month if you want us to handle ongoing tech updates and small content changes. You can skip it. There is no long-term contract.",
   },
   {
     question: "How does the 50% to start / 50% at launch payment work?",

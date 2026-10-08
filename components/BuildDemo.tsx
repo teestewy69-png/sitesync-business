@@ -323,7 +323,7 @@ export default function BuildDemo() {
                         <span className="font-semibold text-sky-200">
                           Lead-ready
                         </span>
-                        <span>Quote form · reviews</span>
+                        <span>Lead form · reviews</span>
                         <span>Tap-to-call CTA</span>
                       </div>
                     </div>

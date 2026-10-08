@@ -266,13 +266,15 @@ test("published factory pages carrying retired copy are replaced by the current 
   assert.ok(offer.findRetiredOfferClaim("lead capture, monetization placeholders, Stripe if you sell"));
   assert.ok(offer.findRetiredOfferClaim("Pay in full through Stripe"));
   assert.ok(offer.findRetiredOfferClaim("Website builds start at $1,995. Pay 50% to start and 50% at launch."));
+  assert.ok(offer.findRetiredOfferClaim("Request a quote for your website"));
+  assert.ok(offer.findRetiredOfferClaim("a flat fee, no quotes, no negotiation"));
   assert.equal(offer.findRetiredOfferClaim("Website builds are $1,995. Pay 50% to start and 50% at launch."), null);
 });
 
 test("public copy: $1,995 is a flat fee, not a starting price or quote", () => {
-  const STARTING = /start(ing)? at \$|\bstarting price\b|from \$1,?995/i;
+  const BANNED = /start(ing)? at \$|\bstarting price\b|from \$1,?995|\bno quotes\b|\b(get|request|ask for) (a )?quote\b|\bfree quotes?\b/i;
   for (const rel of PUBLIC_SOURCES) {
     const text = readFileSync(path.join(ROOT, rel), "utf8");
-    assert.doesNotMatch(text, STARTING, rel);
+    assert.doesNotMatch(text, BANNED, rel);
   }
 });
