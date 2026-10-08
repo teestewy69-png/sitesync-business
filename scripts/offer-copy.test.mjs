@@ -209,6 +209,16 @@ test("Sitesinc public site has the same page types as the general client templat
   assert.match(form, /\/api\/subscribe/);
 });
 
+test("production surfaces include the general-template pages for a Sitesinc production publish", async () => {
+  const { PRODUCTION_SURFACES } = await import("../lib/factory/surfaces.ts");
+  const template = PRODUCTION_SURFACES.find((s) => s.id === "template_pages");
+  assert.ok(template, "template_pages surface");
+  assert.deepEqual([...template.paths], ["/services", "/about", "/contact"]);
+  assert.equal(template.slugs.length, 0, "template pages are Next.js routes, not factory hub slugs");
+  assert.ok(PRODUCTION_SURFACES.find((s) => s.id === "service_pages"));
+  assert.ok(PRODUCTION_SURFACES.find((s) => s.id === "industry_pages"));
+});
+
 /* ------------------------------- public copy ------------------------------- */
 
 function walk(dir, out = []) {

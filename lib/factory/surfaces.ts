@@ -14,6 +14,13 @@ export const PRODUCTION_SURFACES = [
     note: "Already on the current homepage. No new public route.",
   },
   {
+    id: "template_pages",
+    label: "Client-template pages (services, about, contact)",
+    paths: ["/services", "/about", "/contact"],
+    slugs: [] as string[],
+    note: "Always-on Next.js routes matching the general client template. They go live with the production code deploy, not as factory hub drafts.",
+  },
+  {
     id: "service_pages",
     label: "Service / package pages",
     paths: [
