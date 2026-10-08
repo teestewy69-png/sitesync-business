@@ -7,8 +7,8 @@ export type ProcessStep = {
 export const processSteps: ProcessStep[] = [
   {
     step: "01",
-    title: "Pick your design & lock in your spot",
-    text: "Browse our 8 ultra-modern layouts and choose the one that feels right for your business. Reserve your build and pay securely via Stripe (first 10 get 50% off).",
+    title: "Pick your design & request a build",
+    text: "Browse our 8 ultra-modern layouts and choose the one that feels right for your business. Submit a request — that is not a purchase. If we accept the project, you pay $997.50 to start and $997.50 at launch.",
   },
   {
     step: "02",
@@ -18,7 +18,7 @@ export const processSteps: ProcessStep[] = [
   {
     step: "03",
     title: "We build, optimize & connect everything",
-    text: "We design and develop your site on Next.js + Tailwind, set up SEO basics, funnels, Stripe payments, and monetization placeholders, then connect your domain and Netlify hosting.",
+    text: "We design and develop your site on Next.js + Tailwind, set up SEO basics and lead capture (contact form and email signup), then connect your domain and Netlify hosting.",
   },
   {
     step: "04",

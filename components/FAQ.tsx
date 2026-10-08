@@ -13,7 +13,7 @@ export default function FAQ() {
           <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
             Questions small business owners actually ask.
           </h2>
-          <p className="text-sm text-slate-300">
+          <p className="text-base text-slate-300">
             No tech jargon, no hidden fees. Just clear answers about how your
             website is built, what you pay, and what you get.
           </p>
@@ -21,20 +21,20 @@ export default function FAQ() {
 
         <div className="space-y-3">
           {faqItems.map((item, idx) => (
-            <div
+            <details
               key={item.question}
-              className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200 backdrop-blur"
+              className="rounded-2xl border border-white/10 bg-white/5 p-4 text-base text-slate-200 backdrop-blur"
             >
-              <p className="text-xs font-semibold uppercase tracking-wider text-brand-300">
-                Q{String(idx + 1).padStart(2, "0")}
-              </p>
-              <h3 className="mt-1 text-sm font-semibold text-slate-50 sm:text-base">
-                {item.question}
-              </h3>
-              <p className="mt-2 text-xs text-slate-300 sm:text-sm">
-                {item.answer}
-              </p>
-            </div>
+              <summary className="cursor-pointer list-none">
+                <p className="text-xs font-semibold uppercase tracking-wider text-brand-300">
+                  Q{String(idx + 1).padStart(2, "0")}
+                </p>
+                <h3 className="mt-1 text-sm font-semibold text-slate-50 sm:text-base">
+                  {item.question}
+                </h3>
+              </summary>
+              <p className="mt-2 text-base text-slate-300">{item.answer}</p>
+            </details>
           ))}
         </div>
       </div>

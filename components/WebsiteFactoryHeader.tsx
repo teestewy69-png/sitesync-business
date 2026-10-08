@@ -1,0 +1,39 @@
+export default function WebsiteFactoryHeader() {
+  return (
+    <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-4">
+      <div>
+        <h1 className="text-lg font-semibold text-white">Website Factory</h1>
+        <p className="text-base text-slate-400">
+          Create projects, generate sites, then review them in the protected SEO
+          Intelligence workspace (baseline crawl, issues, refresh, indexing).
+        </p>
+      </div>
+      <div className="flex gap-2">
+        <a
+          href="/case-study"
+          className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-200 hover:border-slate-500"
+        >
+          Case study
+        </a>
+        <a
+          href="/app"
+          className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-200 hover:border-slate-500"
+        >
+          Factory
+        </a>
+        <a
+          href="#pick-design"
+          className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-500"
+        >
+          New Project
+        </a>
+        <a
+          href="#designs"
+          className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-200 hover:border-slate-500"
+        >
+          View Sites
+        </a>
+      </div>
+    </div>
+  );
+}

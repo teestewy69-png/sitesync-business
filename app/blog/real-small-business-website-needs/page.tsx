@@ -1,4 +1,12 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "What a Real Small Business Website Actually Needs | Sitesinc",
+  description: "The sections and technical basics every small business website needs: clear hero, offer, proof, booking flow, FAQ, speed and security.",
+  alternates: { canonical: "/blog/real-small-business-website-needs" },
+  openGraph: { title: "What a Real Small Business Website Actually Needs | Sitesinc", description: "The sections and technical basics every small business website needs: clear hero, offer, proof, booking flow, FAQ, speed and security.", url: "/blog/real-small-business-website-needs" },
+};
 
 export default function RealSmallBusinessWebsiteNeeds() {
   return (
@@ -12,14 +20,14 @@ export default function RealSmallBusinessWebsiteNeeds() {
         </Link>
 
         <header className="space-y-2">
-          <p className="text-[11px] text-slate-400">
+          <p className="text-xs text-slate-400">
             Published on {new Date("2024-08-01").toLocaleDateString()}
           </p>
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
             What a Real Small Business Website Actually Needs to Have (And Most
             Don’t)
           </h1>
-          <p className="text-sm text-slate-300 sm:text-base">
+          <p className="text-base text-slate-300">
             Most small business websites look “fine” at a glance—but
             they&apos;re missing 3–5 critical elements that cost you leads every
             single week. Use this guide to see if your site is really doing its
@@ -27,7 +35,7 @@ export default function RealSmallBusinessWebsiteNeeds() {
           </p>
         </header>
 
-        <div className="mt-8 space-y-6 text-sm text-slate-200 sm:text-base">
+        <div className="mt-8 space-y-6 text-base text-slate-200">
           <section>
             <h2 className="text-lg font-semibold text-slate-50 sm:text-xl">
               1. A clear hero section that says who you are and what you do
@@ -148,7 +156,7 @@ export default function RealSmallBusinessWebsiteNeeds() {
 
           <section>
             <h2 className="text-lg font-semibold text-slate-50 sm:text-xl">
-              How Sitesync Business bakes all of this into your site
+              How Sitesinc bakes all of this into your site
             </h2>
             <p className="mt-2">
               When we build your site, these elements aren&apos;t
@@ -183,10 +191,10 @@ export default function RealSmallBusinessWebsiteNeeds() {
                 href="/"
                 className="font-semibold text-brand-300 hover:underline"
               >
-                Click here to see how Sitesync Business can build it for you.
+                Click here to see how Sitesinc can build it for you.
               </Link>{" "}
-              We&apos;ll handle the structure, design, SEO basics, and
-              monetization setup so you can focus on running your business.
+              We&apos;ll handle the structure, design, SEO basics, and lead
+              capture so you can focus on running your business.
             </p>
           </section>
         </div>

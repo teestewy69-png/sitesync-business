@@ -1,4 +1,12 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy | Sitesinc",
+  description: "How Sitesinc collects, uses, and protects your information.",
+  alternates: { canonical: "/privacy" },
+  openGraph: { title: "Privacy Policy | Sitesinc", description: "How Sitesinc collects, uses, and protects your information.", url: "/privacy" },
+};
 
 export default function PrivacyPage() {
   return (
@@ -14,14 +22,14 @@ export default function PrivacyPage() {
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
           Privacy Policy
         </h1>
-        <p className="mt-3 text-sm text-slate-400">
+        <p className="mt-3 text-base text-slate-400">
           Effective date: August 12, 2026
         </p>
 
-        <div className="mt-8 space-y-8 text-sm leading-7 text-slate-300">
+        <div className="mt-8 space-y-8 text-base leading-7 text-slate-300">
           <section>
             <p>
-              Sitesync Business (“we,” “us,” or “our”) operates the website at{" "}
+              Sitesinc (“we,” “us,” or “our”) operates the website at{" "}
               <span className="text-slate-100">sitesinc.co</span>. This Privacy
               Policy explains how we collect, use, and protect your information
               when you visit our website, contact us, purchase services, or sign
@@ -55,8 +63,8 @@ export default function PrivacyPage() {
                 <span className="font-medium text-slate-100">
                   Payment-related information
                 </span>{" "}
-                when you purchase services or digital products. Payments are
-                processed through third-party providers such as Stripe. We do
+                when you pay a Sitesinc invoice. Payments are processed by
+                third-party payment providers. We do
                 not store your full payment card details on our servers.
               </li>
               <li>
@@ -80,9 +88,9 @@ export default function PrivacyPage() {
                 Provide and deliver our website design and development services
               </li>
               <li>
-                Communicate with you about your inquiry, purchase, or project
+                Communicate with you about your website build request or project
               </li>
-              <li>Process payments and send order-related confirmations</li>
+              <li>Process invoice payments and send project-related confirmations</li>
               <li>Improve our website, services, and user experience</li>
               <li>
                 Send updates, resources, or marketing emails if you opt in
@@ -134,7 +142,7 @@ export default function PrivacyPage() {
               our business, including:
             </p>
             <ul className="mt-3 list-disc space-y-2 pl-6">
-              <li>Stripe for payment processing</li>
+              <li>A third-party payment processor for invoice payments</li>
               <li>Google Analytics for traffic and usage reporting</li>
               <li>Netlify for website hosting and deployment</li>
               <li>Email and form tools for communications and lead capture</li>
@@ -231,7 +239,7 @@ export default function PrivacyPage() {
             </p>
             <p className="mt-3">
               <span className="font-medium text-slate-100">
-                Sitesync Business
+                Sitesinc
               </span>
               <br />
               Website:{" "}

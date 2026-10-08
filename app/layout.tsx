@@ -2,8 +2,13 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import content from "@/content.json";
 import Analytics from "@/components/Analytics";
-import AnnouncementTicker from "@/components/AnnouncementTicker";
-import { CartProvider } from "@/components/shop/CartProvider";
+import SitesincTicker from "@/components/SitesincTicker";
+import StagingBanner from "@/components/StagingBanner";
+import {
+  isStagingEnv,
+  publicAnalyticsHosts,
+  publicAnalyticsMeasurementId,
+} from "@/lib/site-env";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -16,7 +21,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "";
+const GA_MEASUREMENT_ID = publicAnalyticsMeasurementId();
+const GA_HOSTS = publicAnalyticsHosts();
 const { seo } = content;
 
 export const metadata: Metadata = {
@@ -44,6 +50,9 @@ export const metadata: Metadata = {
   icons: {
     icon: "/logo.png",
   },
+  ...(isStagingEnv()
+    ? { robots: { index: false, follow: false, nocache: true } }
+    : {}),
 };
 
 export default function RootLayout({
@@ -57,11 +66,10 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-canvas text-slate-200">
-        <CartProvider>
-          <AnnouncementTicker />
-          {children}
-          <Analytics measurementId={GA_MEASUREMENT_ID} />
-        </CartProvider>
+        <SitesincTicker />
+        {children}
+        <StagingBanner />
+        <Analytics measurementId={GA_MEASUREMENT_ID} allowedHosts={GA_HOSTS} />
       </body>
     </html>
   );

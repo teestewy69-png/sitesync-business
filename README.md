@@ -1,3 +1,19 @@
+# Sitesinc Website Factory
+
+Sitesinc (`sitesinc.co`) is a done-for-you website build service. Public brand: **Sitesinc**. Product descriptor: **Website Factory**. Contact: `save@sitesinc.co`.
+
+Do not use SiteSync, Sitesync, or Sitesync Business in public or operator copy.
+
+Website builds start at $1,995 ($997.50 to start, $997.50 at launch). Optional monitoring is $129/month, cancel anytime, no long-term contract. Submitting the homepage form is a request, not a purchase.
+
+## Persistence
+
+Local development writes leads and client projects to `data/store/*.json`.
+
+On Netlify (`NETLIFY=true`), the CRM adapter uses Netlify Blobs (`sitesinc-crm`). That is required for durable lead storage. Do not treat the local JSON files as production storage.
+
+Force a backend with `SITESINC_STORE=local` or `SITESINC_STORE=blobs`.
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
@@ -34,3 +50,14 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Factory / SEO state (durable)
+
+Workspace, baselines, QA checklists and screenshots are stored through `lib/persistence.ts` too: Netlify Blobs on
+Netlify (`sitesinc-crm` production, `sitesinc-crm-staging` staging) and `data/factory/**` locally. Write failures are
+reported (HTTP 500/409), public pages degrade instead of returning 500, `/api/health` includes the factory store and
+workspace status, and `GET /api/factory/export` (operator session) downloads a JSON backup with a `warnings` list.
+
+Moving local factory state to a deployed store is done with `scripts/migrate-factory-state.mjs` (dry run by default;
+real baselines and the QA checklist only, workspace opt-in). **Migrate first, then deploy**; see
+`docs/FACTORY_STATE.md` (first-deploy order, rollback, the "no ETag" warning) and `docs/STAGING.md`.

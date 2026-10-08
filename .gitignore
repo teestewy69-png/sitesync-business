@@ -37,6 +37,33 @@ yarn-error.log*
 # vercel
 .vercel
 
+# netlify local deploy cache
+.netlify/
+
+# local JSON store (leads, orders, inquiries, factory)
+/data/store/*.json
+/data/store/.write-probe
+/data/store/uploads/
+!/data/store/.gitkeep
+
+# internal factory workspace + dated baselines
+/data/factory/**
+!/data/factory/.gitkeep
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+!/data/factory/screenshots/.gitkeep
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# local dev artifacts
+.next-seo-dev/
+tailwindcss-*.log
+
+# SiteFlow local state (orders ledger, partners, commissions, clicks) and private deliverables
+/data/siteflow/**
+/data/private/**

@@ -10,21 +10,21 @@ export default function Footer() {
     <footer className="relative border-t border-white/5 bg-black py-8 text-white">
       <div className="pointer-events-none absolute inset-x-0 -top-10 h-10 bg-gradient-to-b from-surface-elevated/60 via-transparent to-transparent" />
 
-      <div className="relative mx-auto flex max-w-6xl flex-col gap-6 px-6 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between sm:text-sm">
+      <div className="relative mx-auto flex max-w-6xl flex-col gap-6 px-6 text-sm text-slate-400 sm:flex-row sm:items-center sm:justify-between sm:text-base">
         {/* Left: brand & rights */}
         <div className="space-y-2">
-          {/* The logo lockup already contains the Sitesync wordmark */}
+          {/* The logo lockup already contains the Sitesinc wordmark */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/logo.png"
             alt={site.name}
             className="h-14 w-auto rounded-lg ring-1 ring-white/10 sm:h-16"
           />
-          <p className="text-[11px] text-slate-500 sm:text-xs">
+          <p className="text-sm text-slate-400 sm:text-sm">
             © {new Date().getFullYear()} {footer.legalName}. All rights
             reserved.
           </p>
-          <p className="text-[11px] text-slate-400 sm:text-xs">
+          <p className="text-sm text-slate-400 sm:text-sm">
             Email:{" "}
             <a
               href={`mailto:${footer.email}`}
@@ -36,13 +36,13 @@ export default function Footer() {
         </div>
 
         {/* Middle: trust / security */}
-        <div className="space-y-1 text-[11px] text-slate-400 sm:text-xs">
+        <div className="space-y-1 text-sm text-slate-400 sm:text-base">
           <p className="font-medium text-slate-200">{footer.trustTitle}</p>
           <p>{footer.trustLine}</p>
         </div>
 
         {/* Right: quick links */}
-        <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-400 sm:justify-end sm:text-xs">
+        <div className="flex flex-wrap items-center gap-3 text-sm text-slate-400 sm:justify-end sm:text-base">
           {footer.scrollLinks.map((link) => (
             <button
               key={link.target}
@@ -53,9 +53,6 @@ export default function Footer() {
               {link.label}
             </button>
           ))}
-          <a href="/shop" className="transition hover:text-brand-300">
-            Shop
-          </a>
           <a href="/blog" className="transition hover:text-brand-300">
             Blog
           </a>

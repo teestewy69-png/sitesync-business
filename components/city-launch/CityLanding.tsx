@@ -1,0 +1,363 @@
+import Link from "next/link";
+import type { CSSProperties, ReactNode } from "react";
+import { getUsCityIndex } from "@/lib/city-launch";
+import type { CityLandingData, ClientSiteLinks } from "@/lib/factory/city-launch-public";
+import { cityTheme } from "@/lib/factory/city-launch-public";
+import CityReveal from "./CityReveal";
+import s from "./city-landing.module.css";
+
+function Paragraphs({ text }: { text: string }) {
+  const blocks = text.split(/\n\s*\n/).map((b) => b.trim()).filter(Boolean);
+  return (
+    <div className={s.prose}>
+      {blocks.map((block, i) => {
+        const lines = block.split("\n").map((l) => l.trim()).filter(Boolean);
+        if (lines.length && lines.every((l) => /^[-•*]\s+/.test(l))) {
+          return (
+            <ul key={i}>
+              {lines.map((l, j) => (
+                <li key={j}>{l.replace(/^[-•*]\s+/, "")}</li>
+              ))}
+            </ul>
+          );
+        }
+        return <p key={i}>{lines.join(" ")}</p>;
+      })}
+    </div>
+  );
+}
+
+function telHref(phone: string) {
+  const digits = phone.replace(/[^\d+]/g, "");
+  return digits ? `tel:${digits}` : "";
+}
+
+/** Plots the city and its nearest real neighbours (Census internal-point coordinates) on a small animated SVG map. */
+type MapLabel = { x: number; y: number; anchor: "start" | "middle" | "end"; text: string };
+
+/** Greedy label placement: try above / below / right / left of each dot; drop a label that would overlap (dot keeps a tooltip). */
+function placeMapLabels(points: Array<{ x: number; y: number; text: string }>): Array<MapLabel | null> {
+  const boxes: Array<[number, number, number, number]> = [[200 - 40, 165, 200 + 40, 182]]; // main city label
+  const charW = 5.4;
+  const h = 11;
+  return points.map((p) => {
+    const w = p.text.length * charW;
+    const options: MapLabel[] = [
+      { x: p.x, y: p.y - 9, anchor: "middle", text: p.text },
+      { x: p.x, y: p.y + 16, anchor: "middle", text: p.text },
+      { x: p.x + 8, y: p.y + 4, anchor: "start", text: p.text },
+      { x: p.x - 8, y: p.y + 4, anchor: "end", text: p.text },
+    ];
+    for (const o of options) {
+      const x1 = o.anchor === "middle" ? o.x - w / 2 : o.anchor === "start" ? o.x : o.x - w;
+      const box: [number, number, number, number] = [x1, o.y - h + 2, x1 + w, o.y + 2];
+      if (box[0] < 2 || box[2] > 398 || box[1] < 2 || box[3] > 298) continue;
+      if (boxes.some((b) => box[0] < b[2] && box[2] > b[0] && box[1] < b[3] && box[3] > b[1])) continue;
+      boxes.push(box);
+      return o;
+    }
+    return null;
+  });
+}
+
+function ServiceMap({ data }: { data: CityLandingData }) {
+  const { draft } = data;
+  if (draft.city.lat === null || draft.city.lng === null || !draft.nearby.length) return null;
+  const lat0 = draft.city.lat;
+  const lng0 = draft.city.lng;
+  const cos = Math.cos((lat0 * Math.PI) / 180);
+  const index = getUsCityIndex();
+  const pts = draft.nearby
+    .slice(0, 6)
+    .map((n) => {
+      const c = index.bySlug.get(n.slug);
+      return c ? { ...n, dx: (c.lng - lng0) * cos, dy: c.lat - lat0 } : null;
+    })
+    .filter((p): p is NonNullable<typeof p> => p !== null);
+  if (!pts.length) return null;
+  const maxR = Math.max(...pts.map((p) => Math.hypot(p.dx, p.dy)), 1e-6);
+  const placed = pts.map((p) => {
+    // sqrt scale keeps close neighbours readable while preserving real direction and distance order.
+    const r = 34 + 100 * Math.sqrt(Math.hypot(p.dx, p.dy) / maxR);
+    const a = Math.atan2(-p.dy, p.dx);
+    return { ...p, x: 200 + r * Math.cos(a), y: 150 + r * Math.sin(a) * 0.9 };
+  });
+  const live = new Set(data.nearbyLive.map((n) => n.slug));
+  const labels = placeMapLabels(placed.map((p) => ({ x: p.x, y: p.y, text: `${p.name} · ${Math.round(p.distanceMiles)} mi` })));
+  return (
+    <div className={`${s.mapCard} ${s.reveal}`} data-reveal="">
+      <svg viewBox="0 0 400 300" className={s.map} role="img" aria-label={`Map of ${draft.city.name} and nearby cities`}>
+        {placed.map((p, i) => (
+          <line key={p.slug} x1={200} y1={150} x2={p.x} y2={p.y} className={s.mapLine} style={{ "--d": `${0.25 + i * 0.12}s` } as CSSProperties} />
+        ))}
+        <circle cx={200} cy={150} r={14} className={s.ring} />
+        <circle cx={200} cy={150} r={14} className={`${s.ring} ${s.ring2}`} />
+        <circle cx={200} cy={150} r={14} className={`${s.ring} ${s.ring3}`} />
+        <circle cx={200} cy={150} r={7} fill="var(--cl-accent)" />
+        <text x={200} y={178} textAnchor="middle" className={s.mapLabelMain}>
+          {draft.city.name}
+        </text>
+        {placed.map((p, i) => (
+          <g key={`${p.slug}-pt`}>
+            <title>{`${p.name}, ${p.state}: ${p.distanceMiles} mi ${p.direction}`}</title>
+            <circle cx={p.x} cy={p.y} r={live.has(p.slug) ? 5 : 3.5} fill={live.has(p.slug) ? "var(--cl-accent)" : "var(--cl-muted)"} />
+            {labels[i] ? (
+              <text x={labels[i]!.x} y={labels[i]!.y} textAnchor={labels[i]!.anchor} className={s.mapLabel}>
+                {labels[i]!.text}
+              </text>
+            ) : null}
+          </g>
+        ))}
+      </svg>
+      <p className={s.mapCaption}>
+        Nearest cities to {draft.city.name}, plotted from U.S. Census coordinates. Highlighted dots have their own page.
+      </p>
+    </div>
+  );
+}
+
+export default function CityLanding({ data, links }: { data: CityLandingData; links: ClientSiteLinks }) {
+  const { ctx, draft, style, nearbyLive, isDraftPreview } = data;
+  const theme = cityTheme(style);
+  const c = draft.content;
+  const contactHref = links.contact ? `${links.contact}?city=${encodeURIComponent(draft.slug)}` : links.email ? `mailto:${links.email}` : "";
+  const tel = ctx.business.phone ? telHref(ctx.business.phone) : "";
+  const rootId = `cl-${draft.slug}`;
+  const vars = {
+    "--cl-bg": theme.bg,
+    "--cl-surface": theme.surface,
+    "--cl-text": theme.text,
+    "--cl-muted": theme.muted,
+    "--cl-border": theme.border,
+    "--cl-accent": style.accent,
+    "--cl-scale": String(theme.headingScale),
+  } as CSSProperties;
+  const fromBase =
+    ctx.baseCity && draft.city.lat !== null && draft.city.lng !== null && ctx.baseCity.slug !== draft.slug
+      ? Math.round(
+          Math.hypot(
+            (draft.city.lat - ctx.baseCity.lat) * 69,
+            (draft.city.lng - ctx.baseCity.lng) * 69 * Math.cos((ctx.baseCity.lat * Math.PI) / 180)
+          )
+        )
+      : null;
+  const cta = (extra?: string): ReactNode => (
+    <>
+      {tel ? (
+        <a className={`${s.btn} ${extra || ""}`} href={tel} data-lead="call" data-city={draft.slug}>
+          Call {ctx.business.phone}
+        </a>
+      ) : null}
+      {contactHref ? (
+        <a className={tel ? `${s.btnGhost} ${extra || ""}` : `${s.btn} ${extra || ""}`} href={contactHref} data-lead="contact" data-city={draft.slug}>
+          {tel ? (links.contact ? "Request service online" : "Email us") : `Contact ${ctx.business.businessName}`}
+        </a>
+      ) : null}
+    </>
+  );
+  const h1 = c.h1 || c.title;
+  const cityIdx = h1.toLowerCase().indexOf(draft.city.name.toLowerCase());
+
+  return (
+    <div id={rootId} className={`${s.root} ${theme.variant === "split" ? s.split : s.center}`} style={vars}>
+      <CityReveal rootId={rootId} />
+      {links.mode === "preview" || isDraftPreview ? (
+        <p className={s.banner}>
+          {isDraftPreview
+            ? `Operator draft preview · ${draft.status} · not visible to the public · noindex`
+            : `Client preview on Sitesinc · ${ctx.business.businessName} · noindex until published to the client's domain`}
+        </p>
+      ) : null}
+      <div className={s.wrap}>
+        <header className={s.header}>
+          <Link href={links.home} className={s.brand}>
+            <span className={s.logo}>{ctx.business.businessName.slice(0, 1).toUpperCase()}</span>
+            {ctx.business.businessName}
+          </Link>
+          <nav className={s.nav} aria-label="Site">
+            <Link href={links.home}>Home</Link>
+            <Link href={links.locations}>Locations</Link>
+            {links.contact ? <Link href={links.contact}>Contact</Link> : null}
+            {tel ? (
+              <a className={`${s.btn} ${s.btnSmall}`} href={tel} data-lead="call" data-city={draft.slug}>
+                Call now
+              </a>
+            ) : null}
+          </nav>
+        </header>
+      </div>
+
+      <section className={s.hero}>
+        <div className={`${s.orb} ${s.orbA}`} aria-hidden="true" />
+        <div className={`${s.orb} ${s.orbB}`} aria-hidden="true" />
+        <div className={s.gridBg} aria-hidden="true" />
+        <div className={s.wrap}>
+          <div className={s.heroGrid}>
+            <div className={`${s.heroCopy} ${s.heroIn}`}>
+              <span className={s.eyebrow}>
+                <span className={s.dot} aria-hidden="true" /> {draft.keyword} · {draft.city.name}, {draft.city.state}
+              </span>
+              <h1 className={s.h1}>
+                {cityIdx >= 0 ? (
+                  <>
+                    {h1.slice(0, cityIdx)}
+                    <span className={s.accentText}>{h1.slice(cityIdx, cityIdx + draft.city.name.length)}</span>
+                    {h1.slice(cityIdx + draft.city.name.length)}
+                  </>
+                ) : (
+                  h1
+                )}
+              </h1>
+              {c.heroSubhead ? <p className={s.sub}>{c.heroSubhead}</p> : null}
+              <div className={s.heroCtas}>{cta()}</div>
+              <div className={s.chips}>
+                {draft.city.population > 0 ? (
+                  <span className={s.chip}>
+                    <strong>{draft.city.population.toLocaleString("en-US")}</strong>residents (2024 est.)
+                  </span>
+                ) : null}
+                {draft.city.county ? (
+                  <span className={s.chip}>
+                    <strong>{draft.city.county}</strong>
+                    {draft.city.stateName}
+                  </span>
+                ) : null}
+                {fromBase !== null && ctx.baseCity ? (
+                  <span className={s.chip}>
+                    <strong>~{fromBase} mi</strong>from our {ctx.baseCity.name} base
+                  </span>
+                ) : null}
+              </div>
+            </div>
+            {theme.variant === "split" ? <ServiceMap data={data} /> : null}
+          </div>
+          {theme.variant === "center" ? <ServiceMap data={data} /> : null}
+        </div>
+      </section>
+
+      <main>
+        {c.intro ? (
+          <section className={s.section}>
+            <div className={s.wrap}>
+              <p className={`${s.lead} ${s.reveal}`} data-reveal="">
+                {c.intro}
+              </p>
+            </div>
+          </section>
+        ) : null}
+
+        {c.localHighlights.length ? (
+          <section className={s.section} aria-labelledby="cl-local">
+            <div className={s.wrap}>
+              <p className={s.kicker}>Local to {draft.city.name}</p>
+              <h2 id="cl-local" className={`${s.h2} ${s.reveal}`} data-reveal="">
+                What matters for {draft.keyword} in {draft.city.name}
+              </h2>
+              <div className={s.highlights}>
+                {c.localHighlights.map((h, i) => (
+                  <div key={i} className={`${s.card} ${s.reveal}`} data-reveal="" style={{ "--d": `${i * 0.07}s` } as CSSProperties}>
+                    <div className={s.cardNum}>{String(i + 1).padStart(2, "0")}</div>
+                    <p style={{ margin: "0.5rem 0 0", lineHeight: 1.6 }}>{h}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        ) : null}
+
+        <section className={s.section}>
+          <div className={s.wrap}>
+            <div className={s.story}>
+              {c.sections.map((section, i) => (
+                <article key={i} className={`${s.storyBlock} ${s.reveal}`} data-reveal="">
+                  <div className={s.storyIndex} aria-hidden="true">
+                    {String(i + 1).padStart(2, "0")}
+                  </div>
+                  <div>
+                    <h2 className={s.h2}>{section.heading}</h2>
+                    <Paragraphs text={section.body} />
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {c.faq.length ? (
+          <section className={s.section} aria-labelledby="cl-faq">
+            <div className={`${s.wrap} ${s.faq}`}>
+              <p className={s.kicker}>FAQ</p>
+              <h2 id="cl-faq" className={`${s.h2} ${s.reveal}`} data-reveal="">
+                {draft.city.name} questions, answered
+              </h2>
+              {c.faq.map((f, i) => (
+                <details key={i} className={s.reveal} data-reveal="">
+                  <summary>{f.question}</summary>
+                  <p>{f.answer}</p>
+                </details>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        <section className={s.section} aria-labelledby="cl-nearby">
+          <div className={s.wrap}>
+            <p className={s.kicker}>Service area</p>
+            <h2 id="cl-nearby" className={`${s.h2} ${s.reveal}`} data-reveal="">
+              Also serving near {draft.city.name}
+            </h2>
+            {c.serviceArea ? (
+              <p className={`${s.lead} ${s.reveal}`} data-reveal="">
+                {c.serviceArea}
+              </p>
+            ) : null}
+            <div className={`${s.nearby} ${s.reveal}`} data-reveal="">
+              {nearbyLive.map((n) => (
+                <Link key={n.slug} href={links.city(n.slug)}>
+                  {n.name}, {n.state}
+                  {n.distanceMiles ? <small>{Math.round(n.distanceMiles)} mi</small> : null}
+                </Link>
+              ))}
+              <Link href={links.locations}>All locations →</Link>
+            </div>
+          </div>
+        </section>
+
+        <section className={s.section}>
+          <div className={s.wrap}>
+            <div className={`${s.ctaBand} ${s.reveal}`} data-reveal="">
+              <h2 className={s.h2}>{c.ctaHeadline || `Need ${draft.keyword} in ${draft.city.name}?`}</h2>
+              {c.ctaText ? <p>{c.ctaText}</p> : null}
+              <div className={s.heroCtas}>{cta()}</div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer className={s.footer}>
+        <div className={s.wrap}>
+          <p>
+            {ctx.business.businessName}
+            {ctx.business.baseCity ? ` · based in ${ctx.business.baseCity}${ctx.business.baseState ? `, ${ctx.business.baseState}` : ""}` : ""}
+            {ctx.business.phone ? ` · ${ctx.business.phone}` : ""}
+          </p>
+          <p>
+            <Link href={links.locations}>Locations</Link> ·{" "}
+            {links.contact ? (
+              <>
+                <Link href={links.contact}>Contact</Link> ·{" "}
+              </>
+            ) : null}
+            <a href={links.sitemap}>Sitemap</a>
+          </p>
+          <p>City facts: U.S. Census Bureau (Vintage 2024 population estimates, 2024 Gazetteer).</p>
+        </div>
+      </footer>
+      {tel ? (
+        <a className={`${s.btn} ${s.stickyCall}`} href={tel} data-lead="call" data-city={draft.slug} aria-label={`Call ${ctx.business.businessName}`}>
+          Call
+        </a>
+      ) : null}
+    </div>
+  );
+}

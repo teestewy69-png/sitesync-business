@@ -1,4 +1,12 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "DIY Website Builders vs. Done-For-You: What Actually Costs You More | Sitesinc",
+  description: "An honest comparison of DIY website builders and done-for-you builds for small businesses: time, lost leads, and long-term cost.",
+  alternates: { canonical: "/blog/diy-vs-done-for-you-websites" },
+  openGraph: { title: "DIY Website Builders vs. Done-For-You: What Actually Costs You More | Sitesinc", description: "An honest comparison of DIY website builders and done-for-you builds for small businesses: time, lost leads, and long-term cost.", url: "/blog/diy-vs-done-for-you-websites" },
+};
 
 export default function DiyVsDoneForYouWebsites() {
   return (
@@ -12,13 +20,13 @@ export default function DiyVsDoneForYouWebsites() {
         </Link>
 
         <header className="space-y-2">
-          <p className="text-[11px] text-slate-400">
+          <p className="text-xs text-slate-400">
             Published on {new Date("2024-08-05").toLocaleDateString()}
           </p>
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
             DIY Website Builders vs. Done-For-You: What Actually Costs You More
           </h1>
-          <p className="text-sm text-slate-300 sm:text-base">
+          <p className="text-base text-slate-300">
             DIY website builders promise a “free” or cheap site in a weekend. A
             done-for-you build looks more expensive upfront. But when
             you&apos;re running a real business, the cheapest option on day one
@@ -27,7 +35,7 @@ export default function DiyVsDoneForYouWebsites() {
           </p>
         </header>
 
-        <div className="mt-8 space-y-6 text-sm text-slate-200 sm:text-base">
+        <div className="mt-8 space-y-6 text-base text-slate-200">
           <section>
             <h2 className="text-lg font-semibold text-slate-50 sm:text-xl">
               The promise of DIY builders (and what they don&apos;t say)
@@ -168,7 +176,7 @@ export default function DiyVsDoneForYouWebsites() {
             <p className="mt-2">
               Here&apos;s a simple comparison to make the trade-offs clearer:
             </p>
-            <div className="mt-3 grid gap-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-xs text-slate-200 sm:grid-cols-2 sm:text-sm">
+            <div className="mt-3 grid gap-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-base text-slate-200 sm:grid-cols-2">
               <div>
                 <p className="font-semibold text-slate-50">DIY builder</p>
                 <ul className="mt-2 list-disc pl-5">
@@ -192,7 +200,7 @@ export default function DiyVsDoneForYouWebsites() {
                     Built on modern tech (Next.js, Tailwind, Netlify)
                   </li>
                   <li>
-                    SEO basics, funnels, and monetization planned in
+                    SEO basics and lead capture built in
                   </li>
                   <li>
                     Launched in 5–7 business days once we have your info
@@ -208,7 +216,7 @@ export default function DiyVsDoneForYouWebsites() {
               long-term
             </h2>
             <p className="mt-2">
-              A $1,499 professional build can feel expensive next to a $20/month
+              A $1,995 professional build can feel expensive next to a $20/month
               DIY tool. But if a proper site helps you:
             </p>
             <ul className="mt-2 list-disc pl-5">
@@ -225,10 +233,10 @@ export default function DiyVsDoneForYouWebsites() {
 
           <section>
             <h2 className="text-lg font-semibold text-slate-50 sm:text-xl">
-              How Sitesync Business fits into this picture
+              How Sitesinc fits into this picture
             </h2>
             <p className="mt-2">
-              Sitesync Business is for small and local businesses who:
+              Sitesinc is for small and local businesses who:
             </p>
             <ul className="mt-2 list-disc pl-5">
               <li>
@@ -241,8 +249,8 @@ export default function DiyVsDoneForYouWebsites() {
             </ul>
             <p className="mt-2">
               We build your site with the same stack we use for our own: Next.js
-              + Tailwind, hosted on Netlify, with Stripe, GA4, and on-page SEO
-              basics ready to go.
+              + Tailwind, hosted on Netlify, with GA4, a lead form, and on-page
+              SEO basics ready to go.
             </p>
           </section>
 
@@ -273,7 +281,7 @@ export default function DiyVsDoneForYouWebsites() {
                 href="/"
                 className="font-semibold text-brand-300 hover:underline"
               >
-                Click here to see how Sitesync Business can build it for you.
+                Click here to see how Sitesinc can build it for you.
               </Link>{" "}
               We&apos;ll handle the design, tech, SEO basics, and funnels so you
               can get back to running your business.

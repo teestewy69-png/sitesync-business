@@ -1,38 +1,69 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { CheckCircle2, Mail } from "lucide-react";
 import content from "@/content.json";
+import { trackLead } from "@/lib/analytics";
 
 type Status = "idle" | "loading" | "success" | "error";
 
-/**
- * Newsletter / lead-magnet signup. Posts to /api/subscribe, which emails the
- * checklist to the subscriber and a notification to us via Titan SMTP.
- */
 export default function EmailCapture() {
   const { emailCapture, footer } = content;
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [privacy, setPrivacy] = useState(false);
+  const [monitoring, setMonitoring] = useState(false);
+  const [honeypot, setHoneypot] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+
+  // One idempotency key per form instance, plus a lock so double-clicks and retries cannot create twice.
+  const idempotencyKey = useRef("");
+  const submitting = useRef(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (submitting.current || status === "success") return;
+    submitting.current = true;
+    if (!idempotencyKey.current) {
+      idempotencyKey.current =
+        typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+          ? crypto.randomUUID()
+          : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+    }
     setStatus("loading");
     setErrorMessage("");
 
     try {
       const res = await fetch("/api/subscribe", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": idempotencyKey.current,
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          privacy,
+          monitoring,
+          company_website: honeypot,
+        }),
       });
+      const data = await res.json().catch(() => null);
       if (!res.ok) {
-        const data = await res.json().catch(() => null);
         throw new Error(data?.error ?? "Something went wrong. Please try again.");
       }
+      setSuccessMessage(
+        data?.warning
+          ? "Request saved — this is not a purchase. We have your name and email internally. The confirmation email could not send yet."
+          : "Request received. This is not a purchase. If we accept the project, you will get a $997.50 start invoice by email."
+      );
       setStatus("success");
+      // Only after the lead was saved. No PII in params.
+      trackLead("website_build_request", { monitoring_opt_in: monitoring });
     } catch (err) {
+      submitting.current = false;
       setStatus("error");
       setErrorMessage(
         err instanceof Error ? err.message : "Something went wrong. Please try again."
@@ -55,47 +86,106 @@ export default function EmailCapture() {
         <h2 className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl">
           {emailCapture.title}
         </h2>
-        <p className="mx-auto mt-3 max-w-xl text-sm text-slate-400 sm:text-base">
+        <p className="mx-auto mt-3 max-w-xl text-base text-slate-400">
           {emailCapture.subtitle}
         </p>
 
         {status === "success" ? (
           <div className="mx-auto mt-8 flex max-w-md items-center justify-center gap-2 rounded-xl bg-brand-500/10 px-5 py-4 text-sm font-medium text-brand-200 ring-1 ring-brand-500/25">
             <CheckCircle2 className="h-5 w-5 shrink-0" />
-            Checklist sent! Check your inbox (and spam folder, just in case).
+            {successMessage}
           </div>
         ) : (
           <form
+            method="post"
+            action="/api/subscribe"
             onSubmit={handleSubmit}
-            className="mx-auto mt-8 flex max-w-md flex-col gap-3 sm:flex-row"
+            className="mx-auto mt-8 flex max-w-md flex-col gap-3"
           >
+            <label className="sr-only" htmlFor="intake-name">
+              Your name
+            </label>
             <input
+              id="intake-name"
+              type="text"
+              name="name"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={emailCapture.namePlaceholder}
+              autoComplete="name"
+              className="w-full rounded-xl bg-surface-elevated px-4 py-3 text-white ring-1 ring-white/10 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-brand-400"
+            />
+            <label className="sr-only" htmlFor="intake-email">
+              Email address
+            </label>
+            <input
+              id="intake-email"
               type="email"
               name="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder={emailCapture.placeholder}
-              aria-label="Email address"
+              autoComplete="email"
               className="w-full rounded-xl bg-surface-elevated px-4 py-3 text-white ring-1 ring-white/10 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-brand-400"
             />
+            <div className="absolute -left-[9999px] h-0 w-0 overflow-hidden" aria-hidden="true">
+              <label htmlFor="company_website">Company website</label>
+              <input
+                id="company_website"
+                type="text"
+                name="company_website"
+                tabIndex={-1}
+                autoComplete="off"
+                value={honeypot}
+                onChange={(e) => setHoneypot(e.target.value)}
+              />
+            </div>
+            <label className="flex items-start gap-2 text-left text-sm text-slate-400">
+              <input
+                type="checkbox"
+                name="monitoring"
+                checked={monitoring}
+                onChange={(e) => setMonitoring(e.target.checked)}
+                className="mt-1"
+              />
+              <span>{emailCapture.monitoringLabel}</span>
+            </label>
+            <label className="flex items-start gap-2 text-left text-sm text-slate-400">
+              <input
+                type="checkbox"
+                name="privacy"
+                required
+                checked={privacy}
+                onChange={(e) => setPrivacy(e.target.checked)}
+                className="mt-1"
+              />
+              <span>
+                {emailCapture.privacyLabel}{" "}
+                <a href="/privacy" className="font-medium text-brand-300 hover:underline">
+                  Privacy policy
+                </a>
+                .
+              </span>
+            </label>
             <button
               type="submit"
               disabled={status === "loading"}
-              className="shrink-0 rounded-xl bg-gradient-to-b from-brand-300 to-brand-600 px-6 py-3 text-sm font-semibold text-zinc-950 shadow-glow transition hover:from-brand-200 hover:to-brand-500 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-xl bg-gradient-to-b from-brand-300 to-brand-600 px-6 py-3 text-sm font-semibold text-zinc-950 shadow-glow transition hover:from-brand-200 hover:to-brand-500 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {status === "loading" ? "Sending..." : emailCapture.buttonLabel}
+              {status === "loading" ? "Saving..." : emailCapture.buttonLabel}
             </button>
           </form>
         )}
 
         {status === "error" && (
-          <p className="mx-auto mt-3 max-w-md text-xs text-red-400">
+          <p className="mx-auto mt-3 max-w-md text-sm text-red-400">
             {errorMessage}
           </p>
         )}
 
-        <p className="mx-auto mt-5 max-w-md text-[11px] text-slate-400">
+        <p className="mx-auto mt-5 max-w-md text-sm text-slate-400">
           {emailCapture.finePrint}{" "}
           <a
             href={`mailto:${footer.email}`}
