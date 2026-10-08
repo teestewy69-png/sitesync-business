@@ -53,8 +53,8 @@ export default function RealSmallBusinessWebsiteNeeds() {
             <p className="mt-2">
               If someone has to scroll or hunt around to figure out what you
               sell, you&apos;re losing them. A strong headline, one or two short
-              lines of explanation, and a clear button (call, book, buy, request
-              a quote) make all the difference.
+              lines of explanation, and a clear button (call, book, buy, or
+              contact) make all the difference.
             </p>
           </section>
 

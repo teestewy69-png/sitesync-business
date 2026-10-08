@@ -38,7 +38,7 @@ const STEPS: {
   {
     id: 4,
     label: "Wire lead pieces",
-    detail: "Reviews, tap-to-call, quote request form",
+    detail: "Reviews, tap-to-call, contact form",
     durationMs: 1500,
   },
   {

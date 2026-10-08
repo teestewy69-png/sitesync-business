@@ -328,7 +328,7 @@ export const SEED_BRIEFS: ContentBrief[] = [
     wordCountGuidance: {
       min: 800,
       max: 1200,
-      note: "Guidance only. Prices must match content.json: $1,995 starting, 50% ($997.50) to start, 50% at launch.",
+      note: "Guidance only. Prices must match content.json: $1,995 flat fee, 50% ($997.50) to start, 50% at launch.",
     },
     headings: [
       "One-time build",
@@ -336,7 +336,7 @@ export const SEED_BRIEFS: ContentBrief[] = [
       "What is not a package",
       "How payment works",
     ],
-    recurringTopics: ["$1,995 starting", "50% to start / 50% at launch", "$129/mo optional", "No required subscription"],
+    recurringTopics: ["$1,995 flat fee", "50% to start / 50% at launch", "$129/mo optional", "No required subscription"],
     gaps: [
       "Subscription builders hide the long-term cost. This page should show 12-month math without bashing.",
     ],

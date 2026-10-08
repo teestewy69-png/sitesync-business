@@ -28,7 +28,7 @@ That also means we are not a “change this block yourself every Tuesday” tool
 
 ## What we actually build
 
-Website builds start at $1,995. Pay 50% to start and 50% at launch. The package includes a complete custom site, a choice of eight design directions, on-page SEO setup, a lead form, hosting setup, domain connection, one round of revisions, and a 5–7 business day turnaround after we have your content. Those numbers must match the homepage. We will not invent a different price here.
+Website builds are $1,995 — a flat fee, no quotes, no negotiation. Pay 50% to start and 50% at launch. The package includes a complete custom site, a choice of eight design directions, on-page SEO setup, a lead form, hosting setup, domain connection, one round of revisions, and a 5–7 business day turnaround after we have your content. Those numbers must match the homepage. We will not invent a different price here.
 
 ## What we need from you
 
@@ -43,7 +43,7 @@ See current pricing on the homepage or the packages page. No ranking promises �
   packages: {
     title: "Website packages",
     metaDescription:
-      "Sitesinc website packages: builds starting at $1,995, 50% to start and 50% at launch, optional $129/mo monitoring. No required subscription.",
+      "Sitesinc website packages: the build is $1,995, 50% to start and 50% at launch, optional $129/mo monitoring. No required subscription.",
     headings: [
       "One-time build",
       "Optional monitoring",
@@ -54,7 +54,7 @@ See current pricing on the homepage or the packages page. No ranking promises �
 
 ## One-time build
 
-Website builds start at $1,995. Pay 50% ($997.50) to start and 50% at launch. There is no long-term contract.
+Website builds are $1,995 — a flat fee, no quotes, no negotiation. Pay 50% ($997.50) to start and 50% at launch. There is no long-term contract.
 
 Included: custom Next.js + Tailwind site, eight design options, dark glossy UI, on-page SEO basics, lead capture, domain connection, code handoff, Netlify hosting setup, one revision round, 5–7 business days after content.
 
@@ -188,7 +188,7 @@ Show the chair, the work, and how to book. Put the phone and Instagram where the
 
 ## Contractors and trades
 
-Lead with the emergency or the quote. License and insurance if you have them. Before/after photos you actually shot. A form that emails you the same hour.
+Lead with the emergency or how to reach you. License and insurance if you have them. Before/after photos you actually shot. A form that emails you the same hour.
 
 ## Food trucks and hospitality
 

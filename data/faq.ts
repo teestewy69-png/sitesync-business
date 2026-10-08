@@ -37,17 +37,17 @@ export const faqItems: FaqItem[] = [
   {
     question: "How much does it cost? Are there any subscriptions?",
     answer:
-      "Website builds start at $1,995. You pay 50% ($997.50) to start and 50% at launch. There is no required subscription or builder lock-in. Optional monitoring is $129/month if you want us to handle ongoing tech updates and small content changes. You can skip it. There is no long-term contract.",
+      "Website builds are $1,995 — a flat fee, no quotes, no negotiation. You pay 50% ($997.50) to start and 50% at launch. There is no required subscription or builder lock-in. Optional monitoring is $129/month if you want us to handle ongoing tech updates and small content changes. You can skip it. There is no long-term contract.",
   },
   {
     question: "How does the 50% to start / 50% at launch payment work?",
     answer:
-      "The starting price is $1,995. Submitting the website form is a request, not a purchase. If we accept the project, you receive a $997.50 start invoice by email. The remaining $997.50 is due at launch. Monitoring is a separate optional $129/month, cancel anytime, and is never required to keep the site.",
+      "The website build is $1,995. Submitting the website form is a request, not a purchase. If we accept the project, you receive a $997.50 start invoice by email. The remaining $997.50 is due at launch. Monitoring is a separate optional $129/month, cancel anytime, and is never required to keep the site.",
   },
   {
-    question: "What\u2019s included in a website build starting at $1,995?",
+    question: "What\u2019s included in the $1,995 website build?",
     answer:
-      "The build (starting at $1,995, paid 50% to start and 50% at launch) includes: a custom site built on one of 8 ultra-modern dark designs, full Next.js + Tailwind development, on-page SEO basics, lead capture (contact form and email signup), Netlify hosting setup, domain connection, a 5\u20137 business day turnaround after receiving your content, and one round of revisions. Optional monitoring is a separate $129/month.",
+      "The $1,995 build (paid 50% to start and 50% at launch) includes: a custom site built on one of 8 ultra-modern dark designs, full Next.js + Tailwind development, on-page SEO basics, lead capture (contact form and email signup), Netlify hosting setup, domain connection, a 5\u20137 business day turnaround after receiving your content, and one round of revisions. Optional monitoring is a separate $129/month.",
   },
   {
     question: "What do you need from me to start?",

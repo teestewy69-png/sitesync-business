@@ -58,7 +58,7 @@ export const SITESINC_SITE: MiniSiteContent = {
     {
       name: "Complete website build",
       price: "$1,995",
-      blurb: "Website builds starting at $1,995. Pay 50% to start, 50% at launch.",
+      blurb: "Website builds are $1,995. Pay 50% to start, 50% at launch.",
     },
     {
       name: "Netlify hosting",
@@ -85,7 +85,7 @@ export const SITESINC_SITE: MiniSiteContent = {
     {
       name: "Payment",
       quote:
-        "Starting at $1,995. Pay 50% to start, 50% at launch. Optional $129/mo monitoring. You own the code.",
+        "Website builds are $1,995. Pay 50% to start, 50% at launch. Optional $129/mo monitoring. You own the code.",
     },
     {
       name: "Turnaround",
@@ -135,7 +135,7 @@ export function buildPreviewContent(
       {
         name: "Free Estimate",
         price: "Free",
-        blurb: "No-pressure quote tailored to your project.",
+        blurb: "No-pressure estimate tailored to your project.",
       },
     ],
     testimonials: [

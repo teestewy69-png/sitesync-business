@@ -47,7 +47,7 @@ MONEY PIECES (the ones most sites forget)
 [ ] Email list signup so you own your audience
 [ ] Tracking (even simple analytics) so you know what's working
 
-Website builds start at $1,995. $997.50 to start. $997.50 at launch. Optional monitoring $129/month. Cancel anytime. No long-term contract. https://sitesinc.co
+Website builds are $1,995. $997.50 to start. $997.50 at launch. Optional monitoring $129/month. Cancel anytime. No long-term contract. https://sitesinc.co
 
 Questions? Just reply to this email.
 

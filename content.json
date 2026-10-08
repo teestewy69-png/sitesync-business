@@ -7,19 +7,19 @@
   },
   "seo": {
     "title": "Sitesinc Website Factory – Ultra-Modern Small Business Websites (Built Once, Owned Forever)",
-    "description": "Sitesinc Website Factory builds dark, glossy, ultra-modern websites for small businesses who never got their site quite right. Website builds starting at $1,995. Pay $997.50 to start, $997.50 at launch. Optional monitoring $129/month. Cancel anytime. No long-term contract.",
+    "description": "Sitesinc Website Factory builds dark, glossy, ultra-modern websites for small businesses who never got their site quite right. Website builds are $1,995. Pay $997.50 to start, $997.50 at launch. Optional monitoring $129/month. Cancel anytime. No long-term contract.",
     "url": "https://sitesinc.co",
     "siteName": "Sitesinc",
     "locale": "en_US",
     "image": "https://sitesinc.co/logo.png",
     "og": {
       "title": "Sitesinc Website Factory – Ultra-Modern Small Business Websites",
-      "description": "Done-for-you websites from Sitesinc. Builds starting at $1,995. $997.50 to start, $997.50 at launch. Optional monitoring $129/month. Cancel anytime. No long-term contract."
+      "description": "Done-for-you websites from Sitesinc. Website builds are $1,995. $997.50 to start, $997.50 at launch. Optional monitoring $129/month. Cancel anytime. No long-term contract."
     },
     "twitter": {
       "card": "summary_large_image",
       "title": "Sitesinc Website Factory – Ultra-Modern Small Business Websites",
-      "description": "Done-for-you websites from Sitesinc. Starting at $1,995. $997.50 to start, $997.50 at launch. Optional $129/month monitoring."
+      "description": "Done-for-you websites from Sitesinc. Website builds are $1,995. $997.50 to start, $997.50 at launch. Optional $129/month monitoring."
     }
   },
   "hero": {
@@ -27,12 +27,12 @@
     "headline": "Ultra-modern websites that finally make your small business look big.",
     "subheadline": "Sitesinc Website Factory builds dark, glossy, high-converting sites for the “little guy” who never got their website quite right. One-time build, SEO-ready, built to turn visitors into calls and leads, and fully yours.",
     "offer": {
-      "title": "Website builds starting at $1,995.",
+      "title": "Website builds are $1,995.",
       "subtitle": "Pay 50% to start, 50% at launch. Optional monitoring $129/month. No long-term contract."
     },
     "primaryCta": { "label": "Start a website build", "target": "checklist" },
     "secondaryCta": { "label": "See 8 Designs", "target": "designs" },
-    "pricingLine": "Starting at $1,995 · 50% to start, 50% at launch · Optional monitoring $129/mo",
+    "pricingLine": "$1,995 · 50% to start, 50% at launch · Optional monitoring $129/mo",
     "stackLine": "5-7 business day turnaround • Next.js + Tailwind • Netlify hosting included • You own the full code.",
     "trustLine": "Perfect for barbers, cleaners, food trucks, contractors, coaches, solo pros, and side hustles."
   },
@@ -60,7 +60,7 @@
     "outro": "You get a high-performance, future-proof site with clean code that any developer can work with later."
   },
   "included": {
-    "title": "What's included in a website build starting at $1,995",
+    "title": "What's included in the $1,995 website build",
     "items": [
       "A complete, custom website built with Next.js + Tailwind",
       "Choice of 8 ultra-modern designs (you pick your favorite look)",
@@ -75,14 +75,14 @@
   },
   "pricing": {
     "title": "Simple, transparent pricing",
-    "subtitle": "Website builds starting at $1,995. Pay 50% to start, 50% at launch. Monitoring is optional. You own the code.",
+    "subtitle": "The website build is $1,995. Pay 50% to start, 50% at launch. Monitoring is optional. You own the code.",
     "build": {
       "name": "Website build",
-      "startingPrice": "$1,995",
+      "price": "$1,995",
       "startDue": "$997.50",
       "launchDue": "$997.50",
       "launchNote": "50% to start · 50% at launch",
-      "detail": "Starting at $1,995. $997.50 to start, $997.50 at launch. Submitting this form is a request, not a purchase. If we accept the project, you receive a $997.50 start invoice manually. The remaining $997.50 is due at launch. No long-term contract.",
+      "detail": "The website build is $1,995 — a flat fee, no quotes, no negotiation. $997.50 to start, $997.50 at launch. Submitting this form is a request, not a purchase. If we accept the project, you receive a $997.50 start invoice manually. The remaining $997.50 is due at launch. No long-term contract.",
       "cta": {
         "label": "Request a website build",
         "href": "/#checklist"
@@ -161,7 +161,7 @@
     ]
   },
   "cta": {
-    "title": "Start a website build at $1,995",
+    "title": "The website build is $1,995",
     "subtitle": "Pay 50% to start, 50% at launch. Optional monitoring is $129/month. Domain: sitesinc.co.",
     "primaryCta": { "label": "Request a build", "href": "#checklist" },
     "secondaryCta": { "label": "Questions? Read the FAQ", "href": "#faq" }
@@ -217,7 +217,7 @@
     "legalName": "Sitesinc",
     "email": "save@sitesinc.co",
     "trustTitle": "Transparent pricing, invoiced in two parts.",
-    "trustLine": "Starting at $1,995 • 50% to start, 50% at launch • No long-term contract • Optional $129/mo monitoring • You own your site code.",
+    "trustLine": "$1,995 • 50% to start, 50% at launch • No long-term contract • Optional $129/mo monitoring • You own your site code.",
     "scrollLinks": [
       { "label": "Pricing", "target": "pricing" },
       { "label": "Designs", "target": "designs" },

@@ -1,5 +1,5 @@
 /**
- * SiteFlow master switch. Path A (Tony, 2026-10-05): the public offer is ONLY the website build (from $1,995,
+ * SiteFlow master switch. Path A (Tony, 2026-10-05): the public offer is ONLY the website build ($1,995,
  * 50% to start / 50% at launch) and optional $129/mo monitoring. SiteFlow (product checkout, Stripe webhook,
  * digital delivery, partner referrals, affiliate links) is paused for phase 2. The code stays; this flag keeps
  * it off and invisible unless SITEFLOW_ENABLED is exactly "true" or "1".

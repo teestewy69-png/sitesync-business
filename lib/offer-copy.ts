@@ -1,6 +1,6 @@
 /**
  * Path A offer guard (Tony, 2026-10-05). The public offer is ONLY:
- *   - website builds starting at $1,995, paid 50% to start and 50% at launch (invoiced by hand)
+ *   - website builds are $1,995 (flat fee), paid 50% to start and 50% at launch (invoiced by hand)
  *   - optional monitoring at $129/month
  * Public copy must not promise digital-product delivery, Stripe checkout, affiliate or monetization
  * placeholders, discounts/strike-through prices, scarcity, or "pay in full". scripts/offer-copy.test.mjs scans
@@ -31,6 +31,9 @@ export const RETIRED_OFFER_PATTERNS: RegExp[] = [
   /niche playbooks?/i,
   /check your email for (your )?(delivery|download)/i,
   /payment successful/i,
+  /start(ing)? at \$/i,
+  /from \$1,?995/i,
+  /\bstarting price\b/i,
 ];
 
 /** The first retired-offer phrase found in `text`, or null. */
