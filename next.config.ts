@@ -3,6 +3,8 @@ import path from "path";
 import { isStagingEnv } from "./lib/site-env";
 
 const nextConfig: NextConfig = {
+  // Next 16 blocks /_next from 127.0.0.1 when the dev server bound to localhost.
+  allowedDevOrigins: ["127.0.0.1"],
   turbopack: {
     root: path.join(__dirname),
   },

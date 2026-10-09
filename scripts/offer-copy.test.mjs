@@ -307,6 +307,8 @@ test("email catcher: popup is mounted and intercepts start-build clicks", () => 
   assert.equal(content.emailCapture.popupOverline, "Before you go");
   assert.equal(content.emailCapture.popupTitle, "Leave your name and email first.");
   assert.match(content.emailCapture.popupSubtitle, /request, not a purchase/);
+  const nextConfig = readFileSync(path.join(ROOT, "next.config.ts"), "utf8");
+  assert.match(nextConfig, /allowedDevOrigins:\s*\["127\.0\.0\.1"\]/);
 });
 
 test("email catcher: start-build and #checklist clicks are caught; factory and contact stay quiet", async () => {
