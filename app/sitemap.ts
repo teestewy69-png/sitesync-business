@@ -1,6 +1,9 @@
 import type { MetadataRoute } from "next";
 import { PUBLIC_PATHS } from "@/lib/factory/pipeline";
 import { readPublicWorkspace } from "@/lib/factory/workspace";
+import { approvedEntries } from "@/lib/factory/city-launch-public";
+import { readCityIndex } from "@/lib/factory/city-launch";
+import { SITESINC_CITY_PROJECT_ID } from "@/lib/factory/sitesinc-city";
 import { isStagingEnv } from "@/lib/site-env";
 
 export const dynamic = "force-dynamic";
@@ -25,6 +28,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       if (BLOCKED.has(page.path) || page.path.startsWith("/app")) continue;
       paths.add(page.path);
     }
+  }
+  try {
+    for (const city of approvedEntries(await readCityIndex(SITESINC_CITY_PROJECT_ID))) {
+      paths.add(`/locations/${city.slug}`);
+    }
+  } catch {
+    // City index is optional until the first batch is written.
   }
   return [...paths].map((path) => ({
     url: `${origin}${path === "/" ? "" : path}`,

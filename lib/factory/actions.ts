@@ -944,6 +944,13 @@ export async function applyFactoryAction(
     return { ok: true, created: result.initialized > 0, backfill: result };
   }
 
+  if (op === "queue-sitesinc-cities") {
+    const { queueSitesincCityLaunch } = await import("./sitesinc-city");
+    const result = await queueSitesincCityLaunch(actor);
+    if (!result.ok) return { ok: false, error: result.error };
+    return { ok: true, projectId: "sitesinc", created: true };
+  }
+
   return { ok: false, error: `Unknown action: ${op}` };
 }
 

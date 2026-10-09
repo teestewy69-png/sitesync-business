@@ -186,7 +186,12 @@ export function cityLaunchContext(project: ClientProject): CityLaunchClientConte
       notes: project.notes || config.notes || "",
     },
     baseCity,
-    contactPath: contact ? `/demo/client/${project.id}/contact` : `/demo/client/${project.id}`,
+    contactPath:
+      project.id === "sitesinc"
+        ? "/contact"
+        : contact
+          ? `/demo/client/${project.id}/contact`
+          : `/demo/client/${project.id}`,
     designStyleId: project.designStyleId || config.designStyleId,
     selectedDomain: project.selectedDomain,
   };

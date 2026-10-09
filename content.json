@@ -121,7 +121,7 @@
       },
       {
         "title": "Pages for the areas you serve",
-        "text": "Local service-area pages for the cities you work in, written for your business and checked so each one is unique."
+        "text": "Local service-area pages for the cities you work in, written for your business and checked so each one is unique. Sitesinc city pages go live at /locations after City Launch writes unique copy and the uniqueness gate passes."
       },
       {
         "title": "A starting SEO report at launch",
@@ -137,7 +137,6 @@
       "note": "Not available yet. We'll share details when they're ready.",
       "items": [
         "Posting to your social media",
-        "A 500-city local SEO campaign",
         "Ways to monetize your site"
       ]
     }
@@ -206,6 +205,9 @@
     "overline": "Free download",
     "title": "Not ready yet? Grab the free website checklist.",
     "subtitle": "This form is a request, not a purchase. No payment is collected here. If we accept your project, you receive a $997.50 start invoice by email. The remaining $997.50 is due at launch.",
+    "popupOverline": "Before you go",
+    "popupTitle": "Leave your name and email first.",
+    "popupSubtitle": "This pops up before the build request. It is a request, not a purchase. If we accept the project, you get a $997.50 start invoice by email.",
     "namePlaceholder": "Your name",
     "placeholder": "you@email.com",
     "buttonLabel": "Submit a request",

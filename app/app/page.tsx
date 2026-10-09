@@ -10,6 +10,7 @@ import FactoryShell, { Pill } from "@/components/factory/Shell";
 import { PRODUCTION_ORIGIN } from "@/lib/factory/pipeline";
 import { latestBaseline, readWorkspace } from "@/lib/factory/workspace";
 import { summarizeCityLaunchBay } from "@/lib/factory/city-launch";
+import { ensureSitesincCityProject } from "@/lib/factory/sitesinc-city";
 import { summarizeDomainBay } from "@/lib/factory/domainiq";
 import { SITEFLOW_PAUSED_LABEL, siteflowEnabled } from "@/lib/siteflow/flag";
 import { summarizeSiteFlow, type SiteFlowSummary } from "@/lib/siteflow/summary";
@@ -21,6 +22,7 @@ export default async function FactoryHome() {
   ensureBlobsFromRequest({ headers: await headers() });
   let clientProjects: Awaited<ReturnType<typeof listProjects>> = [];
   try {
+    await ensureSitesincCityProject();
     clientProjects = await listProjects();
   } catch (err) {
     console.warn("DomainIQ bay: client projects unavailable.", err instanceof Error ? err.name : "unknown");
@@ -73,6 +75,11 @@ export default async function FactoryHome() {
             approvedBy: "operator",
             origin: process.env.NEXT_PUBLIC_SITE_URL || "http://127.0.0.1:3000",
           }}
+        />
+        <ActionForm
+          op="queue-sitesinc-cities"
+          label="Queue Sitesinc 500-city launch"
+          fields={{ approvedBy: "Tony" }}
         />
         <ActionForm
           op="record-intake"

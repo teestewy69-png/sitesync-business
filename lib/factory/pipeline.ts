@@ -15,6 +15,7 @@ export const PUBLIC_PATHS = [
   "/services",
   "/about",
   "/contact",
+  "/locations",
   "/blog",
   "/blog/real-small-business-website-needs",
   "/blog/diy-vs-done-for-you-websites",

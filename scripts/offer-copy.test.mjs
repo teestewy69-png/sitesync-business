@@ -184,7 +184,7 @@ test("sitemap and public paths: no /cart, /checkout or /shop", async () => {
   const urls = (await withEnvAsync(undefined, () => sitemap())).map((e) => e.url);
   assert.ok(urls.includes("https://sitesinc.co"));
   for (const u of urls) assert.doesNotMatch(u, /\/(cart|checkout|shop|tools|go)(\/|$)/, u);
-  for (const pathName of ["/services", "/about", "/contact"]) {
+  for (const pathName of ["/services", "/about", "/contact", "/locations"]) {
     assert.ok(PUBLIC_PATHS.includes(pathName), pathName);
     assert.ok(urls.includes(`https://sitesinc.co${pathName}`), pathName);
   }
@@ -204,6 +204,8 @@ test("Sitesinc public site has the same page types as the general client templat
     if (page.path !== "/") assert.ok(PUBLIC_PATHS.includes(page.path), page.path);
   }
   const contact = readFileSync(path.join(ROOT, "app/contact/page.tsx"), "utf8");
+  assert.ok(existsSync(path.join(ROOT, "app/locations/page.tsx")));
+  assert.ok(existsSync(path.join(ROOT, "app/locations/[citySlug]/page.tsx")));
   assert.match(contact, /EmailCapture/);
   const form = readFileSync(path.join(ROOT, "components/EmailCapture.tsx"), "utf8");
   assert.match(form, /\/api\/subscribe/);
@@ -287,4 +289,48 @@ test("public copy: $1,995 is a flat fee, not a starting price or quote", () => {
     const text = readFileSync(path.join(ROOT, rel), "utf8");
     assert.doesNotMatch(text, BANNED, rel);
   }
+});
+
+test("email catcher: popup is mounted and intercepts start-build clicks", () => {
+  const layout = readFileSync(path.join(ROOT, "app/layout.tsx"), "utf8");
+  assert.match(layout, /<EmailCatcher\s*\/>/);
+  const catcher = readFileSync(path.join(ROOT, "components/EmailCatcher.tsx"), "utf8");
+  assert.match(catcher, /isEmailCatcherTrigger/);
+  assert.match(catcher, /layout="dialog"/);
+  const capture = readFileSync(path.join(ROOT, "components/EmailCapture.tsx"), "utf8");
+  assert.match(capture, /layout === "dialog"/);
+  assert.match(capture, /email-catcher-title/);
+  const hero = readFileSync(path.join(ROOT, "components/Hero.tsx"), "utf8");
+  assert.match(hero, /data-email-catcher="true"/);
+  assert.match(hero, /data-analytics-cta="start_build"/);
+  const pricing = readFileSync(path.join(ROOT, "components/Pricing.tsx"), "utf8");
+  assert.match(pricing, /data-email-catcher="true"/);
+  const content = JSON.parse(readFileSync(path.join(ROOT, "content.json"), "utf8"));
+  assert.equal(content.emailCapture.popupOverline, "Before you go");
+  assert.equal(content.emailCapture.popupTitle, "Leave your name and email first.");
+  assert.match(content.emailCapture.popupSubtitle, /request, not a purchase/);
+  const nextConfig = readFileSync(path.join(ROOT, "next.config.ts"), "utf8");
+  assert.match(nextConfig, /allowedDevOrigins:\s*\["127\.0\.0\.1"\]/);
+});
+
+test("email catcher: start-build and #checklist clicks are caught; factory and contact stay quiet", async () => {
+  const catcher = await import("../lib/email-catcher.ts");
+  assert.equal(catcher.EMAIL_CATCHER_AUTO_OPEN_MS, 5000);
+  assert.equal(catcher.isEmailCatcherTrigger({ catcher: "true" }), true);
+  assert.equal(catcher.isEmailCatcherTrigger({ href: "/#checklist" }), true);
+  assert.equal(catcher.isEmailCatcherTrigger({ href: "#checklist" }), true);
+  assert.equal(catcher.isEmailCatcherTrigger({ cta: "start_build" }), true);
+  assert.equal(catcher.isEmailCatcherTrigger({ href: "/#pricing" }), false);
+  assert.equal(catcher.isEmailCatcherTrigger({ catcher: "off", href: "/#checklist" }), false);
+  assert.equal(
+    catcher.isEmailCatcherTrigger({ href: "/#checklist", insideCatcher: true }),
+    false
+  );
+  assert.equal(catcher.isEmailCatcherInternalPath("/app"), true);
+  assert.equal(catcher.isEmailCatcherInternalPath("/demo/client/x"), true);
+  assert.equal(catcher.isEmailCatcherInternalPath("/"), false);
+  assert.equal(catcher.shouldAutoOpenEmailCatcher("/"), true);
+  assert.equal(catcher.shouldAutoOpenEmailCatcher("/services"), true);
+  assert.equal(catcher.shouldAutoOpenEmailCatcher("/contact"), false);
+  assert.equal(catcher.shouldAutoOpenEmailCatcher("/app"), false);
 });
