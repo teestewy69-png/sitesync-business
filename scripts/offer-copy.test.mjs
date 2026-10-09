@@ -184,7 +184,7 @@ test("sitemap and public paths: no /cart, /checkout or /shop", async () => {
   const urls = (await withEnvAsync(undefined, () => sitemap())).map((e) => e.url);
   assert.ok(urls.includes("https://sitesinc.co"));
   for (const u of urls) assert.doesNotMatch(u, /\/(cart|checkout|shop|tools|go)(\/|$)/, u);
-  for (const pathName of ["/services", "/about", "/contact"]) {
+  for (const pathName of ["/services", "/about", "/contact", "/locations"]) {
     assert.ok(PUBLIC_PATHS.includes(pathName), pathName);
     assert.ok(urls.includes(`https://sitesinc.co${pathName}`), pathName);
   }
@@ -204,6 +204,8 @@ test("Sitesinc public site has the same page types as the general client templat
     if (page.path !== "/") assert.ok(PUBLIC_PATHS.includes(page.path), page.path);
   }
   const contact = readFileSync(path.join(ROOT, "app/contact/page.tsx"), "utf8");
+  assert.ok(existsSync(path.join(ROOT, "app/locations/page.tsx")));
+  assert.ok(existsSync(path.join(ROOT, "app/locations/[citySlug]/page.tsx")));
   assert.match(contact, /EmailCapture/);
   const form = readFileSync(path.join(ROOT, "components/EmailCapture.tsx"), "utf8");
   assert.match(form, /\/api\/subscribe/);

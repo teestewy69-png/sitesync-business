@@ -92,6 +92,7 @@ const NICHE_SCHEMA: Array<[RegExp, string]> = [
   [/barber|salon|hair/i, "HairSalon"],
   [/moving|movers/i, "MovingCompany"],
   [/real estate|realtor|houses/i, "RealEstateAgent"],
+  [/website|web design|web build/i, "ProfessionalService"],
 ];
 
 export function schemaTypeForNiche(niche: string): string {

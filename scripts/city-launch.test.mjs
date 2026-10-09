@@ -484,3 +484,28 @@ test("llm chatCompletion: classifies errors, retryable + Retry-After, never leak
     globalThis.fetch = realFetch;
   }
 });
+
+test("Sitesinc City Launch picks 500 real Census cities and uses ScaleQuan only", async () => {
+  const sitesinc = await import("../lib/factory/sitesinc-city.ts");
+  const cityLaunch = await import("../lib/factory/city-launch.ts");
+  assert.equal(sitesinc.SITESINC_CITY_PROJECT_ID, "sitesinc");
+  assert.equal(sitesinc.SITESINC_CITY_LIMIT, 500);
+  assert.equal(sitesinc.SITESINC_CITY_STATES.length, 51);
+  const project = sitesinc.sitesincCityProjectRecord();
+  const pick = cityLaunch.pickCities(project, {
+    mode: "top_states",
+    states: sitesinc.SITESINC_CITY_STATES,
+    limit: sitesinc.SITESINC_CITY_LIMIT,
+    minPopulation: 1000,
+  });
+  assert.equal(pick.ok, true, pick.error);
+  assert.equal(pick.cities.length, 500);
+  assert.ok(pick.cities.every((c) => c.population >= 1000 && c.lat && c.state));
+  const slugs = new Set(pick.cities.map((c) => c.slug));
+  assert.equal(slugs.size, 500);
+  const locations = readFileSync(new URL("../app/locations/page.tsx", import.meta.url), "utf8");
+  assert.match(locations, /SITESINC_CITY_PROJECT_ID/);
+  const home = readFileSync(new URL("../app/app/page.tsx", import.meta.url), "utf8");
+  assert.match(home, /queue-sitesinc-cities/);
+  assert.match(home, /CityLaunchBay/);
+});

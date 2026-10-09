@@ -20,6 +20,7 @@ test("factory home mounts all three bays", () => {
   assert.match(home, /SiteGrowBay/);
   assert.match(home, /DomainIQBay/);
   assert.match(home, /CityLaunchBay/);
+  assert.match(home, /queue-sitesinc-cities/);
 });
 
 test("ScaleQuan bay is labeled as ScaleQuan · City Launch", () => {
