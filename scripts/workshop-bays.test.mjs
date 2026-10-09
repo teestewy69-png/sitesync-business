@@ -65,6 +65,17 @@ test("SiteGrow bay exists and points at client factory routes", () => {
   assert.match(bay, /\/demo\/client\//);
 });
 
+test("factory does not show the public pricing ticker", () => {
+  const factoryLayout = readFileSync(path.join(ROOT, "app/app/layout.tsx"), "utf8");
+  const hide = readFileSync(path.join(ROOT, "components/HideOnClientSite.tsx"), "utf8");
+  const css = readFileSync(path.join(ROOT, "app/globals.css"), "utf8");
+  assert.match(factoryLayout, /data-factory/);
+  assert.match(hide, /pathname === "\/app"/);
+  assert.match(css, /data-factory[\s\S]*announcement-ticker/);
+  const publicLayout = readFileSync(path.join(ROOT, "app/layout.tsx"), "utf8");
+  assert.match(publicLayout, /SitesincTicker/);
+});
+
 test("inbox leads with a project link into SiteGrow", () => {
   const inbox = readFileSync(path.join(ROOT, "app/app/inbox/page.tsx"), "utf8");
   assert.match(inbox, /lead\.projectId/);

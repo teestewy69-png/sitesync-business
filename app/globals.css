@@ -116,3 +116,8 @@ body {
 body:has([data-client-site]) .announcement-ticker {
   display: none;
 }
+
+/* Factory (/app): no public pricing ticker. */
+body:has([data-factory]) .announcement-ticker {
+  display: none;
+}
