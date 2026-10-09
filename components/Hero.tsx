@@ -44,6 +44,7 @@ export default function Hero() {
           <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:gap-4">
             <a
               href={startHref}
+              data-email-catcher="true"
               data-analytics-cta="start_build"
               data-analytics-location="hero"
               className="group inline-flex items-center justify-center rounded-full bg-gradient-to-b from-brand-300 to-brand-600 px-6 py-3 text-sm font-semibold text-zinc-950 shadow-lg shadow-brand-500/30 transition hover:from-brand-200 hover:to-brand-500"

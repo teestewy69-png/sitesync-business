@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import content from "@/content.json";
 import Analytics from "@/components/Analytics";
+import EmailCatcher from "@/components/EmailCatcher";
 import SitesincTicker from "@/components/SitesincTicker";
 import StagingBanner from "@/components/StagingBanner";
 import {
@@ -68,6 +69,7 @@ export default function RootLayout({
       <body className="flex min-h-full flex-col bg-canvas text-slate-200">
         <SitesincTicker />
         {children}
+        <EmailCatcher />
         <StagingBanner />
         <Analytics measurementId={GA_MEASUREMENT_ID} allowedHosts={GA_HOSTS} />
       </body>

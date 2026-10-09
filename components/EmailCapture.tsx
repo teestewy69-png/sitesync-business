@@ -8,7 +8,15 @@ import { trackLead } from "@/lib/analytics";
 type Status = "idle" | "loading" | "success" | "error";
 type Variant = "intake" | "contact";
 
-export default function EmailCapture({ variant = "intake" }: { variant?: Variant }) {
+export default function EmailCapture({
+  variant = "intake",
+  layout = "section",
+  onSuccess,
+}: {
+  variant?: Variant;
+  layout?: "section" | "dialog";
+  onSuccess?: () => void;
+}) {
   const { emailCapture, footer, contact } = content;
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -19,7 +27,8 @@ export default function EmailCapture({ variant = "intake" }: { variant?: Variant
   const [status, setStatus] = useState<Status>("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  const sectionId = variant === "contact" ? "contact-form" : "checklist";
+  const sectionId =
+    layout === "dialog" ? "email-catcher" : variant === "contact" ? "contact-form" : "checklist";
 
   // One idempotency key per form instance, plus a lock so double-clicks and retries cannot create twice.
   const idempotencyKey = useRef("");
@@ -66,6 +75,7 @@ export default function EmailCapture({ variant = "intake" }: { variant?: Variant
       setStatus("success");
       // Only after the lead was saved. No PII in params.
       trackLead("website_build_request", { monitoring_opt_in: monitoring, source: variant });
+      onSuccess?.();
     } catch (err) {
       submitting.current = false;
       setStatus("error");
@@ -76,26 +86,30 @@ export default function EmailCapture({ variant = "intake" }: { variant?: Variant
   }
 
   const showHeading = variant === "intake";
+  const isDialog = layout === "dialog";
+  const heading = isDialog ? emailCapture.popupTitle : emailCapture.title;
+  const overline = isDialog ? emailCapture.popupOverline : emailCapture.overline;
+  const subtitle = isDialog ? emailCapture.popupSubtitle : emailCapture.subtitle;
 
-  return (
-    <section id={sectionId} className="relative border-t border-white/5">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-brand-500/10 via-transparent to-transparent" />
-
-      <div className="relative mx-auto max-w-3xl px-6 py-20 text-center sm:py-24">
-        {showHeading ? (
+  const body = (
+    <>
+        {showHeading || isDialog ? (
           <>
             <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-500/10 text-brand-300 ring-1 ring-brand-500/25">
               <Mail className="h-5 w-5" />
             </span>
 
             <p className="mt-5 text-xs font-semibold uppercase tracking-wider text-brand-300">
-              {emailCapture.overline}
+              {overline}
             </p>
-            <h2 className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl">
-              {emailCapture.title}
+            <h2
+              id={isDialog ? "email-catcher-title" : undefined}
+              className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl"
+            >
+              {heading}
             </h2>
             <p className="mx-auto mt-3 max-w-xl text-base text-slate-400">
-              {emailCapture.subtitle}
+              {subtitle}
             </p>
           </>
         ) : (
@@ -225,7 +239,17 @@ export default function EmailCapture({ variant = "intake" }: { variant?: Variant
           </a>
           .
         </p>
-      </div>
+    </>
+  );
+
+  if (isDialog) {
+    return <div className="relative text-center">{body}</div>;
+  }
+
+  return (
+    <section id={sectionId} className="relative border-t border-white/5">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-brand-500/10 via-transparent to-transparent" />
+      <div className="relative mx-auto max-w-3xl px-6 py-20 text-center sm:py-24">{body}</div>
     </section>
   );
 }

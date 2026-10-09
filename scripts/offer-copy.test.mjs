@@ -288,3 +288,45 @@ test("public copy: $1,995 is a flat fee, not a starting price or quote", () => {
     assert.doesNotMatch(text, BANNED, rel);
   }
 });
+
+test("email catcher: popup is mounted and intercepts start-build clicks", () => {
+  const layout = readFileSync(path.join(ROOT, "app/layout.tsx"), "utf8");
+  assert.match(layout, /<EmailCatcher\s*\/>/);
+  const catcher = readFileSync(path.join(ROOT, "components/EmailCatcher.tsx"), "utf8");
+  assert.match(catcher, /isEmailCatcherTrigger/);
+  assert.match(catcher, /layout="dialog"/);
+  const capture = readFileSync(path.join(ROOT, "components/EmailCapture.tsx"), "utf8");
+  assert.match(capture, /layout === "dialog"/);
+  assert.match(capture, /email-catcher-title/);
+  const hero = readFileSync(path.join(ROOT, "components/Hero.tsx"), "utf8");
+  assert.match(hero, /data-email-catcher="true"/);
+  assert.match(hero, /data-analytics-cta="start_build"/);
+  const pricing = readFileSync(path.join(ROOT, "components/Pricing.tsx"), "utf8");
+  assert.match(pricing, /data-email-catcher="true"/);
+  const content = JSON.parse(readFileSync(path.join(ROOT, "content.json"), "utf8"));
+  assert.equal(content.emailCapture.popupOverline, "Before you go");
+  assert.equal(content.emailCapture.popupTitle, "Leave your name and email first.");
+  assert.match(content.emailCapture.popupSubtitle, /request, not a purchase/);
+});
+
+test("email catcher: start-build and #checklist clicks are caught; factory and contact stay quiet", async () => {
+  const catcher = await import("../lib/email-catcher.ts");
+  assert.equal(catcher.EMAIL_CATCHER_AUTO_OPEN_MS, 5000);
+  assert.equal(catcher.isEmailCatcherTrigger({ catcher: "true" }), true);
+  assert.equal(catcher.isEmailCatcherTrigger({ href: "/#checklist" }), true);
+  assert.equal(catcher.isEmailCatcherTrigger({ href: "#checklist" }), true);
+  assert.equal(catcher.isEmailCatcherTrigger({ cta: "start_build" }), true);
+  assert.equal(catcher.isEmailCatcherTrigger({ href: "/#pricing" }), false);
+  assert.equal(catcher.isEmailCatcherTrigger({ catcher: "off", href: "/#checklist" }), false);
+  assert.equal(
+    catcher.isEmailCatcherTrigger({ href: "/#checklist", insideCatcher: true }),
+    false
+  );
+  assert.equal(catcher.isEmailCatcherInternalPath("/app"), true);
+  assert.equal(catcher.isEmailCatcherInternalPath("/demo/client/x"), true);
+  assert.equal(catcher.isEmailCatcherInternalPath("/"), false);
+  assert.equal(catcher.shouldAutoOpenEmailCatcher("/"), true);
+  assert.equal(catcher.shouldAutoOpenEmailCatcher("/services"), true);
+  assert.equal(catcher.shouldAutoOpenEmailCatcher("/contact"), false);
+  assert.equal(catcher.shouldAutoOpenEmailCatcher("/app"), false);
+});
