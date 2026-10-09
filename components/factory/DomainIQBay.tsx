@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { ClientDomainCandidate } from "@/lib/domainiq/client";
-import type { DomainBaySummary } from "@/lib/factory/domainiq";
+import type { DomainBackfillResult, DomainBaySummary } from "@/lib/factory/domainiq";
 import AffiliateDisclosure from "@/components/siteflow/AffiliateDisclosure";
 import { getProgram, outboundHref, plainRegistrarUrl, REGISTRAR_SLUGS, SPONSORED_REL } from "@/lib/affiliates";
 
@@ -17,11 +18,33 @@ export default function DomainIQBay({
   /** SiteFlow paused (Path A, default): registrar links are plain, untracked, internal-only search URLs. */
   siteflowEnabled?: boolean;
 }) {
+  const router = useRouter();
   const [form, setForm] = useState({ businessName: "", niche: "plumbing", city: "", state: "" });
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
   const [result, setResult] = useState<TryResult | null>(null);
   const [verify, setVerify] = useState(summary.availabilityEnabled);
+  const [backfill, setBackfill] = useState<DomainBackfillResult | null>(null);
+
+  async function fireUp() {
+    setBusy("backfill");
+    setError("");
+    try {
+      const res = await fetch("/api/factory/action", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ op: "domainiq-backfill", approvedBy: "Tony" }),
+      });
+      const data = (await res.json()) as { ok?: boolean; error?: string; domainBackfill?: DomainBackfillResult };
+      if (!res.ok || !data.ok || !data.domainBackfill) throw new Error(data.error || "DomainIQ backfill failed");
+      setBackfill(data.domainBackfill);
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "DomainIQ backfill failed");
+    } finally {
+      setBusy("");
+    }
+  }
 
   async function generate() {
     setBusy("generate");
@@ -89,14 +112,31 @@ export default function DomainIQBay({
           <p className="text-xs font-semibold uppercase tracking-wider text-brand-300">Factory bay</p>
           <h2 className="mt-1 text-xl font-semibold">DomainIQ · client domains</h2>
           <p className="mt-1 max-w-3xl text-sm text-slate-400">
-            Runs automatically for every new client project (after setup, like the auto baseline): generates and
-            scores domain candidates from niche, business name and city, then checks availability via free public
-            RDAP + DNS. Operator picks; Tony signs off; purchase stays manual. Engine {summary.engine} ·{" "}
-            {summary.mode} · no server, no API key · availability {summary.availabilityEnabled ? "on (keyless)" : "off"}.
+            Factory only — not on the public site. Runs automatically for every new client project (after setup,
+            like the auto baseline): generates and scores domain candidates from niche, business name and city, then
+            checks availability via free public RDAP + DNS. Operator picks; Tony signs off; purchase stays manual.
+            Engine {summary.engine} · {summary.mode} · no server, no API key · availability{" "}
+            {summary.availabilityEnabled ? "on (keyless)" : "off"}.
           </p>
         </div>
-        <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-200">live</span>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-200">live</span>
+          <button
+            type="button"
+            disabled={Boolean(busy)}
+            onClick={fireUp}
+            className="rounded-lg bg-gradient-to-b from-brand-300 to-brand-600 px-3 py-1.5 text-sm font-semibold text-zinc-950 disabled:opacity-60"
+          >
+            {busy === "backfill" ? "Firing up…" : "Fire up DomainIQ"}
+          </button>
+        </div>
       </div>
+      {backfill ? (
+        <p className="mt-3 text-sm text-slate-300">
+          Backfill: scanned {backfill.scanned}, generated {backfill.generated}, skipped {backfill.skipped}
+          {backfill.errors.length ? `, ${backfill.errors.length} errors` : ""}. Clients who already own a domain stay skipped.
+        </p>
+      ) : null}
 
       <div className="mt-4 grid gap-3 sm:grid-cols-5">
         {[
