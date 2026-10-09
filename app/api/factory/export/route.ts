@@ -23,7 +23,7 @@ export const maxDuration = 60;
  * skipped, a workspace that is only the code-default seed, ...). An empty array means nothing was skipped.
  */
 export async function GET(req: NextRequest) {
-  if (!(await isValidSession(req.cookies.get(FACTORY_COOKIE)?.value))) {
+  if (!(await isValidSession(req.cookies.get(FACTORY_COOKIE)?.value, req.headers.get("host")))) {
     return NextResponse.json({ ok: false, error: "Factory authentication required." }, { status: 401 });
   }
   try {

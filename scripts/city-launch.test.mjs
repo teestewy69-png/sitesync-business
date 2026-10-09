@@ -492,6 +492,9 @@ test("Sitesinc City Launch picks 500 real Census cities and uses ScaleQuan only"
   assert.equal(sitesinc.SITESINC_CITY_LIMIT, 500);
   assert.equal(sitesinc.SITESINC_CITY_STATES.length, 51);
   const project = sitesinc.sitesincCityProjectRecord();
+  assert.equal(project.ownedDomain, "sitesinc.co");
+  assert.equal(project.selectedDomain, "sitesinc.co");
+  assert.equal(project.domainStatus, "client_owned");
   const pick = cityLaunch.pickCities(project, {
     mode: "top_states",
     states: sitesinc.SITESINC_CITY_STATES,

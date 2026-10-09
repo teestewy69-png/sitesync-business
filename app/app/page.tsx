@@ -82,6 +82,11 @@ export default async function FactoryHome() {
           fields={{ approvedBy: "Tony" }}
         />
         <ActionForm
+          op="domainiq-backfill"
+          label="Fire up DomainIQ"
+          fields={{ approvedBy: "Tony" }}
+        />
+        <ActionForm
           op="record-intake"
           label="Convert intake → internal project"
           tone="muted"

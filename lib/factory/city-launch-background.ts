@@ -47,7 +47,7 @@ export function backgroundPending(bgState: { requestedAt?: string; startedAt?: s
 
 export type BackgroundDeps = {
   runTick: (projectId: string, batchId: string, opts: { budgetMs: number; hostOrigin?: string | null }) => Promise<{ ok: boolean; status: string; drafted: number; failed: number; remaining: number; continued: string; detail?: string }>;
-  isValidSession: (cookie: string | undefined) => Promise<boolean>;
+  isValidSession: (cookie: string | undefined, host?: string | null) => Promise<boolean>;
   markStarted: (projectId: string, batchId: string) => Promise<void>;
   budgetMs?: number;
 };
@@ -69,7 +69,13 @@ function json(status: number, body: unknown): Response {
 export async function handleCityLaunchBackground(req: Request, deps?: Partial<BackgroundDeps>): Promise<Response> {
   if (req.method !== "POST") return json(405, { ok: false, error: "POST only." });
   const check = deps?.isValidSession || isValidSession;
-  if (!(await check(cookieValue(req.headers.get("cookie"), FACTORY_COOKIE)))) {
+  let host: string | null = req.headers.get("host");
+  try {
+    host = host || new URL(req.url).host;
+  } catch {
+    // keep header host
+  }
+  if (!(await check(cookieValue(req.headers.get("cookie"), FACTORY_COOKIE), host))) {
     return json(401, { ok: false, error: "Factory authentication required." });
   }
   const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;

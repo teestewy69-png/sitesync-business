@@ -13,7 +13,7 @@ const ID_PATTERN = /^[a-z]+_[a-z0-9]{4,64}$/i;
  * Auth is enforced by middleware.ts (matcher /api/factory/*) and re-checked here.
  */
 export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
-  if (!(await isValidSession(req.cookies.get(FACTORY_COOKIE)?.value))) {
+  if (!(await isValidSession(req.cookies.get(FACTORY_COOKIE)?.value, req.headers.get("host")))) {
     return NextResponse.json({ ok: false, error: "Factory authentication required." }, { status: 401 });
   }
   const { id } = await ctx.params;

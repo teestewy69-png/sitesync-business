@@ -100,6 +100,18 @@ test("middleware: client host rewrites, Sitesinc host unchanged", async () => {
   assert.equal(res.status, 401, "bare /api/factory must also require auth");
   res = await run("https://sitesinc.co/app/login");
   assert.equal(res.headers.get("x-middleware-next"), "1");
+  // Local factory: no token, no login page. Hosted factory still requires the access token.
+  res = await run("http://127.0.0.1:3000/app");
+  assert.equal(res.headers.get("x-middleware-next"), "1");
+  assert.notEqual(res.status, 307);
+  res = await run("http://localhost:3000/app/clients");
+  assert.equal(res.headers.get("x-middleware-next"), "1");
+  res = await run("http://127.0.0.1:3000/api/factory/domainiq");
+  assert.equal(res.headers.get("x-middleware-next"), "1");
+  assert.notEqual(res.status, 401);
+  res = await run("http://127.0.0.1:3000/app/login");
+  assert.equal(res.status, 307);
+  assert.match(res.headers.get("location") || "", /\/app$/);
   // the internal prefix is not reachable directly on real Sitesinc hosts
   res = await run("https://sitesinc.co/client-domain/desertflow.com/locations");
   assert.equal(res.status, 404);

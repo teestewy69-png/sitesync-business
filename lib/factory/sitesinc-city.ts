@@ -3,8 +3,9 @@
  * no second doorway generator. Public pages live at /locations.
  */
 import { US_STATE_ROWS } from "@/lib/city-launch/us-cities.generated";
+import { DOMAINIQ_ENGINE_VERSION } from "@/lib/domainiq";
 import type { ClientProject } from "@/lib/store";
-import { appendProject, findProjectById } from "@/lib/store";
+import { appendProject, findProjectById, updateProject } from "@/lib/store";
 import { pickCities, queueCityLaunchBatch, type QueueBatchResult } from "./city-launch";
 import { productionLinks, type ClientSiteLinks } from "./city-launch-public";
 
@@ -43,8 +44,17 @@ export function sitesincCityProjectRecord(): ClientProject {
       "Internal Sitesinc City Launch. ScaleQuan is the only writer. No invented HQ. Pages go live at /locations after they pass the uniqueness gate and are approved.",
     designStyleId: "neon-glass",
     templateId: "general",
+    ownedDomain: "sitesinc.co",
     selectedDomain: "sitesinc.co",
     domainStatus: "client_owned",
+    domainIQ: {
+      engine: DOMAINIQ_ENGINE_VERSION,
+      mode: "in-process",
+      purchase: "manual",
+      reason: "Client already owns sitesinc.co. Domain suggestions are not auto-generated (Generate still works if you want ideas).",
+      selectedBy: "Sitesinc factory",
+      selectedAt: "2026-10-09T00:00:00.000Z",
+    },
     seededPages: [
       { slug: "home", path: "/", title: "Home", purpose: "Sitesinc offer." },
       { slug: "services", path: "/services", title: "Services", purpose: "What the $1,995 build includes." },
@@ -57,7 +67,16 @@ export function sitesincCityProjectRecord(): ClientProject {
 
 export async function ensureSitesincCityProject(): Promise<ClientProject> {
   const existing = await findProjectById(SITESINC_CITY_PROJECT_ID);
-  if (existing) return existing;
+  if (existing) {
+    if (existing.ownedDomain === "sitesinc.co" && existing.domainStatus === "client_owned") {
+      return existing;
+    }
+    return updateProject(existing.id, {
+      ownedDomain: existing.ownedDomain || "sitesinc.co",
+      selectedDomain: existing.selectedDomain || existing.ownedDomain || "sitesinc.co",
+      domainStatus: "client_owned",
+    });
+  }
   return appendProject(sitesincCityProjectRecord());
 }
 
