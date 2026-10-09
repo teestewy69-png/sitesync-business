@@ -1,7 +1,14 @@
+import { isLocalDevHost } from "@/lib/client-domain/host";
+
 export const FACTORY_COOKIE = "factory_session";
 
 export function isHostedRuntime(): boolean {
   return Boolean(process.env.NETLIFY || process.env.CONTEXT || process.env.NODE_ENV === "production");
+}
+
+/** Localhost / 127.0.0.1 / IPs: factory is open. sitesinc.co and Netlify still require the access token. */
+export function factoryAuthRequired(host?: string | null): boolean {
+  return !isLocalDevHost(host);
 }
 
 export function factoryToken(): string {
@@ -21,7 +28,8 @@ export async function sessionValue(token = factoryToken()): Promise<string> {
     .join("");
 }
 
-export async function isValidSession(cookie: string | undefined): Promise<boolean> {
+export async function isValidSession(cookie: string | undefined, host?: string | null): Promise<boolean> {
+  if (!factoryAuthRequired(host)) return true;
   const token = factoryToken();
   if (!token || !cookie) return false;
   const expected = await sessionValue(token);

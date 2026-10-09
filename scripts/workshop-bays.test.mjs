@@ -65,6 +65,15 @@ test("SiteGrow bay exists and points at client factory routes", () => {
   assert.match(bay, /\/demo\/client\//);
 });
 
+test("local factory opens without an access token; hosted factory still requires one", () => {
+  const auth = readFileSync(path.join(ROOT, "lib/factory/auth.ts"), "utf8");
+  const mw = readFileSync(path.join(ROOT, "middleware.ts"), "utf8");
+  assert.match(auth, /factoryAuthRequired/);
+  assert.match(auth, /isLocalDevHost/);
+  assert.match(mw, /factoryAuthRequired\(host\)/);
+  assert.match(mw, /pathname === "\/app\/login"/);
+});
+
 test("factory does not show the public pricing ticker", () => {
   const factoryLayout = readFileSync(path.join(ROOT, "app/app/layout.tsx"), "utf8");
   const hide = readFileSync(path.join(ROOT, "components/HideOnClientSite.tsx"), "utf8");

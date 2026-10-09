@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { FACTORY_COOKIE, isPublicFactoryPath, isValidSession } from "@/lib/factory/auth";
+import { FACTORY_COOKIE, factoryAuthRequired, isPublicFactoryPath, isValidSession } from "@/lib/factory/auth";
 import { CLIENT_DOMAIN_PREFIX, clientDomainRoute, isLocalDevHost, isSitesincHost } from "@/lib/client-domain/host";
 import { isSiteflowPath, siteflowEnabled } from "@/lib/siteflow/flag";
 import { shouldCaptureRef, stripRefParam } from "@/lib/siteflow/ref";
@@ -14,10 +14,20 @@ function notFound() {
 
 async function factoryAuth(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  const host = requestHost(req);
+  if (!factoryAuthRequired(host)) {
+    if (pathname === "/app/login") {
+      const home = req.nextUrl.clone();
+      home.pathname = "/app";
+      home.search = "";
+      return NextResponse.redirect(home);
+    }
+    return NextResponse.next();
+  }
   if (isPublicFactoryPath(pathname)) return NextResponse.next();
 
   const cookie = req.cookies.get(FACTORY_COOKIE)?.value;
-  if (await isValidSession(cookie)) return NextResponse.next();
+  if (await isValidSession(cookie, host)) return NextResponse.next();
 
   if (pathname.startsWith("/api/")) {
     return NextResponse.json({ ok: false, error: "Factory authentication required." }, { status: 401 });

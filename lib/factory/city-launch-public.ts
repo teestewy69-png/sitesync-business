@@ -3,7 +3,7 @@
  * Only APPROVED pages whose quality gate is not "block" are served publicly. A signed-in factory operator
  * can add ?preview=1 to see a draft (noindex, labeled).
  */
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { unstable_rethrow } from "next/navigation";
 import { haversineMiles } from "@/lib/city-launch";
 import type { CityDraft, CityIndexEntry, CityLaunchIndex } from "@/lib/city-launch/job";
@@ -25,7 +25,8 @@ export function approvedEntries(index: CityLaunchIndex | null): CityIndexEntry[]
 export async function isOperatorSession(): Promise<boolean> {
   try {
     const jar = await cookies();
-    return await isValidSession(jar.get(FACTORY_COOKIE)?.value);
+    const host = (await headers()).get("host");
+    return await isValidSession(jar.get(FACTORY_COOKIE)?.value, host);
   } catch (err) {
     unstable_rethrow(err);
     return false;
