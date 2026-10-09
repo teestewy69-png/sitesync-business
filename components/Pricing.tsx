@@ -39,6 +39,7 @@ export default function Pricing() {
             </p>
             <a
               href={pricing.build.cta.href}
+              data-email-catcher="true"
               data-analytics-cta="start_build"
               data-analytics-location="pricing"
               className="mt-8 inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-b from-brand-300 to-brand-600 px-6 py-3.5 font-semibold text-zinc-950 shadow-glow transition hover:from-brand-200 hover:to-brand-500 sm:w-auto"
@@ -70,6 +71,7 @@ export default function Pricing() {
             {pricing.maintenance.cta?.href && (
               <a
                 href={pricing.maintenance.cta.href}
+                data-email-catcher="true"
                 data-analytics-cta="monitoring"
                 data-analytics-location="pricing"
                 className="mt-8 inline-flex w-full items-center justify-center rounded-xl bg-white/5 px-6 py-3 font-semibold text-white ring-1 ring-white/10 transition hover:bg-white/10"
