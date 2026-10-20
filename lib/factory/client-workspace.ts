@@ -110,7 +110,7 @@ export function autoSeedClientDraftPages(
           : clientBriefHeadings(
               config,
               page.slug,
-              [config.city, config.state].filter(Boolean).join(", ") || "the service area"
+              [config.city, config.state].filter(Boolean).join(", ")
             ),
         recurringTopics: [config.businessName, config.niche].filter(Boolean),
         gaps: [],

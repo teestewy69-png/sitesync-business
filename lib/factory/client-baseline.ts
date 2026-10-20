@@ -12,6 +12,7 @@ import {
 import { saveBaseline } from "./workspace";
 import { readClientWorkspace, updateClientWorkspace } from "./client-workspace";
 import { configFromProject } from "./client-config";
+import { applyRealSitePlan } from "./client-real-site";
 import {
   applyAutoStageProgression,
   applyBaselineCaptureResult,
@@ -90,12 +91,16 @@ export async function captureClientBaseline(opts: {
     /\/$/,
     ""
   );
-  const paths = [...site.crawlPaths];
+  const previewOriginEarly = clientPreviewOrigin(projectId, opts.hostOrigin).replace(/\/$/, "");
+  const isPreviewEarly = origin === previewOriginEarly || origin.endsWith(`/demo/client/${projectId}`);
+  // Real-site crawls start at "/" and discover pages (sitemap + links) instead of guessing template paths.
+  const paths = isPreviewEarly ? [...site.crawlPaths] : ["/"];
 
   const snapshot = await captureBaseline({
     origin,
     siteId: projectId,
     paths,
+    discover: true,
     source: origin.includes("sitesinc.co") && !hostOriginFrom(origin).includes("localhost")
       ? "manual"
       : "local",
@@ -118,6 +123,23 @@ export async function captureClientBaseline(opts: {
   const isPreview = origin === previewOrigin || origin.endsWith(`/demo/client/${projectId}`);
   if (!isPreview) {
     const reference = await updateClientWorkspace(projectId, (current) => {
+      // Build the plan from the client's real pages (keeps operator copy and approved pages).
+      const plan = applyRealSitePlan(current, snapshot, {
+        businessName: current.clientContext?.businessName || site.name,
+      });
+      if (plan.imported > 0) {
+        current.blueprint = plan.blueprint;
+        current.pages = plan.pages;
+        current.stages = current.stages.map((stage, index) =>
+          index === 1
+            ? {
+                ...stage,
+                notes: `Blueprint built from the live site crawl ${snapshot.id} (${plan.imported} real pages at ${origin}), not a template.`,
+                artifacts: plan.blueprint.map((page) => page.path),
+              }
+            : stage
+        );
+      }
       current.clientReferenceBaselines = [
         {
           id: snapshot.id,
@@ -131,6 +153,19 @@ export async function captureClientBaseline(opts: {
       ].slice(0, 20);
       return current;
     });
+    // Keep the project's page list in step with the real-site plan so the preview, its sitemap and the
+    // preview crawl all use the client's real pages instead of the template seed.
+    if (reference.blueprint.some((page) => page.existing)) {
+      const { updateProject } = await import("@/lib/store");
+      await updateProject(projectId, {
+        seededPages: reference.blueprint.map((page) => ({
+          slug: page.slug,
+          path: page.path,
+          title: page.title,
+          purpose: page.purpose,
+        })),
+      });
+    }
     return { snapshot, site, workspace: reference, pagesOk, pagesTotal, limited, reference: true };
   }
 

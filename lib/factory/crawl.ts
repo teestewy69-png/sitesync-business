@@ -2,6 +2,7 @@
 import { docStoreHealth } from "@/lib/persistence";
 import { newId, storeWritable } from "@/lib/store";
 import { PRODUCTION_ORIGIN } from "./pipeline";
+import { crawlablePath, enqueue, newDiscovery, robotsDisallows } from "./crawl-discovery";
 import type {
   BaselineSnapshot,
   BrokenLink,
@@ -180,6 +181,10 @@ export function parsePage(origin: string, pathName: string, fetched: Awaited<Ret
     ttfbMs: fetched.ok ? fetched.ttfbMs : null,
     bytes: fetched.ok ? fetched.bytes : null,
     error: fetched.error,
+    excerpt: stripTags(
+      (html.match(/<main\b[\s\S]*?<\/main>/i)?.[0] || html.match(/<body\b[\s\S]*<\/body>/i)?.[0] || html)
+        .replace(/<(nav|header|footer)\b[\s\S]*?<\/\1>/gi, " ")
+    ).slice(0, 600),
   };
 }
 
@@ -264,6 +269,10 @@ export async function captureBaseline(opts?: {
   siteId?: string;
   paths?: string[];
   skipIntake?: boolean;
+  /** Discover pages from sitemap.xml + same-origin links (default on for client sites). */
+  discover?: boolean;
+  /** Page budget for discovery (default 30). */
+  maxPages?: number;
 }): Promise<BaselineSnapshot> {
   const { findCatalogSite } = await import("./seo-sites");
   // Never silently borrow Sitesinc catalog when siteId is a client project (unknown to static catalog).
@@ -283,8 +292,12 @@ export async function captureBaseline(opts?: {
   const sitemapFetch = await fetchText(`${origin}/sitemap.xml`);
   const sitemapList = sitemapFetch.ok ? sitemapUrls(sitemapFetch.body) : [];
 
+  // Sitesinc's own workspace pages and /case-study only belong to the Sitesinc crawl. Client sites used to get
+  // them appended (and 404'd on the client's real origin).
+  const sitesincSite = !opts?.siteId || siteId === "sitesinc-growth-case-study";
+  const discover = opts?.discover ?? !sitesincSite;
   const extraPaths: string[] = [];
-  if (!demo) {
+  if (!demo && sitesincSite) {
     try {
       const { readWorkspace } = await import("./workspace");
       const workspace = await readWorkspace();
@@ -309,12 +322,33 @@ export async function captureBaseline(opts?: {
     );
   }
   const pageInventory: PageAudit[] = [];
-  const paths = demo
+  const paths = demo || !sitesincSite
     ? [...new Set<string>(seedPaths)]
     : [...new Set<string>([...seedPaths, ...extraPaths, "/case-study"])];
-  for (const pathName of paths) {
-    const fetched = await fetchText(`${origin}${pathName === "/" ? "" : pathName}`);
-    pageInventory.push(parsePage(origin, pathName, fetched));
+  if (!discover) {
+    for (const pathName of paths) {
+      const fetched = await fetchText(`${origin}${pathName === "/" ? "" : pathName}`);
+      pageInventory.push(parsePage(origin, pathName, fetched));
+    }
+  } else {
+    const maxPages = Math.max(1, Math.min(opts?.maxPages || 30, 200));
+    const disallow = robots.ok ? robotsDisallows(robots.body) : [];
+    const queue = newDiscovery(paths);
+    for (const loc of sitemapList) enqueue(queue, crawlablePath(origin, loc), 3, disallow);
+    while (queue.queue.length && pageInventory.length < maxPages) {
+      const pathName = queue.queue.shift()!;
+      const fetched = await fetchText(`${origin}${pathName === "/" ? "" : pathName}`);
+      const page = parsePage(origin, pathName, fetched);
+      page.discoveredVia = paths.includes(pathName)
+        ? "seed"
+        : sitemapList.some((loc) => crawlablePath(origin, loc) === pathName)
+          ? "sitemap"
+          : "link";
+      pageInventory.push(page);
+      if (fetched.ok) {
+        for (const href of page.internalLinks) enqueue(queue, crawlablePath(origin, href), 3, disallow);
+      }
+    }
   }
 
   const brokenLinks: BrokenLink[] = [];
@@ -401,7 +435,7 @@ export async function captureBaseline(opts?: {
         ? "GA4 is installed on the public site. This snapshot does not import numeric reports (in progress)."
         : "NEXT_PUBLIC_GA_MEASUREMENT_ID is empty. No analytics metrics claimed.",
     },
-    intakeFormHealth: demo || opts?.skipIntake
+    intakeFormHealth: demo || opts?.skipIntake || !sitesincSite
       ? {
           checklistEndpoint: "ok" as const,
           storeWritable: true,

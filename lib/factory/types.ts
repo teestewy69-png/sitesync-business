@@ -87,6 +87,10 @@ export type PageAudit = {
   ttfbMs: number | null;
   bytes: number | null;
   error: string;
+  /** How the crawler found this page (discovery crawls only). */
+  discoveredVia?: "seed" | "sitemap" | "link";
+  /** First ~600 chars of visible body text (scripts/nav stripped), for grounding drafts in real copy. */
+  excerpt?: string;
 };
 
 export type BrokenLink = {
