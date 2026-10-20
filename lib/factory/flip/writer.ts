@@ -8,6 +8,7 @@ import { checkContentLength, type ContentLengthCheck } from "../content-length";
 import type { FlipState, PlannedPage } from "./model";
 import type { CityPageContent } from "@/lib/city-launch/prompts";
 import { flipPresetFor } from "./presets";
+import { analyzeCompetitors, competitorPromptBlock, type CompetitorAnalysis } from "./competitors";
 
 export type GeneratedPage = {
   slug: string;
@@ -22,6 +23,7 @@ export type GeneratedPage = {
   generatedAt: string;
   attempts: number;
   status: "pending_approval" | "needs_fix";
+  competitors?: CompetitorAnalysis;
   approvedAt?: string;
   approvedBy?: string;
 };
@@ -65,7 +67,7 @@ function userPrompt(state: FlipState, page: PlannedPage, min: number, max: numbe
 export async function generateFlipPage(
   state: FlipState,
   page: PlannedPage,
-  opts: { env?: Record<string, string | undefined>; fetchImpl?: unknown; timeoutMs?: number } = {}
+  opts: { env?: Record<string, string | undefined>; fetchImpl?: unknown; timeoutMs?: number; competitorFetch?: unknown; competitors?: CompetitorAnalysis | null } = {}
 ): Promise<GeneratedPage> {
   const resolved = resolveLlmProvider(opts.env || process.env);
   if (!resolved) throw new Error("No LLM configured (set LLM_BASE_URL + LLM_MODEL for Ollama, or a hosted key).");
@@ -74,6 +76,9 @@ export async function generateFlipPage(
     { role: "system", content: systemPrompt(state) },
     { role: "user", content: userPrompt(state, page, min, max) },
   ];
+  const competitors = opts.competitors !== undefined ? opts.competitors : await analyzeCompetitors(competitorKeyword(page), { env: opts.env || process.env, fetchImpl: opts.competitorFetch as never, manualUrls: (page as { competitorUrls?: string[] }).competitorUrls });
+  const research = competitorPromptBlock(competitors);
+  if (research) messages[1] = { role: "user", content: `${messages[1].content}\n\n${research}` };
   let body = "";
   let model = resolved.provider.model;
   let attempts = 0;
@@ -105,7 +110,15 @@ export async function generateFlipPage(
     slug: page.slug, path: page.path, kind: page.kind === "calculator" ? "calculator" : page.kind === "city" ? "city" : "guide",
     title: page.title, body, words: check.words, check, leaks, model, generatedAt: new Date().toISOString(), attempts,
     status: check.status === "ok" && !leaks.length ? "pending_approval" : "needs_fix",
+    ...(competitors ? { competitors } : {}),
   };
+}
+
+/** Search keyword used to find the top 3 competitors for a planned page. */
+export function competitorKeyword(page: PlannedPage): string {
+  const k = (page as { keyword?: string }).keyword;
+  if (k) return k;
+  return page.kind === "city" ? `${page.title.replace(/[:|].*$/, "")} house flipping` : page.title;
 }
 
 /** Validate an imported page (e.g. generated on Tony's PC) with the same rules; never trusts the sender's verdict. */
