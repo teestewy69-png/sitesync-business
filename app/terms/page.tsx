@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   title: "Terms of Service | Sitesinc",
   description: "The terms for Sitesinc website builds: $1,995 flat, 50% to start and 50% at launch, revisions, ownership, and monitored SEO at $129/mo after month one.",
   alternates: { canonical: "/terms" },
-  openGraph: { title: "Terms of Service | Sitesinc", description: "The terms for Sitesinc website builds: $1,995 flat, 50% to start and 50% at launch, revisions, ownership, and monitored SEO at $129/mo after month one.", url: "/terms" images: [OG_IMAGE], },
+  openGraph: { title: "Terms of Service | Sitesinc", description: "The terms for Sitesinc website builds: $1,995 flat, 50% to start and 50% at launch, revisions, ownership, and monitored SEO at $129/mo after month one.", url: "/terms", images: [OG_IMAGE] },
 };
 
 export default function TermsPage() {

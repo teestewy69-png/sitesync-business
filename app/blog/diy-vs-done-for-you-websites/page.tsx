@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   title: "DIY Website Builders vs. Done-For-You: The Real Cost | Sitesinc",
   description: "An honest comparison of DIY website builders and done-for-you builds for small businesses: time, lost leads, and long-term cost.",
   alternates: { canonical: "/blog/diy-vs-done-for-you-websites" },
-  openGraph: { title: "DIY Website Builders vs. Done-For-You: The Real Cost | Sitesinc", description: "An honest comparison of DIY website builders and done-for-you builds for small businesses: time, lost leads, and long-term cost.", url: "/blog/diy-vs-done-for-you-websites" images: [OG_IMAGE], },
+  openGraph: { title: "DIY Website Builders vs. Done-For-You: The Real Cost | Sitesinc", description: "An honest comparison of DIY website builders and done-for-you builds for small businesses: time, lost leads, and long-term cost.", url: "/blog/diy-vs-done-for-you-websites", images: [OG_IMAGE] },
 };
 
 export default function DiyVsDoneForYouWebsites() {

@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   title: "Sitesinc Blog | Small Business Website Guides",
   description: "Straightforward guides from Sitesinc on small business websites, local SEO, lead capture and getting real results from the site you already pay to run.",
   alternates: { canonical: "/blog" },
-  openGraph: { title: "Sitesinc Blog | Small Business Website Guides", description: "Straightforward guides from Sitesinc on small business websites, local SEO, lead capture and getting real results from the site you already pay to run.", url: "/blog" images: [OG_IMAGE], },
+  openGraph: { title: "Sitesinc Blog | Small Business Website Guides", description: "Straightforward guides from Sitesinc on small business websites, local SEO, lead capture and getting real results from the site you already pay to run.", url: "/blog", images: [OG_IMAGE] },
 };
 
 export default function BlogIndex() {
