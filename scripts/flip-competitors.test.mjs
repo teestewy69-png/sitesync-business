@@ -56,5 +56,10 @@ test("writer feeds competitor analysis into the LLM prompt and stores it on the 
   const g = await W.generateFlipPage(state, page, { env: { LLM_BASE_URL: "http://x/v1", LLM_MODEL: "m" }, fetchImpl: llmFetch, competitors: a });
   assert.match(sent, /Competitor research for "ARV Calculator"/); assert.match(sent, /a\.com: thin content/);
   assert.equal(g.competitors.status, "ok");
-  assert.equal(W.competitorKeyword({ kind: "city", title: "Flipping Houses in Austin, TX: guide" }), "Flipping Houses in Austin, TX house flipping");
+  assert.equal(W.competitorKeyword({ kind: "city", title: "Austin, TX House Flipping Market" }), "flipping houses in Austin TX");
+  const fs = await import("node:fs"); const os = await import("node:os"); const p = await import("node:path");
+  const file = p.join(fs.mkdtempSync(p.join(os.tmpdir(), "comp-")), "c.json"); fs.writeFileSync(file, JSON.stringify({ "arv-calculator": a }));
+  sent = "";
+  const g2 = await W.generateFlipPage(state, page, { env: { LLM_BASE_URL: "http://x/v1", LLM_MODEL: "m", FLIP_COMPETITORS_FILE: file }, fetchImpl: llmFetch });
+  assert.match(sent, /a\.com: thin content/); assert.equal(g2.competitors.keyword, "ARV Calculator");
 });

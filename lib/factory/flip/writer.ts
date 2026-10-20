@@ -3,6 +3,7 @@
  * LLM (local Ollama via LLM_BASE_URL/LLM_MODEL, hosted keys as fallback). Every page is length-checked
  * (900-1,500 words) and leak-checked, with up to two repair passes. Output is a draft pending approval.
  */
+import { readFileSync } from "node:fs";
 import { chatCompletion, resolveLlmProvider, type ChatMessage } from "@/lib/city-launch/llm";
 import { checkContentLength, type ContentLengthCheck } from "../content-length";
 import type { FlipState, PlannedPage } from "./model";
@@ -76,7 +77,8 @@ export async function generateFlipPage(
     { role: "system", content: systemPrompt(state) },
     { role: "user", content: userPrompt(state, page, min, max) },
   ];
-  const competitors = opts.competitors !== undefined ? opts.competitors : await analyzeCompetitors(competitorKeyword(page), { env: opts.env || process.env, fetchImpl: opts.competitorFetch as never, manualUrls: (page as { competitorUrls?: string[] }).competitorUrls });
+  const precomputed = opts.competitors !== undefined ? opts.competitors : loadCompetitorFile(opts.env || process.env)[page.slug];
+  const competitors = precomputed !== undefined ? precomputed : await analyzeCompetitors(competitorKeyword(page), { env: opts.env || process.env, fetchImpl: opts.competitorFetch as never, manualUrls: (page as { competitorUrls?: string[] }).competitorUrls });
   const research = competitorPromptBlock(competitors);
   if (research) messages[1] = { role: "user", content: `${messages[1].content}\n\n${research}` };
   let body = "";
@@ -114,11 +116,20 @@ export async function generateFlipPage(
   };
 }
 
+/** Optional precomputed analyses (FLIP_COMPETITORS_FILE = JSON {slug: CompetitorAnalysis}), e.g. researched on another machine. */
+function loadCompetitorFile(env: Record<string, string | undefined>): Record<string, CompetitorAnalysis> {
+  const file = env.FLIP_COMPETITORS_FILE;
+  if (!file) return {};
+  return JSON.parse(readFileSync(file, "utf8")) as Record<string, CompetitorAnalysis>;
+}
+
 /** Search keyword used to find the top 3 competitors for a planned page. */
 export function competitorKeyword(page: PlannedPage): string {
   const k = (page as { keyword?: string }).keyword;
   if (k) return k;
-  return page.kind === "city" ? `${page.title.replace(/[:|].*$/, "")} house flipping` : page.title;
+  if (page.kind !== "city") return page.title;
+  const place = page.title.replace(/[:|].*$/, "").replace(/\s*house flipping market\s*$/i, "").replace(/,/g, "").trim();
+  return `flipping houses in ${place}`;
 }
 
 /** Validate an imported page (e.g. generated on Tony's PC) with the same rules; never trusts the sender's verdict. */
