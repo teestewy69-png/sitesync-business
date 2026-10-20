@@ -179,15 +179,44 @@ test("DomainIQ bay registrar links while paused are plain registrar URLs (no /go
 
 /* ------------------------------ sitemap / nav ------------------------------ */
 
-test("sitemap and public paths: no /cart, /checkout or /shop", () => {
+test("sitemap and public paths: no /cart, /checkout or /shop", async () => {
   for (const p of PUBLIC_PATHS) assert.doesNotMatch(p, /^\/(cart|checkout|shop)(\/|$)/, p);
-  const urls = withEnv(undefined, () => sitemap()).map((e) => e.url);
+  const urls = (await withEnvAsync(undefined, () => sitemap())).map((e) => e.url);
   assert.ok(urls.includes("https://sitesinc.co"));
   for (const u of urls) assert.doesNotMatch(u, /\/(cart|checkout|shop|tools|go)(\/|$)/, u);
+  for (const pathName of ["/services", "/about", "/contact"]) {
+    assert.ok(PUBLIC_PATHS.includes(pathName), pathName);
+    assert.ok(urls.includes(`https://sitesinc.co${pathName}`), pathName);
+  }
   const footer = readFileSync(path.join(ROOT, "components/Footer.tsx"), "utf8");
   assert.doesNotMatch(footer, /href="\/(shop|cart|checkout)"/);
   const robots = readFileSync(path.join(ROOT, "app/robots.ts"), "utf8");
   assert.doesNotMatch(robots, /\/shop/, "robots must not block /shop: crawlers need to see the 301");
+});
+
+test("Sitesinc public site has the same page types as the general client template", async () => {
+  const { CLIENT_TEMPLATES } = await import("../lib/factory/client-templates.ts");
+  const general = CLIENT_TEMPLATES.find((t) => t.id === "general");
+  assert.ok(general, "general template");
+  for (const page of general.pages) {
+    const route = page.path === "/" ? "app/page.tsx" : `app${page.path}/page.tsx`;
+    assert.ok(existsSync(path.join(ROOT, route)), route);
+    if (page.path !== "/") assert.ok(PUBLIC_PATHS.includes(page.path), page.path);
+  }
+  const contact = readFileSync(path.join(ROOT, "app/contact/page.tsx"), "utf8");
+  assert.match(contact, /EmailCapture/);
+  const form = readFileSync(path.join(ROOT, "components/EmailCapture.tsx"), "utf8");
+  assert.match(form, /\/api\/subscribe/);
+});
+
+test("production surfaces include the general-template pages for a Sitesinc production publish", async () => {
+  const { PRODUCTION_SURFACES } = await import("../lib/factory/surfaces.ts");
+  const template = PRODUCTION_SURFACES.find((s) => s.id === "template_pages");
+  assert.ok(template, "template_pages surface");
+  assert.deepEqual([...template.paths], ["/services", "/about", "/contact"]);
+  assert.equal(template.slugs.length, 0, "template pages are Next.js routes, not factory hub slugs");
+  assert.ok(PRODUCTION_SURFACES.find((s) => s.id === "service_pages"));
+  assert.ok(PRODUCTION_SURFACES.find((s) => s.id === "industry_pages"));
 });
 
 /* ------------------------------- public copy ------------------------------- */
@@ -209,6 +238,9 @@ const PUBLIC_SOURCES = [
   "data/process.ts",
   "data/posts.ts",
   "app/page.tsx",
+  "app/about/page.tsx",
+  "app/services/page.tsx",
+  "app/contact/page.tsx",
   "app/terms/page.tsx",
   "app/privacy/page.tsx",
   "lib/factory/drafts.ts",
@@ -228,7 +260,7 @@ test("public copy: no retired monetization claims (Path A)", () => {
 
 test("pricing: only the $1,995 build (50/50) and optional $129/mo monitoring", () => {
   const content = JSON.parse(readFileSync(path.join(ROOT, "content.json"), "utf8"));
-  assert.equal(content.pricing.build.startingPrice, offer.PATH_A_OFFER.buildFrom);
+  assert.equal(content.pricing.build.price, offer.PATH_A_OFFER.buildFrom);
   assert.equal(content.pricing.build.startDue, offer.PATH_A_OFFER.startDue);
   assert.equal(content.pricing.build.launchDue, offer.PATH_A_OFFER.launchDue);
   assert.equal(content.pricing.maintenance.price, offer.PATH_A_OFFER.monitoring);
@@ -243,5 +275,16 @@ test("pricing: only the $1,995 build (50/50) and optional $129/mo monitoring", (
 test("published factory pages carrying retired copy are replaced by the current draft", () => {
   assert.ok(offer.findRetiredOfferClaim("lead capture, monetization placeholders, Stripe if you sell"));
   assert.ok(offer.findRetiredOfferClaim("Pay in full through Stripe"));
-  assert.equal(offer.findRetiredOfferClaim("Website builds start at $1,995. Pay 50% to start and 50% at launch."), null);
+  assert.ok(offer.findRetiredOfferClaim("Website builds start at $1,995. Pay 50% to start and 50% at launch."));
+  assert.ok(offer.findRetiredOfferClaim("Request a quote for your website"));
+  assert.ok(offer.findRetiredOfferClaim("a flat fee, no quotes, no negotiation"));
+  assert.equal(offer.findRetiredOfferClaim("Website builds are $1,995. Pay 50% to start and 50% at launch."), null);
+});
+
+test("public copy: $1,995 is a flat fee, not a starting price or quote", () => {
+  const BANNED = /start(ing)? at \$|\bstarting price\b|from \$1,?995|\bno quotes\b|\b(get|request|ask for) (a )?quote\b|\bfree quotes?\b/i;
+  for (const rel of PUBLIC_SOURCES) {
+    const text = readFileSync(path.join(ROOT, rel), "utf8");
+    assert.doesNotMatch(text, BANNED, rel);
+  }
 });

@@ -97,7 +97,7 @@ export default async function FactoryHome() {
               <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Factory bay</p>
               <h2 className="mt-1 text-xl font-semibold">SiteFlow</h2>
               <p className="mt-1 max-w-3xl text-sm text-slate-400">
-                Paused for phase 2 (Path A). The public offer is only the website build (from $1,995, 50% to start, 50%
+                Paused for phase 2 (Path A). The public offer is only the website build ($1,995, 50% to start, 50%
                 at launch) and optional $129/mo monitoring, invoiced by hand. Product checkout, the Stripe webhook, digital
                 delivery and download links, partner referrals (?ref=), /go affiliate links and /tools are switched off and
                 answer 404. The code is kept; turning it back on is Tony&apos;s call (SITEFLOW_ENABLED=true, then redeploy).

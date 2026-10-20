@@ -4,7 +4,7 @@ Sitesinc (`sitesinc.co`) is a done-for-you website build service. Public brand: 
 
 Do not use SiteSync, Sitesync, or Sitesync Business in public or operator copy.
 
-Website builds start at $1,995 ($997.50 to start, $997.50 at launch). Optional monitoring is $129/month, cancel anytime, no long-term contract. Submitting the homepage form is a request, not a purchase.
+Website builds are $1,995 ($997.50 to start, $997.50 at launch). Optional monitoring is $129/month, cancel anytime, no long-term contract. Submitting the homepage form is a request, not a purchase.
 
 ## Persistence
 

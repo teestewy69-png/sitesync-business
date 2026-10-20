@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound, unstable_rethrow } from "next/navigation";
+import SitePage from "@/components/SitePage";
 import { PAGE_DRAFTS } from "@/lib/factory/drafts";
 import { readPublicWorkspace } from "@/lib/factory/workspace";
 import type { FactoryPage } from "@/lib/factory/types";
@@ -116,8 +117,8 @@ export async function PublishedOrNotFound({ slug }: { slug: string }) {
   }
   if (!page) notFound();
   return (
-    <main className="min-h-screen bg-black text-white">
+    <SitePage>
       <FactoryArticle page={page} staged={preview || page.noindex} />
-    </main>
+    </SitePage>
   );
 }

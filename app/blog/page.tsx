@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { posts } from "@/data/posts";
 import type { Metadata } from "next";
+import SitePage from "@/components/SitePage";
 
 export const metadata: Metadata = {
   title: "Sitesinc Blog | Small Business Website Guides",
@@ -13,7 +14,7 @@ export default function BlogIndex() {
   const sorted = [...posts].sort((a, b) => (a.date < b.date ? 1 : -1));
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <SitePage>
       <section className="mx-auto max-w-4xl px-6 py-16">
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
           Sitesinc Blog
@@ -46,6 +47,6 @@ export default function BlogIndex() {
           ))}
         </div>
       </section>
-    </main>
+    </SitePage>
   );
 }

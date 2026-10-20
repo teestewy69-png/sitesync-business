@@ -6,17 +6,20 @@ import content from "@/content.json";
 import { trackLead } from "@/lib/analytics";
 
 type Status = "idle" | "loading" | "success" | "error";
+type Variant = "intake" | "contact";
 
-export default function EmailCapture() {
-  const { emailCapture, footer } = content;
+export default function EmailCapture({ variant = "intake" }: { variant?: Variant }) {
+  const { emailCapture, footer, contact } = content;
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [details, setDetails] = useState("");
   const [privacy, setPrivacy] = useState(false);
   const [monitoring, setMonitoring] = useState(false);
   const [honeypot, setHoneypot] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const sectionId = variant === "contact" ? "contact-form" : "checklist";
 
   // One idempotency key per form instance, plus a lock so double-clicks and retries cannot create twice.
   const idempotencyKey = useRef("");
@@ -47,6 +50,7 @@ export default function EmailCapture() {
           email,
           privacy,
           monitoring,
+          details: details.trim() || undefined,
           company_website: honeypot,
         }),
       });
@@ -61,7 +65,7 @@ export default function EmailCapture() {
       );
       setStatus("success");
       // Only after the lead was saved. No PII in params.
-      trackLead("website_build_request", { monitoring_opt_in: monitoring });
+      trackLead("website_build_request", { monitoring_opt_in: monitoring, source: variant });
     } catch (err) {
       submitting.current = false;
       setStatus("error");
@@ -71,24 +75,34 @@ export default function EmailCapture() {
     }
   }
 
+  const showHeading = variant === "intake";
+
   return (
-    <section id="checklist" className="relative border-t border-white/5">
+    <section id={sectionId} className="relative border-t border-white/5">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-brand-500/10 via-transparent to-transparent" />
 
       <div className="relative mx-auto max-w-3xl px-6 py-20 text-center sm:py-24">
-        <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-500/10 text-brand-300 ring-1 ring-brand-500/25">
-          <Mail className="h-5 w-5" />
-        </span>
+        {showHeading ? (
+          <>
+            <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-500/10 text-brand-300 ring-1 ring-brand-500/25">
+              <Mail className="h-5 w-5" />
+            </span>
 
-        <p className="mt-5 text-xs font-semibold uppercase tracking-wider text-brand-300">
-          {emailCapture.overline}
-        </p>
-        <h2 className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl">
-          {emailCapture.title}
-        </h2>
-        <p className="mx-auto mt-3 max-w-xl text-base text-slate-400">
-          {emailCapture.subtitle}
-        </p>
+            <p className="mt-5 text-xs font-semibold uppercase tracking-wider text-brand-300">
+              {emailCapture.overline}
+            </p>
+            <h2 className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl">
+              {emailCapture.title}
+            </h2>
+            <p className="mx-auto mt-3 max-w-xl text-base text-slate-400">
+              {emailCapture.subtitle}
+            </p>
+          </>
+        ) : (
+          <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-500/10 text-brand-300 ring-1 ring-brand-500/25">
+            <Mail className="h-5 w-5" />
+          </span>
+        )}
 
         {status === "success" ? (
           <div className="mx-auto mt-8 flex max-w-md items-center justify-center gap-2 rounded-xl bg-brand-500/10 px-5 py-4 text-sm font-medium text-brand-200 ring-1 ring-brand-500/25">
@@ -102,11 +116,11 @@ export default function EmailCapture() {
             onSubmit={handleSubmit}
             className="mx-auto mt-8 flex max-w-md flex-col gap-3"
           >
-            <label className="sr-only" htmlFor="intake-name">
+            <label className="sr-only" htmlFor={`${sectionId}-name`}>
               Your name
             </label>
             <input
-              id="intake-name"
+              id={`${sectionId}-name`}
               type="text"
               name="name"
               required
@@ -116,11 +130,11 @@ export default function EmailCapture() {
               autoComplete="name"
               className="w-full rounded-xl bg-surface-elevated px-4 py-3 text-white ring-1 ring-white/10 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-brand-400"
             />
-            <label className="sr-only" htmlFor="intake-email">
+            <label className="sr-only" htmlFor={`${sectionId}-email`}>
               Email address
             </label>
             <input
-              id="intake-email"
+              id={`${sectionId}-email`}
               type="email"
               name="email"
               required
@@ -130,10 +144,26 @@ export default function EmailCapture() {
               autoComplete="email"
               className="w-full rounded-xl bg-surface-elevated px-4 py-3 text-white ring-1 ring-white/10 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-brand-400"
             />
+            {variant === "contact" ? (
+              <>
+                <label className="sr-only" htmlFor={`${sectionId}-details`}>
+                  {contact.messageLabel}
+                </label>
+                <textarea
+                  id={`${sectionId}-details`}
+                  name="details"
+                  rows={5}
+                  value={details}
+                  onChange={(e) => setDetails(e.target.value)}
+                  placeholder={contact.messagePlaceholder}
+                  className="w-full rounded-xl bg-surface-elevated px-4 py-3 text-white ring-1 ring-white/10 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-brand-400"
+                />
+              </>
+            ) : null}
             <div className="absolute -left-[9999px] h-0 w-0 overflow-hidden" aria-hidden="true">
-              <label htmlFor="company_website">Company website</label>
+              <label htmlFor={`${sectionId}-company_website`}>Company website</label>
               <input
-                id="company_website"
+                id={`${sectionId}-company_website`}
                 type="text"
                 name="company_website"
                 tabIndex={-1}

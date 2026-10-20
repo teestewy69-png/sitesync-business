@@ -27,9 +27,9 @@ export default function Pricing() {
             </h3>
             <p className="mt-6 flex items-baseline gap-3">
               <span className="text-5xl font-bold tracking-tight text-white">
-                {pricing.build.startingPrice}
+                {pricing.build.price}
               </span>
-              <span className="text-slate-400">starting</span>
+              <span className="text-slate-400">flat fee</span>
             </p>
             <p className="mt-3 text-base text-slate-300">
               {pricing.build.startDue} to start · {pricing.build.launchDue} at launch

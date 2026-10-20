@@ -232,3 +232,11 @@ export function productionLinks(domain: string, opts: { contactPath: string | nu
     sitemap: "/sitemap.xml",
   };
 }
+
+/** Map a client page path (`/contact`) onto preview (`/demo/client/<id>/contact`) or production (`/contact`). */
+export function clientPageHref(links: ClientSiteLinks, path: string): string {
+  if (links.mode !== "preview") return path || "/";
+  const base = links.home.replace(/\/$/, "");
+  if (!path || path === "/") return base;
+  return `${base}${path.startsWith("/") ? path : `/${path}`}`;
+}

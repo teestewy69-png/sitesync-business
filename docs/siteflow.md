@@ -1,6 +1,6 @@
 # SiteFlow (paused phase 2 code)
 
-> **Status: PAUSED (phase 2). Decision: Path A, 2026-10-05.** The public offer is ONLY website builds starting at
+> **Status: PAUSED (phase 2). Decision: Path A, 2026-10-05.** The public offer is ONLY website builds at
 > $1,995 (50% to start, 50% at launch, invoiced by hand) and optional $129/month monitoring. SiteFlow (product
 > checkout, Stripe webhook, digital delivery, partner referrals, affiliate links) is switched off by
 > `SITEFLOW_ENABLED` (unset = off; only `true`/`1` turns it on). The code from commits adf321d, 135e5d3 and 519831d is

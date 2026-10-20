@@ -33,7 +33,7 @@ export default function SeoJsonLd() {
           price: "1995",
           priceCurrency: "USD",
           description:
-            "Website builds starting at $1,995. Pay 50% to start, 50% at launch. Optional monitoring $129/month.",
+            "Website builds are $1,995. Pay 50% to start, 50% at launch. Optional monitoring $129/month.",
         },
       },
       {

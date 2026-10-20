@@ -91,7 +91,7 @@ export async function runStagingQa(origin: string): Promise<{
   items.push({
     id: "intake",
     area: "Intake form",
-    status: has(home.body, /id="checklist"/) && has(home.body, /Send me the checklist/) ? "pass" : "fail",
+    status: has(home.body, /id="checklist"/) && has(home.body, /Submit a request/) ? "pass" : "fail",
     detail: has(home.body, /id="checklist"/)
       ? "Checklist intake form is on the homepage."
       : "Checklist form missing.",

@@ -2,7 +2,7 @@ import type { CSSProperties, ReactNode } from "react";
 import Link from "next/link";
 import s from "@/components/city-launch/city-landing.module.css";
 import type { DesignStyle } from "@/lib/design-styles";
-import { cityTheme, type ClientSiteLinks } from "@/lib/factory/city-launch-public";
+import { cityTheme, clientPageHref, type ClientSiteLinks } from "@/lib/factory/city-launch-public";
 import type { CityLaunchClientContext } from "@/lib/factory/city-launch";
 import type { PublishedClientPage } from "@/lib/factory/client-domain";
 
@@ -59,7 +59,7 @@ export default function ClientSiteShell({
           <nav className={s.nav} aria-label="Site">
             <Link href={links.home}>Home</Link>
             {navPages.map((p) => (
-              <Link key={p.slug} href={p.path}>
+              <Link key={p.slug} href={clientPageHref(links, p.path)}>
                 {p.title.split(/[|·]/)[0].trim()}
               </Link>
             ))}

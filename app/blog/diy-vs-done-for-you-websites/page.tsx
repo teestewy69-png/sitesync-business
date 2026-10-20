@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import SitePage from "@/components/SitePage";
 
 export const metadata: Metadata = {
   title: "DIY Website Builders vs. Done-For-You: What Actually Costs You More | Sitesinc",
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function DiyVsDoneForYouWebsites() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <SitePage>
       <article className="mx-auto max-w-3xl px-6 py-16">
         <Link
           href="/blog"
@@ -289,6 +290,6 @@ export default function DiyVsDoneForYouWebsites() {
           </section>
         </div>
       </article>
-    </main>
+    </SitePage>
   );
 }
