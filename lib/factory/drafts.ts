@@ -28,7 +28,7 @@ That also means we are not a “change this block yourself every Tuesday” tool
 
 ## What we actually build
 
-Website builds are $1,995 — a flat fee. No negotiation. Pay 50% to start and 50% at launch. The package includes a complete custom site, a choice of eight design directions, on-page SEO setup, a lead form, hosting setup, domain connection, one round of revisions, and a 5–7 business day turnaround after we have your content. Those numbers must match the homepage. We will not invent a different price here.
+Website builds are $1,995 — a flat fee. No negotiation. Pay 50% to start and 50% at launch. Monitored SEO is optional: 1st month free, then $129/mo. The package includes a complete custom site, a choice of eight design directions, on-page SEO setup, a lead form, hosting setup, domain connection, one round of revisions, and a 5–7 business day turnaround after we have your content. Those numbers must match the homepage. We will not invent a different price here.
 
 ## What we need from you
 
@@ -38,12 +38,12 @@ Business name, what you sell, photos you want used, logo and colors if you have 
 
 If you need a 40-page catalog, a custom app, or same-day copywriting from thin air, say so before you pay. We will tell you no rather than ship a thin site. If a rebuild is not the right move yet, read the redesign page first.
 
-See current pricing on the homepage or the packages page. No ranking promises — a clearer site is the deliverable.`,
+See current pricing on the homepage or the packages page. No ranking promises — a clearer site is the deliverable.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional monitored SEO: 1st month free, then $129/mo. Questions? Call (909) 378-6404 or email save@sitesinc.co.`,
   },
   packages: {
     title: "Website packages",
     metaDescription:
-      "Sitesinc website packages: the build is $1,995, 50% to start and 50% at launch, optional $129/mo monitoring. No required subscription.",
+      "Sitesinc website packages: the build is $1,995, 50% to start and 50% at launch, optional monitored SEO free the 1st month, then $129/mo.",
     headings: [
       "One-time build",
       "Optional monitoring",
@@ -54,13 +54,13 @@ See current pricing on the homepage or the packages page. No ranking promises �
 
 ## One-time build
 
-Website builds are $1,995 — a flat fee. No negotiation. Pay 50% ($997.50) to start and 50% at launch. There is no long-term contract.
+Website builds are $1,995 — a flat fee. No negotiation. Pay 50% to start (a $997.50 deposit) and 50% at launch (the remaining $997.50). There is no long-term contract.
 
 Included: custom Next.js + Tailwind site, eight design options, dark glossy UI, on-page SEO basics, lead capture, domain connection, code handoff, Netlify hosting setup, one revision round, 5–7 business days after content.
 
 ## Optional monitoring
 
-$129/month. Completely optional. Your site runs without it. Cancel anytime. It covers monitoring, basic technical updates, and two to three small text or image changes a month. It is not unlimited design time and it is not ads management.
+1st month free, then $129/mo. Completely optional. Your site runs without it. Cancel anytime. It covers monitoring, basic technical updates, and two to three small text or image changes a month. It is not unlimited design time and it is not ads management.
 
 ## What is not a package
 
@@ -70,7 +70,7 @@ We do not sell 20 “city + service” landing pages. We do not sell guaranteed 
 
 Submitting the build form is a request, not a purchase. If we accept the project, Sitesinc emails a $997.50 start invoice; we start once it is paid and your onboarding details are in. The remaining $997.50 is invoiced at launch. If you have questions first, email save@sitesinc.co. Prices on this page must match the homepage — if they ever drift, trust the homepage and tell us.
 
-Twelve-month math, stated plainly: a $1,995 build plus optional $129/mo monitoring is $1,995 + $1,548 if you keep monitoring for a year. A $30–$50/mo builder is cheaper up front and more expensive if you stay for years — and you still do not own the code. Pick the model that matches how you want to operate.`,
+Twelve-month math, stated plainly: the $1,995 build plus optional monitored SEO (1st month free, then $129/mo) adds $1,419 (11 paid months × $129) if you keep it for the first year. A typical DIY builder plan in the $30–$50/mo range is cheaper up front and more expensive if you stay for years — and you still do not own the code. Pick the model that matches how you want to operate.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional monitored SEO: 1st month free, then $129/mo. Questions? Call (909) 378-6404 or email save@sitesinc.co.`,
   },
   "website-redesign": {
     title: "Website redesign",
@@ -88,7 +88,7 @@ Twelve-month math, stated plainly: a $1,995 build plus optional $129/mo monitori
 
 People cannot find your phone number. The page is slow or broken on a phone. The copy talks about “solutions” instead of the service you actually sell. You cannot change hosting because the site lives inside a builder you do not control. Those are rebuild reasons.
 
-A site that looks dated but still books work may only need better photos and a clearer headline. That is an edit, not a $1,995 project.
+A site that looks dated but still books work may only need better photos and a clearer headline. That is an edit, not a $1,995 rebuild.
 
 ## What we keep
 
@@ -102,7 +102,7 @@ The template, the theme lock-in, and the layout that hides the CTA. We rebuild i
 
 If you have no photos, no offer, and no time to answer onboarding questions, wait. If you only need a new logo, hire a designer. If you need a native app, we are the wrong shop.
 
-Related reading: our blog posts on what a real small-business site needs and DIY vs done-for-you. This page will not claim a redesign raises revenue. It claims a clearer site is easier to use.`,
+Related reading: our blog posts on what a real small-business site needs and DIY vs done-for-you. This page will not claim a redesign raises revenue. It claims a clearer site is easier to use.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional monitored SEO: 1st month free, then $129/mo. Questions? Call (909) 378-6404 or email save@sitesinc.co.`,
   },
   "seo-ready-websites": {
     title: "SEO-ready websites",
@@ -137,12 +137,12 @@ A lead form that writes to a store and emails save@sitesinc.co is part of SEO-re
 
 It does not mean page-one rankings, a set number of leads, or that submitting a sitemap indexes the URL. Search Console, when connected, is how we verify status. Until then we record “submitted” or “not submitted” and we do not mark pages indexed.
 
-Google’s SEO Starter Guide is the public reference we align with. This factory case study tracks the same checklist on sitesinc.co itself.`,
+Google’s SEO Starter Guide is the public reference we align with. This factory case study tracks the same checklist on sitesinc.co itself.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional monitored SEO: 1st month free, then $129/mo. Questions? Call (909) 378-6404 or email save@sitesinc.co.`,
   },
   "website-monitoring": {
     title: "Website monitoring",
     metaDescription:
-      "Optional $129/mo Sitesinc monitoring: uptime, small edits, basic technical updates. The site works if you skip it.",
+      "Optional Sitesinc monitored SEO: 1st month free, then $129/mo. Uptime, small edits, basic technical updates. The site works if you skip it.",
     headings: [
       "What monitoring means here",
       "What the $129/mo plan covers",
@@ -152,7 +152,7 @@ Google’s SEO Starter Guide is the public reference we align with. This factory
 
 ## What monitoring means here
 
-We watch that the site responds, apply basic technical updates, and make a few small copy or image changes if you ask. That is the $129/month monitoring plan on the homepage pricing section.
+We watch that the site responds, apply basic technical updates, and make a few small copy or image changes if you ask. That is the optional monitoring plan on the homepage pricing section: 1st month free, then $129/mo.
 
 ## What the $129/mo plan covers
 
@@ -162,7 +162,7 @@ Technical updates and security basics, uptime/monitoring and basic fixes, and tw
 
 You can host the handed-off repo yourself and never pay the care plan. The build is complete without it. If you want us to keep watching it, ask for the $129/mo monitoring plan. If you want to cancel later, you still have the code.
 
-This page will not scare you into a subscription. The homepage already says the care plan is optional. We repeat that here so a search for website monitoring does not hide the opt-out.`,
+This page will not scare you into a subscription. The homepage already says the care plan is optional. We repeat that here so a search for website monitoring does not hide the opt-out.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional monitored SEO: 1st month free, then $129/mo. Questions? Call (909) 378-6404 or email save@sitesinc.co.`,
   },
   "for-local-service-businesses": {
     title: "For local service businesses",
@@ -202,7 +202,7 @@ One offer, one next step, proof that you have done the work. A 12-page “about 
 
 Sitesinc will not clone this page for “barber in [city]” fifty times. If we ever add a second industry page, it will have new examples, not a find-and-replace. That is a quality rule, not a slogan.
 
-The same factory that is rebuilding sitesinc.co — research, brief, human approval, staging, then publish — is the factory we run for a shop. Timeline is 5–7 business days after content, not 90 days of mystery. The 90-day case study on this domain is about proving the marketing system, not delaying your build.`,
+The same factory that is rebuilding sitesinc.co — research, brief, human approval, staging, then publish — is the factory we run for a shop. Timeline is 5–7 business days after content, not 90 days of mystery. The 90-day case study on this domain is about proving the marketing system, not delaying your build.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional monitored SEO: 1st month free, then $129/mo. Questions? Call (909) 378-6404 or email save@sitesinc.co.`,
   },
 };
 

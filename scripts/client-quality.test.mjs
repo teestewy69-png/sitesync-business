@@ -75,3 +75,18 @@ test("business-fact check flags wrong phone, unknown price, wrong street, missin
   const good = K.checkBusinessFacts("Sitesinc, Laguna Beach. Call (909) 378-6404. $1,995 flat; $129/mo.", cfg, "contact");
   assert.equal(good.status, "ok", JSON.stringify(good.issues));
 });
+
+test("Sitesinc hub pages (6) match the offer facts: $1,995 50/50, monitoring 1st month free then $129/mo, phone", async () => {
+  const { PAGE_DRAFTS } = await import("../lib/factory/drafts.ts");
+  const offer = { phone: "(909) 378-6404", pricingNote: "$1,995 flat, 50% to start ($997.50) and 50% at launch; monitored SEO 1st month free, then $129/mo; first year of monitoring $1,419 (11 x $129); DIY builder comparison $30-$50/mo" };
+  const slugs = ["website-design", "packages", "website-redesign", "seo-ready-websites", "website-monitoring", "for-local-service-businesses"];
+  for (const slug of slugs) {
+    const d = PAGE_DRAFTS[slug];
+    const text = `${d.body} ${d.metaDescription}`;
+    assert.equal(K.checkBusinessFacts(text, offer, slug).status, "ok", slug + JSON.stringify(K.checkBusinessFacts(text, offer, slug).issues));
+    assert.match(text, /\(909\) 378-6404/);
+    assert.match(text, /1st month free, then \$129\/mo/);
+    assert.match(text, /50% to start and 50% at launch/);
+    assert.doesNotMatch(text, /1,548|721-5236/);
+  }
+});

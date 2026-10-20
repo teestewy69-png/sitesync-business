@@ -85,7 +85,7 @@ export const SITESINC_SITE: MiniSiteContent = {
     {
       name: "Payment",
       quote:
-        "Website builds are $1,995. Pay 50% to start, 50% at launch. Monitored SEO not included: 1st month free, then $129/mo. You own the code.",
+        "Website builds are $1,995. Pay 50% to start, 50% at launch. Monitored SEO (optional): 1st month free, then $129/mo. You own the code.",
     },
     {
       name: "Turnaround",
