@@ -244,3 +244,10 @@ test("Flip Mode screen exists, is in factory nav, and wires every control to fli
   assert.match(readFileSync(path.join(root, "components/factory/Shell.tsx"), "utf8"), /\/app\/flips/);
   assert.match(readFileSync(path.join(root, "app/app/flips/page.tsx"), "utf8"), /mode === "flip"/);
 });
+
+test("location parser ignores lowercase words like 'or' as state codes", () => {
+  assert.equal(parseIntakeHints("Sell on Flippa or private sale after 6 months").state, "");
+  assert.equal(parseIntakeHints("in or near town, available to all").state, "");
+  assert.equal(parseIntakeHints("House flippers in Portland, OR").state, "OR");
+  assert.equal(parseIntakeHints("We serve TX investors").state, "TX");
+});
