@@ -1107,7 +1107,7 @@ async function applyFlipAction(op: string, body: Record<string, string | string[
       });
       project = await findProjectById(intake.id);
       if (!project) return { ok: false, error: "FlipRadar project was not saved." };
-      const { state, created } = await flip.initFlipState(project, { businessName: c.businessName, domain: c.domain, niche: c.niche, ga4MeasurementId: c.ga4MeasurementId, gscProperty: c.gscProperty, launchDate: one("launchDate") || undefined, test });
+      const { state, created } = await flip.initFlipState(project, { businessName: c.businessName, domain: c.domain, niche: c.niche, adsensePublisherId: c.adsensePublisherId, ga4MeasurementId: c.ga4MeasurementId, gscProperty: c.gscProperty, launchDate: one("launchDate") || undefined, test });
       return { ok: true, created, projectId: project.id, flip: state };
     }
     if (!project) return { ok: false, error: "Client project not found." };
@@ -1148,7 +1148,65 @@ async function applyFlipAction(op: string, body: Record<string, string | string[
         state.analytics.ga4MeasurementId = one("ga4MeasurementId").toUpperCase();
       }
       if (one("gscProperty")) state.analytics.gscProperty = one("gscProperty");
-      if (one("adsensePublisherId")) state.adsensePublisherId = one("adsensePublisherId");
+      if (one("adsensePublisherId")) {
+        const { isAdsensePublisherId } = await import("./flip/presets");
+        if (!isAdsensePublisherId(one("adsensePublisherId"))) return { ok: false, error: "AdSense ID must look like ca-pub-1234567890123456." };
+        state.adsensePublisherId = one("adsensePublisherId");
+      }
+      if (one("adsenseApproved")) state.adsenseApproved = ["1", "true", "yes"].includes(one("adsenseApproved").toLowerCase());
+      if (state.monetization) {
+        const { defaultAdSlots } = await import("./flip/presets");
+        state.monetization.adSlots = defaultAdSlots(state.adsensePublisherId, state.adsenseApproved);
+      }
+    } else if (op === "flip-set-affiliate") {
+      const slug = one("slug");
+      const program = state.monetization?.programs.find((p) => p.slug === slug);
+      if (!program) return { ok: false, error: "Run the monetization stage first, or unknown program." };
+      const status = one("status");
+      if (status) {
+        if (!["apply", "pending", "active"].includes(status)) return { ok: false, error: "status must be apply, pending or active." };
+        program.status = status as typeof program.status;
+      }
+      const link = one("trackingTemplate");
+      if (link) {
+        if (!/^https:\/\//i.test(link)) return { ok: false, error: "Tracking link must be https." };
+        program.trackingTemplate = link.slice(0, 500);
+      }
+    } else if (op === "flip-import-generated") {
+      const { revalidateGenerated } = await import("./flip/writer");
+      let pages: import("./flip/writer").GeneratedPage[] = [];
+      try { pages = JSON.parse(one("pages")); } catch { return { ok: false, error: "pages must be a JSON array." }; }
+      if (!Array.isArray(pages) || !pages.length || pages.length > 600) return { ok: false, error: "pages must be a non-empty array (max 600)." };
+      const bySlug = new Map((state.generated || []).map((g) => [`${g.kind}:${g.slug}`, g]));
+      for (const raw of pages) {
+        if (!raw || typeof raw.body !== "string" || !raw.slug || !["guide", "calculator", "city"].includes(raw.kind)) continue;
+        const page = revalidateGenerated(state, { ...raw, body: raw.body.slice(0, 40_000) });
+        bySlug.set(`${page.kind}:${page.slug}`, page);
+      }
+      state.generated = [...bySlug.values()];
+      state.records.changeLog.push({ date: nowIso().slice(0, 10), change: `Imported ${pages.length} factory-generated drafts (pending approval)`, by: String(body.approvedBy || "operator") });
+    } else if (op === "flip-approve-page") {
+      const g = (state.generated || []).find((x) => x.slug === one("slug") && x.kind === one("kind"));
+      if (!g) return { ok: false, error: "Generated page not found." };
+      if (g.status !== "pending_approval") return { ok: false, error: "Only pages that pass the length and content checks can be approved." };
+      (g as typeof g & { approvedAt?: string; approvedBy?: string }).approvedAt = nowIso();
+      (g as typeof g & { approvedBy?: string }).approvedBy = String(body.approvedBy || "operator");
+    } else if (op === "flip-generate") {
+      // Runs the LLM writer where an LLM is reachable (Tony's PC with Ollama). Never publishes.
+      const { generateFlipPage } = await import("./flip/writer");
+      const kinds = (one("kinds") || "guide,calculator").split(",");
+      const limit = Math.max(1, Math.min(500, Number(one("limit")) || 50));
+      const targets = [
+        ...(kinds.includes("calculator") ? state.traffic.toolPages : []),
+        ...(kinds.includes("guide") ? state.traffic.contentPlan : []),
+        ...(kinds.includes("city") ? state.traffic.cityPages : []),
+      ].filter((p) => one("force") === "1" || !(state.generated || []).some((g) => g.slug === p.slug && g.status === "pending_approval")).slice(0, limit);
+      state.generated = state.generated || [];
+      for (const page of targets) {
+        const g = await generateFlipPage(state, page);
+        state.generated = [...state.generated.filter((x) => !(x.slug === g.slug && x.kind === g.kind)), g];
+        await flip.writeFlipState(state);
+      }
     } else if (op === "flip-close") {
       state.closed = true;
       const { updateRecordStage } = await import("@/lib/store");

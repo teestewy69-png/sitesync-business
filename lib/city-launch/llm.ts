@@ -11,10 +11,14 @@
  *   EMERGENT_LLM_KEY         https://integrations.emergentagent.com/llm         gpt-4o-mini (Emergent universal key, OpenAI-compatible proxy)
  * CITY_LAUNCH_LLM_MODEL overrides the model for whichever provider is picked.
  *
+ * Local / self-hosted (checked FIRST, no key needed): LLM_BASE_URL (OpenAI-compatible, e.g. Ollama
+ * http://127.0.0.1:11434/v1) + LLM_MODEL (e.g. qwen3.8:latest), optional LLM_API_KEY. Hosted keys above stay
+ * the fallback when LLM_BASE_URL is unset. Reasoning models' <think> blocks are stripped from replies.
+ *
  * Pure + erasable TypeScript (env + fetch injected) so `node --test` can import it.
  */
 
-export type LlmProviderId = "custom" | "openrouter" | "openai" | "anthropic" | "gemini" | "emergent";
+export type LlmProviderId = "local" | "custom" | "openrouter" | "openai" | "anthropic" | "gemini" | "emergent";
 
 export type LlmProvider = {
   id: LlmProviderId;
@@ -40,9 +44,17 @@ const PROVIDERS: Array<Omit<LlmProvider, "model"> & { defaultModel: string }> = 
   { id: "emergent", envKey: "EMERGENT_LLM_KEY", label: "Emergent universal key", baseUrl: "https://integrations.emergentagent.com/llm", defaultModel: "gpt-4o-mini", format: "openai" },
 ];
 
-export const LLM_ENV_KEYS = PROVIDERS.map((p) => p.envKey);
+export const LLM_ENV_KEYS = ["LLM_BASE_URL", ...PROVIDERS.map((p) => p.envKey)];
 
 export function resolveLlmProvider(env: Env): { provider: LlmProvider; apiKey: string } | null {
+  const localBase = (env.LLM_BASE_URL || "").trim().replace(/\/+$/, "");
+  const localModel = (env.LLM_MODEL || "").trim();
+  if (localBase && localModel && /^https?:\/\//i.test(localBase)) {
+    return {
+      provider: { id: "local", envKey: "LLM_BASE_URL", label: "Local OpenAI-compatible (Ollama)", baseUrl: localBase, model: localModel, format: "openai" },
+      apiKey: (env.LLM_API_KEY || "").trim() || "ollama",
+    };
+  }
   for (const p of PROVIDERS) {
     const apiKey = (env[p.envKey] || "").trim();
     if (!apiKey) continue;
@@ -139,7 +151,7 @@ export async function chatCompletion(
     headers = { "content-type": "application/json", authorization: `Bearer ${apiKey}` };
     if (provider.id === "openrouter" || provider.id === "custom") headers["X-Title"] = opts.appName || "Sitesinc City Launch";
     body = { model: provider.model, messages, temperature: opts.temperature ?? 0.6, max_tokens: opts.maxTokens ?? 3000 };
-    if (opts.jsonMode && (provider.id === "openai" || provider.id === "emergent" || provider.id === "openrouter")) {
+    if (opts.jsonMode && (provider.id === "local" || provider.id === "openai" || provider.id === "emergent" || provider.id === "openrouter")) {
       body.response_format = { type: "json_object" };
     }
   }
@@ -174,8 +186,13 @@ export async function chatCompletion(
     return { content, model: String(json.model || provider.model), usage: { promptTokens: usage?.input_tokens, completionTokens: usage?.output_tokens } };
   }
   const choice = (Array.isArray(json.choices) ? json.choices[0] : null) as { message?: { content?: string } } | null;
-  const content = choice?.message?.content || "";
+  const content = stripThinking(choice?.message?.content || "");
   if (!content) throw new LlmError("bad_response", "Empty completion.");
   const usage = json.usage as { prompt_tokens?: number; completion_tokens?: number } | undefined;
   return { content, model: String(json.model || provider.model), usage: { promptTokens: usage?.prompt_tokens, completionTokens: usage?.completion_tokens } };
+}
+
+/** Remove reasoning blocks (<think>...</think>) some local models (qwen3) put before the answer. */
+export function stripThinking(text: string): string {
+  return String(text || "").replace(/<think>[\s\S]*?<\/think>/gi, "").replace(/^[\s\S]*?<\/think>/i, "").trim();
 }

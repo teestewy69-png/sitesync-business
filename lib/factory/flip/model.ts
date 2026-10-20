@@ -2,6 +2,7 @@
 import { outboundHref, SPONSORED_REL } from "@/lib/affiliates";
 import { checkContentLength, lengthTarget, type ContentLengthCheck, type ContentLengthTarget } from "../content-length";
 import {
+  ADSENSE_ID_PLACEHOLDER,
   defaultAdSlots,
   FLIP_AFFILIATE_PROGRAMS,
   FLIP_GOAL,
@@ -54,6 +55,10 @@ export type FlipState = {
   sellTargetMonths: number;
   analytics: { ga4MeasurementId: string; gscProperty: string };
   adsensePublisherId: string;
+  /** Set only after AdSense approves the site. Ads stay off until then. */
+  adsenseApproved?: boolean;
+  /** Factory-generated page drafts (LLM), pending approval. Never published by the factory. */
+  generated?: import("./writer").GeneratedPage[];
   contentTarget: ContentLengthTarget;
   stages: FlipStageRun[];
   traffic: { cityPages: PlannedPage[]; toolPages: PlannedPage[]; contentPlan: PlannedPage[]; cityLaunch: string };
@@ -121,6 +126,7 @@ export function newFlipState(input: {
     monetization: null,
     records: { snapshots: [], ledger: [], changeLog: [] },
     socialDrafts: [],
+    generated: [],
     createdAt: now,
     updatedAt: now,
   };
@@ -179,6 +185,9 @@ export function runTrafficStage(
 
 /** Stage 2, content: every guide gets a word window (max 1,500) and is checked when a body is supplied. */
 export function runContentStage(state: FlipState, bodies: Record<string, string> = {}, now = new Date().toISOString()): FlipState {
+  if (!Object.keys(bodies).length) {
+    for (const g of state.generated || []) if (g.kind === "guide") bodies[g.slug] = g.body;
+  }
   state.articles = state.traffic.contentPlan.map((p) => {
     const body = bodies[p.slug];
     if (!body) return { slug: p.slug, title: p.title, words: 0, check: null, status: "needs_writing" };
@@ -205,11 +214,12 @@ export function runMonetizationStage(state: FlipState, now = new Date().toISOStr
       goHref: outboundHref(origin, p.slug, { src: "flip" }),
       rel: SPONSORED_REL,
     })),
-    adSlots: defaultAdSlots(state.adsensePublisherId),
+    adSlots: defaultAdSlots(state.adsensePublisherId, state.adsenseApproved),
     clickLogging: "Each partner link goes through /go/[slug] (lib/affiliates.ts) which logs the click and 302s; tracking template env AFFILIATE_<SLUG>_URL_TEMPLATE once approved.",
   };
   const needs = ["Apply to affiliate programs (all marked apply/pending)"];
-  if (!state.monetization.adSlots.enabled) needs.push("AdSense publisher ID");
+  if (state.monetization.adSlots.publisherId === ADSENSE_ID_PLACEHOLDER) needs.push("AdSense publisher ID");
+  else if (!state.adsenseApproved) needs.push(`AdSense approval (ads off until approved; publish ads.txt: ${state.monetization.adSlots.adsTxt})`);
   setStage(state, "monetization", `${state.monetization.programs.length} programs wired as /go links, ${state.monetization.adSlots.slots.length} ad slots configured.`, needs, now);
   return state;
 }

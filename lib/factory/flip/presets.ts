@@ -77,6 +77,8 @@ export type FlipAffiliateProgram = {
   homeUrl: string;
   envVar: string;
   status: FlipAffiliateStatus;
+  /** Network tracking link (set after approval); deploy it as env <envVar> on the flip site. */
+  trackingTemplate?: string;
 };
 
 export const FLIP_AFFILIATE_PROGRAMS: FlipAffiliateProgram[] = [
@@ -96,16 +98,28 @@ export type AdSlotConfig = {
   enabled: boolean;
   slots: { id: string; placement: string; pageTypes: string[] }[];
   upgradeRule: string;
+  adsTxt?: string;
+  approved?: boolean;
 };
 
 export const ADSENSE_ID_PLACEHOLDER = "ca-pub-XXXXXXXXXXXXXXXX";
 
-export function defaultAdSlots(publisherId = ""): AdSlotConfig {
-  const id = /^ca-pub-\d{10,20}$/.test(publisherId) ? publisherId : ADSENSE_ID_PLACEHOLDER;
+export const isAdsensePublisherId = (id: string) => /^ca-pub-\d{10,20}$/.test(String(id || "").trim());
+
+/** ads.txt line for an AdSense publisher (f08c47fec0942fa0 is Google's certification authority ID). */
+export function adsTxtLine(publisherId: string): string {
+  return isAdsensePublisherId(publisherId) ? `google.com, ${publisherId.trim().replace(/^ca-/, "")}, DIRECT, f08c47fec0942fa0` : "";
+}
+
+/** Ads stay OFF until the site is approved in AdSense, even when a real publisher ID is set. */
+export function defaultAdSlots(publisherId = "", approved = false): AdSlotConfig {
+  const id = isAdsensePublisherId(publisherId) ? publisherId.trim() : ADSENSE_ID_PLACEHOLDER;
   return {
     network: "adsense",
     publisherId: id,
-    enabled: id !== ADSENSE_ID_PLACEHOLDER,
+    approved: Boolean(approved),
+    adsTxt: adsTxtLine(id),
+    enabled: id !== ADSENSE_ID_PLACEHOLDER && Boolean(approved),
     slots: [
       { id: "in-article-1", placement: "after 2nd H2", pageTypes: ["guide", "city"] },
       { id: "in-article-2", placement: "before conclusion", pageTypes: ["guide"] },

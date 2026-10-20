@@ -81,7 +81,9 @@ test("monetization: plan programs as click-logged /go links, never active; AdSen
   assert.ok(s.monetization.programs.every((p) => p.status === "apply" || p.status === "pending"));
   assert.equal(s.monetization.adSlots.publisherId, P.ADSENSE_ID_PLACEHOLDER);
   assert.equal(s.monetization.adSlots.enabled, false);
-  assert.equal(P.defaultAdSlots("ca-pub-1234567890123456").enabled, true);
+  assert.equal(P.defaultAdSlots("ca-pub-1234567890123456").enabled, false, "ads stay off until AdSense approves");
+  assert.equal(P.defaultAdSlots("ca-pub-1234567890123456", true).enabled, true);
+  assert.equal(P.adsTxtLine("ca-pub-2781122781186262"), "google.com, pub-2781122781186262, DIRECT, f08c47fec0942fa0");
   // /go/[slug] resolves flip partners; untracked until env template is set
   const prog = getProgram("kiavi");
   assert.ok(prog);
@@ -152,6 +154,7 @@ test("FlipRadar seed + flip actions end to end on the local store (no network)",
   assert.equal(seeded.flip.domain, "flipradar.co");
   assert.equal(seeded.flip.businessName, "FlipRadar");
   assert.equal(seeded.flip.presetId, "house-flipping");
+  assert.equal(seeded.flip.adsensePublisherId, "ca-pub-2781122781186262");
   const run = await applyFactoryAction("flip-run-stage", { projectId: id, stage: "all", cityLimit: "10" });
   assert.equal(run.ok, true, run.error);
   assert.equal(run.flip.traffic.cityPages.length, 10);
@@ -164,4 +167,80 @@ test("FlipRadar seed + flip actions end to end on the local store (no network)",
   const closed = await applyFactoryAction("flip-close", { projectId: id });
   assert.equal(closed.flip.closed, true);
   assert.equal((await findProjectById(id)).stage, "closed");
+});
+
+const llm = await import("../lib/city-launch/llm.ts");
+const W = await import("../lib/factory/flip/writer.ts");
+
+test("LLM client: local Ollama base URL + model first, hosted keys stay fallback, think blocks stripped", () => {
+  const local = llm.resolveLlmProvider({ LLM_BASE_URL: "http://127.0.0.1:11434/v1/", LLM_MODEL: "qwen3.8:latest", OPENROUTER_API_KEY: "x" });
+  assert.equal(local.provider.id, "local");
+  assert.equal(local.provider.baseUrl, "http://127.0.0.1:11434/v1");
+  assert.equal(local.provider.model, "qwen3.8:latest");
+  assert.equal(llm.resolveLlmProvider({ LLM_BASE_URL: "http://127.0.0.1:11434/v1", OPENROUTER_API_KEY: "x" }).provider.id, "openrouter");
+  assert.equal(llm.resolveLlmProvider({ OPENROUTER_API_KEY: "x" }).provider.id, "openrouter");
+  assert.equal(llm.stripThinking("<think>plan</think>\n# Hi"), "# Hi");
+});
+
+function fakeFetch(replies) {
+  let i = 0; const calls = [];
+  const f = async (url, init) => {
+    calls.push({ url, body: JSON.parse(init.body) });
+    const content = replies[Math.min(i++, replies.length - 1)];
+    return { ok: true, status: 200, headers: { get: () => null }, text: async () => JSON.stringify({ model: "qwen3.8:latest", choices: [{ message: { content } }] }) };
+  };
+  f.calls = calls; return f;
+}
+
+test("flip writer: factory LLM writes the page, repairs length + leaks, result is a draft pending approval", async () => {
+  const s = M.runTrafficStage(fresh(), [], { cityLaunchReady: true });
+  const env = { LLM_BASE_URL: "http://127.0.0.1:11434/v1", LLM_MODEL: "qwen3.8:latest" };
+  const f = fakeFetch([`<think>x</think># Short\n${words(200)} NBA props`, `# ARV\n${words(1100)}`]);
+  const g = await W.generateFlipPage(s, s.traffic.toolPages[0], { env, fetchImpl: f });
+  assert.equal(f.calls[0].url, "http://127.0.0.1:11434/v1/chat/completions");
+  assert.equal(f.calls[0].body.model, "qwen3.8:latest");
+  assert.match(f.calls[1].body.messages.at(-1).content, /expand it/);
+  assert.match(f.calls[1].body.messages.at(-1).content, /NBA/);
+  assert.equal(g.attempts, 2);
+  assert.equal(g.status, "pending_approval");
+  assert.ok(g.words >= 900 && g.words <= 1500);
+  assert.deepEqual(W.contentLeaks("Built by Sitesinc for PropCheck"), ["PropCheck", "Sitesinc"]);
+  const bad = W.revalidateGenerated(s, { ...g, body: `${words(1000)} prop bets`, status: "pending_approval" });
+  assert.equal(bad.status, "needs_fix");
+  assert.match(W.cityDraftToMarkdown({ title: "T", h1: "Austin flips", heroSubhead: "s", intro: "i", sections: [{ heading: "H", body: "b" }], localHighlights: [], faq: [{ question: "Q?", answer: "A" }], ctaHeadline: "C", ctaText: "t" }), /## H[\s\S]*### Q\?/);
+});
+
+test("flip import + approval actions revalidate drafts; content stage uses generated guides", async () => {
+  const seeded = await applyFactoryAction("flip-seed-flipradar", {});
+  const id = seeded.projectId;
+  await applyFactoryAction("flip-run-stage", { projectId: id, stage: "traffic", cityLimit: "3" });
+  const st = (await applyFactoryAction("flip-run-stage", { projectId: id, stage: "monetization" })).flip;
+  const guide = st.traffic.contentPlan[0];
+  const pages = [
+    { slug: guide.slug, path: guide.path, kind: "guide", title: guide.title, body: words(1000), status: "pending_approval", leaks: [], model: "qwen3.8:latest" },
+    { slug: "x", path: "/x", kind: "guide", title: "x", body: words(50), status: "pending_approval", leaks: [], model: "m" },
+  ];
+  const imp = await applyFactoryAction("flip-import-generated", { projectId: id, pages: JSON.stringify(pages) });
+  assert.equal(imp.ok, true, imp.error);
+  assert.deepEqual(imp.flip.generated.map((g) => g.status), ["pending_approval", "needs_fix"]);
+  const content = await applyFactoryAction("flip-run-stage", { projectId: id, stage: "content" });
+  assert.equal(content.flip.articles.find((a) => a.slug === guide.slug).status, "ok");
+  assert.equal((await applyFactoryAction("flip-approve-page", { projectId: id, slug: "x", kind: "guide" })).ok, false);
+  const ok = await applyFactoryAction("flip-approve-page", { projectId: id, slug: guide.slug, kind: "guide" });
+  assert.ok(ok.flip.generated[0].approvedAt);
+  const aff = await applyFactoryAction("flip-set-affiliate", { projectId: id, slug: "kiavi", status: "pending", trackingTemplate: "https://t.example/c?u={url}" });
+  assert.equal(aff.flip.monetization.programs.find((p) => p.slug === "kiavi").status, "pending");
+  assert.equal((await applyFactoryAction("flip-set-affiliate", { projectId: id, slug: "kiavi", trackingTemplate: "http://x" })).ok, false);
+  const an = await applyFactoryAction("flip-set-analytics", { projectId: id, adsenseApproved: "false" });
+  assert.equal(an.flip.monetization.adSlots.enabled, false);
+  assert.equal((await applyFactoryAction("flip-set-analytics", { projectId: id, adsensePublisherId: "pub-1" })).ok, false);
+});
+
+test("Flip Mode screen exists, is in factory nav, and wires every control to flip actions/exports", async () => {
+  const { readFileSync } = await import("node:fs");
+  const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
+  const ui = readFileSync(path.join(root, "components/factory/FlipConsole.tsx"), "utf8");
+  for (const needle of ["flip-seed-flipradar", "flip-init", "flip-run-stage", "flip-set-analytics", "flip-set-affiliate", "flip-add-ledger", "flip-record-snapshot", "flip-approve-page", "format=handoff", "format=sitegrow-json", "format=sitegrow-csv"]) assert.ok(ui.includes(needle), needle);
+  assert.match(readFileSync(path.join(root, "components/factory/Shell.tsx"), "utf8"), /\/app\/flips/);
+  assert.match(readFileSync(path.join(root, "app/app/flips/page.tsx"), "utf8"), /mode === "flip"/);
 });

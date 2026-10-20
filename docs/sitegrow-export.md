@@ -22,3 +22,18 @@ Header row, UTF-8, RFC 4180 quoting: `id,site,platform,scheduled_for,status,text
 - Links carry `utm_source=<platform>&utm_medium=social&utm_campaign=sitegrow` so GA4 records social traffic.
 
 Note: SiteGrow's own importer schema was not available to verify against; if it expects different column names, map them 1:1 from this file.
+
+# Flip content generation with local Ollama
+
+Hosted staging cannot reach a home PC's Ollama, so flip content is generated where Ollama runs and imported:
+
+1. On Tony's PC (fresh checkout of `staging`, Node 22): `npm ci`, then
+   `set LLM_BASE_URL=http://127.0.0.1:11434/v1` and `set LLM_MODEL=qwen3.8:latest`,
+   `node --experimental-strip-types scripts/flip-generate-local.mjs --cities 10 --out flip-generated.json`.
+   This runs the factory's own flip actions + writer against a local store (`./data`). Resumable.
+2. Import into staging: `POST /api/factory/action` `{op:"flip-import-generated", projectId, pages:"<JSON array>"}`.
+   Staging re-checks every page (900-1,500 words; no NBA/props/PropCheck/Sitesinc/betting text) and stores them as
+   drafts `pending_approval` (or `needs_fix`). Nothing is published.
+
+`LLM_BASE_URL` + `LLM_MODEL` (optional `LLM_API_KEY`) make the factory LLM client use any OpenAI-compatible server
+first; OpenRouter/OpenAI/... keys remain the fallback when unset. `LLM_TIMEOUT_MS` (default 900000) for slow local models.
