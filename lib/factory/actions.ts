@@ -1100,12 +1100,14 @@ async function applyFlipAction(op: string, body: Record<string, string | string[
     if (op === "flip-seed-flipradar" && !project) {
       const { FLIPRADAR_FLIP_CONFIG: c } = await import("./flip/flipradar");
       const test = ["1", "true", "yes"].includes(one("test").toLowerCase());
-      project = await recordIntakeProject({
+      const intake = await recordIntakeProject({
         mode: "flip", businessName: c.businessName, domain: c.domain, niche: c.niche, businessType: c.businessType,
         primaryGoal: c.primaryGoal, offer: c.offer, notes: c.notes, source: "factory_intake",
         label: `${test ? "[TEST] " : ""}${c.businessName} flip`, hostOrigin: one("hostOrigin") || null,
       });
-      const { state, created } = await flip.initFlipState(project, { ga4MeasurementId: c.ga4MeasurementId, gscProperty: c.gscProperty, launchDate: one("launchDate") || undefined, test });
+      project = await findProjectById(intake.id);
+      if (!project) return { ok: false, error: "FlipRadar project was not saved." };
+      const { state, created } = await flip.initFlipState(project, { businessName: c.businessName, domain: c.domain, niche: c.niche, ga4MeasurementId: c.ga4MeasurementId, gscProperty: c.gscProperty, launchDate: one("launchDate") || undefined, test });
       return { ok: true, created, projectId: project.id, flip: state };
     }
     if (!project) return { ok: false, error: "Client project not found." };

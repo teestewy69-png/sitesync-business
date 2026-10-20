@@ -31,14 +31,14 @@ export async function writeFlipState(state: FlipState): Promise<void> {
   await writeDoc(flipKey(state.projectId), state);
 }
 
-export async function initFlipState(project: ClientProject, opts: { launchDate?: string; ga4MeasurementId?: string; gscProperty?: string; adsensePublisherId?: string; test?: boolean }): Promise<{ state: FlipState; created: boolean }> {
+export async function initFlipState(project: ClientProject, opts: { businessName?: string; domain?: string; niche?: string; launchDate?: string; ga4MeasurementId?: string; gscProperty?: string; adsensePublisherId?: string; test?: boolean }): Promise<{ state: FlipState; created: boolean }> {
   const existing = await readFlipState(project.id);
   if (existing) return { state: existing, created: false };
   const state = newFlipState({
     projectId: project.id,
-    businessName: project.businessName || project.label,
-    domain: project.ownedDomain || "",
-    niche: project.niche || "",
+    businessName: opts.businessName || project.businessName || project.label,
+    domain: opts.domain || project.ownedDomain || "",
+    niche: opts.niche || project.niche || "",
     launchDate: opts.launchDate,
     ga4MeasurementId: opts.ga4MeasurementId,
     gscProperty: opts.gscProperty,

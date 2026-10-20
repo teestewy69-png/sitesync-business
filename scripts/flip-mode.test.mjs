@@ -149,9 +149,14 @@ test("FlipRadar seed + flip actions end to end on the local store (no network)",
   assert.equal(project.primaryGoal, "Build to sell");
   assert.match(project.label, /^\[TEST\]/);
   assert.equal(seeded.flip.analytics.ga4MeasurementId, "G-X306Z6MEQH");
+  assert.equal(seeded.flip.domain, "flipradar.co");
+  assert.equal(seeded.flip.businessName, "FlipRadar");
+  assert.equal(seeded.flip.presetId, "house-flipping");
   const run = await applyFactoryAction("flip-run-stage", { projectId: id, stage: "all", cityLimit: "10" });
   assert.equal(run.ok, true, run.error);
   assert.equal(run.flip.traffic.cityPages.length, 10);
+  assert.equal(run.flip.traffic.toolPages.length, 6);
+  assert.equal(run.flip.monetization.programs[0].goHref.startsWith("https://flipradar.co/go/"), true);
   assert.ok(run.flip.stages.every((s) => s.ranAt), "every stage ran");
   assert.ok(run.flip.socialDrafts.length > 0);
   assert.equal((await applyFactoryAction("flip-add-ledger", { projectId: id, date: "2026-10-25", type: "revenue", source: "AdSense", amount: "3.25" })).ok, true);
