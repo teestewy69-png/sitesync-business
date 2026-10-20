@@ -66,7 +66,7 @@ export default function Hero() {
             <p>{hero.pricingLine}</p>
             <p className="text-slate-400">{hero.stackLine}</p>
             <p className="text-base text-emerald-300/90">
-              No long-term contract. Monitoring is optional.
+              No long-term contract. Monitored SEO is not included: 1st month free, then $129/mo.
             </p>
           </div>
 

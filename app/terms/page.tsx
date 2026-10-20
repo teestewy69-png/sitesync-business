@@ -4,9 +4,9 @@ import SitePage from "@/components/SitePage";
 
 export const metadata: Metadata = {
   title: "Terms of Service | Sitesinc",
-  description: "The terms that apply to Sitesinc website builds, payments, and optional monitoring.",
+  description: "The terms for Sitesinc website builds: $1,995 flat, 50% to start and 50% at launch, revisions, ownership, and monitored SEO at $129/mo after month one.",
   alternates: { canonical: "/terms" },
-  openGraph: { title: "Terms of Service | Sitesinc", description: "The terms that apply to Sitesinc website builds, payments, and optional monitoring.", url: "/terms" },
+  openGraph: { title: "Terms of Service | Sitesinc", description: "The terms for Sitesinc website builds: $1,995 flat, 50% to start and 50% at launch, revisions, ownership, and monitored SEO at $129/mo after month one.", url: "/terms" },
 };
 
 export default function TermsPage() {

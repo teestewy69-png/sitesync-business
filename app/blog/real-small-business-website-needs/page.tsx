@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import SitePage from "@/components/SitePage";
+import ArticleJsonLd from "@/components/ArticleJsonLd";
 
 export const metadata: Metadata = {
   title: "What a Real Small Business Website Actually Needs | Sitesinc",
@@ -12,6 +13,7 @@ export const metadata: Metadata = {
 export default function RealSmallBusinessWebsiteNeeds() {
   return (
     <SitePage>
+      <ArticleJsonLd slug="real-small-business-website-needs" />
       <article className="mx-auto max-w-3xl px-6 py-16">
         <Link
           href="/blog"

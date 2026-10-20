@@ -6,33 +6,39 @@
     "domain": "sitesinc.co"
   },
   "seo": {
-    "title": "Sitesinc Website Factory – Ultra-Modern Small Business Websites (Built Once, Owned Forever)",
-    "description": "Sitesinc Website Factory builds dark, glossy, ultra-modern websites for small businesses who never got their site quite right. Website builds are $1,995. Pay $997.50 to start, $997.50 at launch. Optional monitoring $129/month. Cancel anytime. No long-term contract.",
+    "title": "Sitesinc – Real Small Business Websites for $1,995 Flat",
+    "description": "We build real working websites, not subscriptions. $1,995 flat: 50% to start, 50% at launch. Monitored SEO not included: 1st month free, then $129/mo.",
     "url": "https://sitesinc.co",
     "siteName": "Sitesinc",
     "locale": "en_US",
-    "image": "https://sitesinc.co/logo.png",
+    "image": "https://sitesinc.co/og-image.png",
     "og": {
-      "title": "Sitesinc Website Factory – Ultra-Modern Small Business Websites",
-      "description": "Done-for-you websites from Sitesinc. Website builds are $1,995. $997.50 to start, $997.50 at launch. Optional monitoring $129/month. Cancel anytime. No long-term contract."
+      "title": "Sitesinc – Real Working Websites for $1,995 Flat",
+      "description": "We build real working websites, not subscriptions. $1,995 flat: 50% to start, 50% at launch. Monitored SEO not included: 1st month free, then $129/mo."
     },
     "twitter": {
       "card": "summary_large_image",
-      "title": "Sitesinc Website Factory – Ultra-Modern Small Business Websites",
-      "description": "Done-for-you websites from Sitesinc. Website builds are $1,995. $997.50 to start, $997.50 at launch. Optional $129/month monitoring."
+      "title": "Sitesinc – Real Working Websites for $1,995 Flat",
+      "description": "We build real working websites, not subscriptions. $1,995 flat: 50% to start, 50% at launch. Monitored SEO not included: 1st month free, then $129/mo."
     }
   },
   "hero": {
     "overline": "Done-for-you small business websites",
-    "headline": "Ultra-modern websites that finally make your small business look big.",
+    "headline": "We build real working websites — not subscriptions like the rest.",
     "subheadline": "Sitesinc Website Factory builds dark, glossy, high-converting sites for the “little guy” who never got their website quite right. One-time build, SEO-ready, built to turn visitors into calls and leads, and fully yours.",
     "offer": {
-      "title": "Website builds are $1,995.",
-      "subtitle": "Pay 50% to start, 50% at launch. Optional monitoring $129/month. No long-term contract."
+      "title": "For $1,995 flat.",
+      "subtitle": "50% to start, 50% at launch. Monitored SEO is not included in the $1,995 build: 1st month free, then $129/mo."
     },
-    "primaryCta": { "label": "Start a website build", "target": "checklist" },
-    "secondaryCta": { "label": "See 8 Designs", "target": "designs" },
-    "pricingLine": "$1,995 · 50% to start, 50% at launch · Optional monitoring $129/mo",
+    "primaryCta": {
+      "label": "Start a website build",
+      "target": "checklist"
+    },
+    "secondaryCta": {
+      "label": "See 8 Designs",
+      "target": "designs"
+    },
+    "pricingLine": "$1,995 flat · 50% to start, 50% at launch · Monitored SEO: 1st month free, then $129/mo",
     "stackLine": "5-7 business day turnaround • Next.js + Tailwind • Netlify hosting included • You own the full code.",
     "trustLine": "Perfect for barbers, cleaners, food trucks, contractors, coaches, solo pros, and side hustles."
   },
@@ -75,7 +81,7 @@
   },
   "pricing": {
     "title": "Simple, transparent pricing",
-    "subtitle": "The website build is $1,995. Pay 50% to start, 50% at launch. Monitoring is optional. You own the code.",
+    "subtitle": "The website build is $1,995 flat. Pay 50% to start, 50% at launch. Monitored SEO is not included in the $1,995 build: 1st month free, then $129/mo. You own the code.",
     "build": {
       "name": "Website build",
       "price": "$1,995",
@@ -89,16 +95,16 @@
       }
     },
     "maintenance": {
-      "name": "Optional monitoring",
-      "price": "$129/month",
-      "detail": "Completely optional — your site works without it. Cancel anytime. No long-term contract.",
+      "name": "Monitored SEO (not included in the build)",
+      "price": "1st month free, then $129/mo",
+      "detail": "Monitored SEO is not part of the $1,995 build. Your first month is free, then it is $129/mo. Cancel anytime. No long-term contract. Your site works without it.",
       "features": [
         "Technical updates and security",
         "Uptime and SEO monitoring, plus basic fixes",
         "2-3 small text/image updates per month"
       ],
       "cta": {
-        "label": "Ask about $129/mo monitoring",
+        "label": "Ask about monitored SEO",
         "href": "/#checklist"
       }
     }
@@ -128,17 +134,20 @@
         "text": "A baseline SEO check of your site at launch, so you know where it stands and what to work on next."
       },
       {
-        "title": "Optional $129/mo monitoring",
-        "text": "If you want it: uptime and SEO monitoring, technical updates and security, basic fixes, and 2-3 small text or image updates each month. Cancel anytime."
+        "title": "Monitored SEO: 1st month free, then $129/mo",
+        "text": "Not included in the $1,995 build. Uptime and SEO monitoring, technical updates and security, basic fixes, and 2-3 small text or image updates each month. Cancel anytime."
       }
     ],
     "comingSoon": {
-      "title": "Coming soon",
-      "note": "Not available yet. We'll share details when they're ready.",
+      "title": "What we set up for you",
+      "note": "Every business is different, so we don't promise specific income or Google rankings. These are the pieces we build and set up for you.",
       "items": [
-        "Posting to your social media",
-        "A 500-city local SEO campaign",
-        "Ways to monetize your site"
+        "Monitored SEO",
+        "A 500 city landing page campaign",
+        "Scheduled social media posts",
+        "Indexed backlink pages",
+        "Content up to 1,500 words for your business",
+        "Setting up monetized placements in your website"
       ]
     }
   },
@@ -151,7 +160,7 @@
       "Any photos you want used",
       "Your main offer or goal (calls, bookings, sales, leads)"
     ],
-    "note": "Submitting the form is a request, not a purchase. If we accept the project, Sitesinc emails a $997.50 start invoice. The remaining $997.50 is due at launch. Optional monitoring is $129/month and can be enrolled manually."
+    "note": "Submitting the form is a request, not a purchase. If we accept the project, Sitesinc emails a $997.50 start invoice. The remaining $997.50 is due at launch. Monitored SEO is not included in the $1,995 build: 1st month free, then $129/mo."
   },
   "about": {
     "title": "Built for the “little guy” who's tired of feeling left behind online.",
@@ -162,9 +171,15 @@
   },
   "cta": {
     "title": "The website build is $1,995",
-    "subtitle": "Pay 50% to start, 50% at launch. Optional monitoring is $129/month. Domain: sitesinc.co.",
-    "primaryCta": { "label": "Request a build", "href": "#checklist" },
-    "secondaryCta": { "label": "Questions? Read the FAQ", "href": "#faq" }
+    "subtitle": "Pay 50% to start, 50% at launch. Monitored SEO is not included in the $1,995 build: 1st month free, then $129/mo.",
+    "primaryCta": {
+      "label": "Request a build",
+      "href": "#checklist"
+    },
+    "secondaryCta": {
+      "label": "Questions? Read the FAQ",
+      "href": "#faq"
+    }
   },
   "proof": {
     "overline": "Proof",
@@ -194,11 +209,14 @@
       "result": "Call-first homepage, 24/7 service focus, reviews block, and tap-to-call CTA—the kind of site that answers the phone instead of looking pretty and silent.",
       "note": "Demo of our per-client workflow using the same stack and content.json system we ship to paying customers."
     },
-    "cta": { "label": "See pricing & start a build", "target": "pricing" }
+    "cta": {
+      "label": "See pricing & start a build",
+      "target": "pricing"
+    }
   },
   "contact": {
     "title": "Contact Sitesinc",
-    "subtitle": "Questions about a website build? Send a request or email us. Submitting this form is a request, not a purchase.",
+    "subtitle": "Questions about a $1,995 website build? Call (909) 378-6404, email us, or send a request. Submitting this form is a request, not a purchase.",
     "messagePlaceholder": "Tell us about your business and what you need",
     "messageLabel": "Message (optional)"
   },
@@ -210,22 +228,46 @@
     "placeholder": "you@email.com",
     "buttonLabel": "Submit a request",
     "privacyLabel": "I agree to the privacy policy so you can contact me about this request.",
-    "monitoringLabel": "I’m interested in optional $129/month monitoring (cancel anytime).",
+    "monitoringLabel": "I’m interested in monitored SEO (1st month free, then $129/mo, cancel anytime).",
     "finePrint": "No charge on submit. We store your name and email privately so we can follow up. Contact us anytime at"
   },
   "footer": {
     "legalName": "Sitesinc",
     "email": "save@sitesinc.co",
     "trustTitle": "Transparent pricing, invoiced in two parts.",
-    "trustLine": "$1,995 • 50% to start, 50% at launch • No long-term contract • Optional $129/mo monitoring • You own your site code.",
+    "trustLine": "$1,995 flat • 50% to start, 50% at launch • Monitored SEO not included: 1st month free, then $129/mo • You own your site code.",
     "scrollLinks": [
-      { "label": "Pricing", "target": "pricing" },
-      { "label": "Designs", "target": "designs" },
-      { "label": "FAQ", "target": "faq" }
+      {
+        "label": "Pricing",
+        "target": "pricing"
+      },
+      {
+        "label": "Designs",
+        "target": "designs"
+      },
+      {
+        "label": "FAQ",
+        "target": "faq"
+      }
     ],
     "legalLinks": [
-      { "label": "Privacy", "href": "/privacy" },
-      { "label": "Terms", "href": "/terms" }
-    ]
+      {
+        "label": "Privacy",
+        "href": "/privacy"
+      },
+      {
+        "label": "Terms",
+        "href": "/terms"
+      }
+    ],
+    "phone": "(909) 378-6404",
+    "phoneHref": "tel:+19093786404",
+    "address": {
+      "street": "1986 South Coast Hwy #3632",
+      "city": "Laguna Beach",
+      "region": "CA",
+      "postalCode": "92651",
+      "country": "US"
+    }
   }
 }

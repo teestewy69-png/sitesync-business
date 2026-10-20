@@ -258,7 +258,7 @@ test("public copy: no retired monetization claims (Path A)", () => {
   }
 });
 
-test("pricing: only the $1,995 build (50/50) and optional $129/mo monitoring", () => {
+test("pricing: only the $1,995 build (50/50) and monitored SEO (1st month free, then $129/mo)", () => {
   const content = JSON.parse(readFileSync(path.join(ROOT, "content.json"), "utf8"));
   assert.equal(content.pricing.build.price, offer.PATH_A_OFFER.buildFrom);
   assert.equal(content.pricing.build.startDue, offer.PATH_A_OFFER.startDue);

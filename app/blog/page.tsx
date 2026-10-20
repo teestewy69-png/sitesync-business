@@ -5,9 +5,9 @@ import SitePage from "@/components/SitePage";
 
 export const metadata: Metadata = {
   title: "Sitesinc Blog | Small Business Website Guides",
-  description: "Straightforward guides on websites, SEO, and getting more from your small business site.",
+  description: "Straightforward guides from Sitesinc on small business websites, local SEO, lead capture and getting real results from the site you already pay to run.",
   alternates: { canonical: "/blog" },
-  openGraph: { title: "Sitesinc Blog | Small Business Website Guides", description: "Straightforward guides on websites, SEO, and getting more from your small business site.", url: "/blog" },
+  openGraph: { title: "Sitesinc Blog | Small Business Website Guides", description: "Straightforward guides from Sitesinc on small business websites, local SEO, lead capture and getting real results from the site you already pay to run.", url: "/blog" },
 };
 
 export default function BlogIndex() {

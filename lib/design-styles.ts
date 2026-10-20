@@ -52,7 +52,7 @@ export const SITESINC_SITE: MiniSiteContent = {
   tagline:
     "Ultra-modern websites that finally make your small business look big. Live now at sitesinc.co.",
   cta: "Request My Build",
-  phone: "save@sitesinc.co",
+  phone: "(909) 378-6404",
   footerNote: "save@sitesinc.co · Live at sitesinc.co · You own the code",
   services: [
     {
@@ -71,9 +71,9 @@ export const SITESINC_SITE: MiniSiteContent = {
       blurb: "On-page SEO basics and a lead form that reaches you, from day one.",
     },
     {
-      name: "Optional monitoring",
-      price: "$129/mo",
-      blurb: "Optional monitoring. Cancel anytime. The site works without it.",
+      name: "Monitored SEO",
+      price: "1st mo free",
+      blurb: "Not included in the build: 1st month free, then $129/mo. Cancel anytime.",
     },
   ],
   testimonials: [
@@ -85,7 +85,7 @@ export const SITESINC_SITE: MiniSiteContent = {
     {
       name: "Payment",
       quote:
-        "Website builds are $1,995. Pay 50% to start, 50% at launch. Optional $129/mo monitoring. You own the code.",
+        "Website builds are $1,995. Pay 50% to start, 50% at launch. Monitored SEO not included: 1st month free, then $129/mo. You own the code.",
     },
     {
       name: "Turnaround",
@@ -115,21 +115,21 @@ export function buildPreviewContent(
     business,
     tagline,
     cta: `Contact ${business}`,
-    phone: "(555) 010-2400",
+    phone: "Your phone number",
     services: [
       {
         name: keyword.trim() ? `${capitalize(serviceWord)} Consult` : "Starter Package",
-        price: "From $99",
+        price: "Your price",
         blurb: `Quick intro call to map the right ${serviceWord} plan.`,
       },
       {
         name: keyword.trim() ? `${capitalize(serviceWord)} Core` : "Core Service",
-        price: "From $299",
+        price: "Your price",
         blurb: `The most-booked ${serviceWord} option for busy customers.`,
       },
       {
         name: "Premium Bundle",
-        price: "From $799",
+        price: "Your price",
         blurb: "Priority scheduling, extras, and white-glove follow-up.",
       },
       {

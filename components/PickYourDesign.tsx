@@ -98,14 +98,18 @@ export default function PickYourDesign() {
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/80" />
             </div>
             <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-wider text-slate-300">
-              Live preview · {active.name}
+              Example client site · {active.name}
             </div>
           </div>
 
           <div
             key={`${active.id}-${content.business}-${content.tagline}`}
             className="animate-design-fade-in rounded-[26px] border border-white/5 bg-black/40 p-4 sm:p-5"
+            data-nosnippet
           >
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-brand-300">
+              Example client site — not Sitesinc pricing or contact info
+            </p>
             <MiniSiteFrame style={active} content={content} />
           </div>
         </div>

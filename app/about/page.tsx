@@ -5,11 +5,11 @@ import SitePage from "@/components/SitePage";
 
 export const metadata: Metadata = {
   title: "About | Sitesinc",
-  description: content.about.paragraphs[0],
+  description: "Sitesinc builds real working websites for small and local businesses: custom design, SEO, lead capture and hosting, with full code you own. $1,995 flat.",
   alternates: { canonical: "/about" },
   openGraph: {
     title: "About | Sitesinc",
-    description: content.about.paragraphs[0],
+    description: "Sitesinc builds real working websites for small and local businesses: custom design, SEO, lead capture and hosting, with full code you own. $1,995 flat.",
     url: "/about",
   },
 };

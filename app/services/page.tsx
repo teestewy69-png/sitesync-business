@@ -6,11 +6,11 @@ import SitePage from "@/components/SitePage";
 
 export const metadata: Metadata = {
   title: "Website build services | Sitesinc",
-  description: content.included.title,
+  description: "Everything in the $1,995 Sitesinc website build: custom Next.js design, on-page SEO, lead capture, hosting setup and domain connection. 50% to start.",
   alternates: { canonical: "/services" },
   openGraph: {
     title: "Website build services | Sitesinc",
-    description: content.included.title,
+    description: "Everything in the $1,995 Sitesinc website build: custom Next.js design, on-page SEO, lead capture, hosting setup and domain connection. 50% to start.",
     url: "/services",
   },
 };

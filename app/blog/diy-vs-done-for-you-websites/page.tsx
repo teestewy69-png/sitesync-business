@@ -1,17 +1,19 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import SitePage from "@/components/SitePage";
+import ArticleJsonLd from "@/components/ArticleJsonLd";
 
 export const metadata: Metadata = {
-  title: "DIY Website Builders vs. Done-For-You: What Actually Costs You More | Sitesinc",
+  title: "DIY Website Builders vs. Done-For-You: The Real Cost | Sitesinc",
   description: "An honest comparison of DIY website builders and done-for-you builds for small businesses: time, lost leads, and long-term cost.",
   alternates: { canonical: "/blog/diy-vs-done-for-you-websites" },
-  openGraph: { title: "DIY Website Builders vs. Done-For-You: What Actually Costs You More | Sitesinc", description: "An honest comparison of DIY website builders and done-for-you builds for small businesses: time, lost leads, and long-term cost.", url: "/blog/diy-vs-done-for-you-websites" },
+  openGraph: { title: "DIY Website Builders vs. Done-For-You: The Real Cost | Sitesinc", description: "An honest comparison of DIY website builders and done-for-you builds for small businesses: time, lost leads, and long-term cost.", url: "/blog/diy-vs-done-for-you-websites" },
 };
 
 export default function DiyVsDoneForYouWebsites() {
   return (
     <SitePage>
+      <ArticleJsonLd slug="diy-vs-done-for-you-websites" />
       <article className="mx-auto max-w-3xl px-6 py-16">
         <Link
           href="/blog"

@@ -7,12 +7,23 @@ export default function SeoJsonLd() {
     "@context": "https://schema.org",
     "@graph": [
       {
-        "@type": "Organization",
+        "@type": ["Organization", "LocalBusiness", "ProfessionalService"],
         "@id": `${origin}/#organization`,
         name: content.site.name,
         url: origin,
         email: content.footer.email,
-        logo: content.seo.image,
+        telephone: "+1-909-378-6404",
+        logo: `${origin}/logo.png`,
+        image: content.seo.image,
+        priceRange: "$1,995",
+        address: {
+          "@type": "PostalAddress",
+          streetAddress: content.footer.address.street,
+          addressLocality: content.footer.address.city,
+          addressRegion: content.footer.address.region,
+          postalCode: content.footer.address.postalCode,
+          addressCountry: content.footer.address.country,
+        },
       },
       {
         "@type": "WebSite",
@@ -33,7 +44,7 @@ export default function SeoJsonLd() {
           price: "1995",
           priceCurrency: "USD",
           description:
-            "Website builds are $1,995. Pay 50% to start, 50% at launch. Optional monitoring $129/month.",
+            "Website builds are $1,995. Pay 50% to start, 50% at launch. Monitored SEO is not included in the $1,995 build: 1st month free, then $129/mo.",
         },
       },
       {

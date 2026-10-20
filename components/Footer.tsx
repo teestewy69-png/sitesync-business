@@ -30,6 +30,16 @@ export default function Footer() {
               {footer.email}
             </a>
           </p>
+          <p className="text-sm text-slate-400 sm:text-sm">
+            Phone:{" "}
+            <a href={footer.phoneHref} className="text-brand-300 hover:underline">
+              {footer.phone}
+            </a>
+          </p>
+          <address className="text-sm not-italic text-slate-400 sm:text-sm">
+            {footer.address.street}, {footer.address.city}, {footer.address.region}{" "}
+            {footer.address.postalCode}
+          </address>
         </div>
 
         <div className="space-y-1 text-sm text-slate-400 sm:text-base">

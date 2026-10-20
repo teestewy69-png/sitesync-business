@@ -3,6 +3,8 @@ export type PostMeta = {
   title: string;
   description: string;
   date: string;
+  /** Last real content edit (sitemap lastmod / dateModified). */
+  updated?: string;
 };
 
 export const posts: PostMeta[] = [

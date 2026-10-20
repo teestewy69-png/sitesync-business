@@ -3,9 +3,9 @@ import SitePage from "@/components/SitePage";
 
 export const metadata: Metadata = {
   title: "Privacy Policy | Sitesinc",
-  description: "How Sitesinc collects, uses, and protects your information.",
+  description: "How Sitesinc collects, uses, stores and protects the information you share through our website, request forms and emails, and how to contact us about it.",
   alternates: { canonical: "/privacy" },
-  openGraph: { title: "Privacy Policy | Sitesinc", description: "How Sitesinc collects, uses, and protects your information.", url: "/privacy" },
+  openGraph: { title: "Privacy Policy | Sitesinc", description: "How Sitesinc collects, uses, stores and protects the information you share through our website, request forms and emails, and how to contact us about it.", url: "/privacy" },
 };
 
 export default function PrivacyPage() {

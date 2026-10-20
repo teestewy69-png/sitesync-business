@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import content from "@/content.json";
 import EmailCapture from "@/components/EmailCapture";
 import SitePage from "@/components/SitePage";
+import OrgJsonLd from "@/components/OrgJsonLd";
 
 export const metadata: Metadata = {
   title: "Contact | Sitesinc",
@@ -19,6 +20,7 @@ export default function ContactPage() {
 
   return (
     <SitePage>
+      <OrgJsonLd />
       <section className="mx-auto max-w-3xl px-6 pt-16 text-center">
         <p className="text-xs font-semibold uppercase tracking-wider text-brand-300">Contact</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">{contact.title}</h1>
@@ -28,7 +30,15 @@ export default function ContactPage() {
           <a href={`mailto:${footer.email}`} className="font-medium text-brand-300 hover:underline">
             {footer.email}
           </a>
+          {" · "}Call{" "}
+          <a href={footer.phoneHref} className="font-medium text-brand-300 hover:underline">
+            {footer.phone}
+          </a>
         </p>
+        <address className="mt-2 text-base not-italic text-slate-400">
+          {footer.address.street}, {footer.address.city}, {footer.address.region}{" "}
+          {footer.address.postalCode}
+        </address>
       </section>
       <EmailCapture variant="contact" />
     </SitePage>
