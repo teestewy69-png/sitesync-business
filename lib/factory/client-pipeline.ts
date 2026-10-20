@@ -151,7 +151,13 @@ export function clientBriefHeadings(config: ClientBuildConfig, slug: string, loc
     };
     return [...(bySlug[slug] || [`${config.businessName}`, "The work", "How to inquire"]), "What this page is not"];
   }
-  return [`What ${config.businessName} offers`, `Who this helps in ${loc}`, "How to get started", "What this page is not"];
+  const hasPlace = Boolean(place([config.city, config.state]));
+  return [
+    `What ${config.businessName} offers`,
+    hasPlace ? `Who this helps in ${loc}` : "Who this is for",
+    "How to get started",
+    "What this page is not",
+  ];
 }
 
 export function seedClientBriefs(config: ClientBuildConfig): ContentBrief[] {

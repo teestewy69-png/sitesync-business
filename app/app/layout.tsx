@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Sitesinc Growth Case Study — internal factory",
+  title: { default: "Sitesinc factory (internal)", template: "%s · Sitesinc factory" },
   robots: { index: false, follow: false, nocache: true },
 };
 

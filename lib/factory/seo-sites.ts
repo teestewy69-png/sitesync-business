@@ -94,6 +94,8 @@ export function clientCrawlPaths(
   const paths = pages.map((page) => {
     if (page.slug === "home" || page.path === "/") return "/";
     const fromPath = (page.path || "").trim();
+    // The preview route is /demo/client/<id>/<slug> (one segment); nested real-site paths preview at /<slug>.
+    if (fromPath && fromPath !== "/" && fromPath.replace(/^\/+|\/+$/g, "").includes("/")) return `/${page.slug}`;
     if (fromPath && fromPath !== "/") {
       return fromPath.startsWith("/") ? fromPath : `/${fromPath}`;
     }

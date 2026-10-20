@@ -2,6 +2,7 @@ import type { ContentBrief, FactoryPage } from "./types";
 import type { ClientBuildConfig } from "./client-config";
 import { artworkCaption, orderedArtworks, type SuppliedContent } from "./client-content";
 import type { ClientArtwork } from "./types";
+import { clientFacingEmail } from "./client-real-site";
 
 type Draft = Pick<FactoryPage, "title" | "metaDescription" | "headings" | "body">;
 
@@ -158,16 +159,20 @@ export function draftFromClientBrief(
         ? [`${config.businessName}`, "The work", "How to inquire"]
         : [`What ${config.businessName} offers`, loc ? `Who this helps in ${loc}` : "Who this helps", "How to get started"];
 
-  const contactBits = [config.email ? `email ${config.email}` : "", config.phone ? `call ${config.phone}` : ""].filter(Boolean);
+  const email = clientFacingEmail(config.email);
+  const contactBits = [email ? `email ${email}` : "", config.phone ? `call ${config.phone}` : ""].filter(Boolean);
   const contactLine = contactBits.length
     ? `To get in touch, ${contactBits.join(" or ")}${portfolio ? "" : ", or use the contact form"}.`
     : "[Contact details not provided yet - add an email or phone before review.]";
   const pricingLine = config.pricingNote ? `Pricing: ${config.pricingNote}.` : "";
+  const needsLocation = config.templateId === "local-service";
   const locationLine = loc
     ? portfolio
       ? `Based in ${loc}.`
       : `Serving ${loc}. Other cities only through City Launch (unique local copy per city; near-duplicates are blocked by the quality gate).`
-    : MISSING_LOCATION;
+    : needsLocation
+      ? MISSING_LOCATION
+      : "";
 
   const intro = portfolio
     ? `${config.businessName}: ${lowerFirst(offer)}${loc ? `, ${loc}` : ""}.`
@@ -187,7 +192,10 @@ export function draftFromClientBrief(
           headings[0],
           [`${config.businessName} focuses on ${lowerFirst(offer)}. Goal for this site: ${lowerFirst(config.primaryGoal)}.`],
         ],
-        [headings[1] || "Location", [locationLine]],
+        [
+          headings[1] || "Who this is for",
+          [locationLine || "[Client to describe who uses this and why, in their own words.]"],
+        ],
         [headings[2] || "How to get started", [contactLine, pricingLine]],
       ];
 

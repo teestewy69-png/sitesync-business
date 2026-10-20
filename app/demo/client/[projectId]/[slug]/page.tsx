@@ -12,10 +12,24 @@ import { findProjectById } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  robots: { index: false, follow: false },
-  title: "Client page preview",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ projectId: string; slug: string }>;
+}): Promise<Metadata> {
+  const { projectId, slug } = await params;
+  const workspace = await readClientWorkspace(projectId).catch(() => null);
+  const page = workspace?.pages.find((row) => row.slug === slug);
+  // Client previews must never inherit Sitesinc's title, description or canonical from the root layout.
+  return {
+    title: { absolute: page?.title || "Client page preview" },
+    description: page?.metaDescription || "Client page preview. Internal noindex.",
+    robots: { index: false, follow: false },
+    alternates: { canonical: null },
+    openGraph: null,
+    twitter: null,
+  };
+}
 
 export default async function ClientDeliverablePage({
   params,

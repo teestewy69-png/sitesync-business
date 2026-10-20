@@ -22,9 +22,13 @@ export async function generateMetadata({
   const project = await findProjectById(projectId);
   const name = project?.businessName || project?.label || "Client preview";
   return {
-    title: `${name} · client deliverable preview`,
+    title: { absolute: `${name} · client deliverable preview` },
     description: "Per-client factory preview. Internal noindex. Not auto-published.",
     robots: { index: false, follow: false },
+    // Never inherit Sitesinc's canonical / Open Graph from the root layout.
+    alternates: { canonical: null },
+    openGraph: null,
+    twitter: null,
   };
 }
 

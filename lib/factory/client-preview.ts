@@ -4,6 +4,7 @@
  * Anything the client still has to supply is shown as a clearly bracketed placeholder.
  */
 import type { ClientBuildConfig } from "./client-config";
+import { clientFacingEmail } from "./client-real-site";
 import {
   assetByRole,
   clientAssetUrl,
@@ -75,7 +76,9 @@ function lowerFirst(value: string): string {
   return value ? value.charAt(0).toLowerCase() + value.slice(1) : value;
 }
 
-export function buildClientPreviewModel(config: ClientBuildConfig, supplied?: ClientPreviewSupplied): ClientPreviewModel {
+export function buildClientPreviewModel(rawConfig: ClientBuildConfig, supplied?: ClientPreviewSupplied): ClientPreviewModel {
+  // Sitesinc's own inbox (e.g. an operator-filled intake) is never shown as the client's contact.
+  const config = { ...rawConfig, email: clientFacingEmail(rawConfig.email) };
   const template = getClientTemplate(config.templateId);
   const operatorPages = new Map(
     (supplied?.pages || []).filter((p) => isOperatorCopy(p) && p.body?.trim()).map((p) => [p.slug, p.body])
