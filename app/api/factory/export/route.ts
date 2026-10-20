@@ -26,6 +26,15 @@ export async function GET(req: NextRequest) {
   if (!(await isValidSession(req.cookies.get(FACTORY_COOKIE)?.value))) {
     return NextResponse.json({ ok: false, error: "Factory authentication required." }, { status: 401 });
   }
+  const flipId = req.nextUrl.searchParams.get("flip");
+  if (flipId) {
+    try {
+      ensureBlobsFromRequest(req);
+      return await flipExport(flipId, req.nextUrl.searchParams.get("format") || "handoff");
+    } catch (err) {
+      return factoryErrorResponse(err, "Flip export failed.");
+    }
+  }
   try {
     ensureBlobsFromRequest(req);
     const [leads, inquiries, projects, rawOrders, workspaceState, baselineRead, checklists] = await Promise.all([
@@ -93,4 +102,30 @@ export async function GET(req: NextRequest) {
     console.error("Factory export failed:", err instanceof Error ? err.name : "unknown");
     return factoryErrorResponse(err, "Export failed.");
   }
+}
+
+/** Flip (build-to-sell) exports: buyer handoff package (JSON) or SiteGrow drafts (JSON/CSV). Never includes secrets. */
+async function flipExport(projectId: string, format: string): Promise<NextResponse> {
+  const { readFlipState } = await import("@/lib/factory/flip/store");
+  const { buildHandoffPackage } = await import("@/lib/factory/flip/model");
+  const { buildSocialDrafts, sitegrowCsv, sitegrowJson } = await import("@/lib/factory/flip/sitegrow");
+  const state = await readFlipState(projectId);
+  if (!state) return NextResponse.json({ ok: false, error: "Flip project not found." }, { status: 404 });
+  const name = (state.domain || state.projectId).replace(/[^a-z0-9.-]/gi, "-");
+  const date = new Date().toISOString().slice(0, 10);
+  const drafts = state.socialDrafts.length ? state.socialDrafts : buildSocialDrafts(state);
+  const headers = (type: string, file: string) => ({
+    "content-type": type,
+    "content-disposition": `attachment; filename="${file}"`,
+    "cache-control": "no-store",
+  });
+  if (format === "sitegrow-csv") {
+    return new NextResponse(sitegrowCsv(drafts), { headers: headers("text/csv; charset=utf-8", `${name}-sitegrow-drafts-${date}.csv`) });
+  }
+  if (format === "sitegrow-json") {
+    return new NextResponse(`${JSON.stringify(sitegrowJson(state, drafts), null, 2)}\n`, { headers: headers("application/json; charset=utf-8", `${name}-sitegrow-drafts-${date}.json`) });
+  }
+  if (format !== "handoff") return NextResponse.json({ ok: false, error: "format must be handoff, sitegrow-json or sitegrow-csv." }, { status: 400 });
+  const body = { ok: true, ...buildHandoffPackage(state), sitegrowDrafts: sitegrowJson(state, drafts) };
+  return new NextResponse(`${JSON.stringify(body, null, 2)}\n`, { headers: headers("application/json; charset=utf-8", `${name}-handoff-package-${date}.json`) });
 }

@@ -73,6 +73,8 @@ export type ClientProject = {
   /** Operator-only pipeline stage; absent means "new". */
   stage?: LeadStage;
   stageUpdatedAt?: string;
+  /** Site mode: "client" (default when absent) or "flip" (build-to-sell). */
+  mode?: "client" | "flip";
   /** Structured client build config (optional on legacy thin projects). */
   businessName?: string;
   /** Person to talk to (may differ from the business name). */

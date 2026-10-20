@@ -33,6 +33,7 @@ import {
 export { recordIntakeProject } from "./record-intake";
 import { runConversionChecks } from "./conversions";
 import { draftFromBrief, wordCount } from "./drafts";
+import { checkContentLength, MAX_ARTICLE_WORDS } from "./content-length";
 import { DISCLAIMERS, SEED_BRIEFS, STAGE_DEFS } from "./pipeline";
 import { slugsForSurfaces } from "./surfaces";
 import { inspectUrl, sitemapSubmission } from "./search-console";
@@ -83,7 +84,7 @@ function nowIso() {
 export async function applyFactoryAction(
   op: string,
   body: Record<string, string | string[] | undefined>
-): Promise<{ ok: boolean; error?: string; status?: number; workspace?: FactoryWorkspace; created?: boolean; projectId?: string; refreshed?: string[]; kept?: string[]; operatorKept?: string[]; warnings?: string[]; count?: number; clientContent?: import("./types").ClientContent; backfill?: import("./client-automation").BackfillResult; domainBackfill?: import("./domainiq").DomainBackfillResult }> {
+): Promise<{ ok: boolean; error?: string; status?: number; workspace?: FactoryWorkspace; created?: boolean; projectId?: string; refreshed?: string[]; kept?: string[]; operatorKept?: string[]; warnings?: string[]; count?: number; clientContent?: import("./types").ClientContent; backfill?: import("./client-automation").BackfillResult; domainBackfill?: import("./domainiq").DomainBackfillResult; flip?: import("./flip/model").FlipState }> {
   const actor = String(body.approvedBy || "operator");
   const when = nowIso();
 
@@ -160,6 +161,7 @@ export async function applyFactoryAction(
               ...page,
               ...draft,
               wordCount: wordCount(draft.body),
+              lengthCheck: checkContentLength(draft.body, { min: 1, max: MAX_ARTICLE_WORDS }),
               status: "ready_for_review",
               noindex: true,
             }
@@ -513,6 +515,10 @@ export async function applyFactoryAction(
     return applyFactoryAction("verify-indexing", { approvedBy: actor });
   }
 
+  if (op.startsWith("flip-")) {
+    return applyFlipAction(op, body);
+  }
+
   if (op === "record-intake") {
     const fields = clientFieldsFromBody(body);
     const hasClientDetails = Object.keys(fields).some((key) => key !== "monitoringInterest");
@@ -555,6 +561,7 @@ export async function applyFactoryAction(
     if ("notes" in fields) assign("notes", fields.notes);
     if ("pricingNote" in fields) assign("pricingNote", fields.pricingNote);
     if ("niche" in fields) assign("niche", fields.niche);
+    if ("mode" in fields) assign("mode", fields.mode === "flip" ? "flip" : "client");
     if ("designStyleId" in fields) assign("designStyleId", fields.designStyleId);
     const whatChanged =
       ("businessType" in fields && fields.businessType !== project.businessType) ||
@@ -910,6 +917,7 @@ export async function applyFactoryAction(
               ...draft,
               source: "template" as const,
               wordCount: clientWordCount(draft.body),
+              lengthCheck: checkContentLength(draft.body, { min: 1, max: MAX_ARTICLE_WORDS }),
               status: "ready_for_review",
               briefId: brief.id,
               noindex: true,
@@ -1046,6 +1054,7 @@ async function applyClientContentAction(
 }
 
 const CLIENT_TEXT_FIELDS = [
+  "mode",
   "businessName",
   "contactName",
   "email",
@@ -1077,4 +1086,77 @@ export function clientFieldsFromBody(
     out.monitoringInterest = ["1", "true", "yes", "on"].includes(String(body.monitoringInterest).toLowerCase());
   }
   return out;
+}
+
+/** Flip-site (build-to-sell) actions. Never posts, emails, deploys or touches Stripe. */
+async function applyFlipAction(op: string, body: Record<string, string | string[] | undefined>) {
+  const { findProjectById, updateProject } = await import("@/lib/store");
+  const flip = await import("./flip/store");
+  const { FLIP_STAGE_ORDER } = await import("./flip/model");
+  const projectId = String(body.projectId || "");
+  const one = (k: string) => String(Array.isArray(body[k]) ? (body[k] as string[])[0] ?? "" : body[k] ?? "").trim();
+  if (op === "flip-seed-flipradar" || op === "flip-init") {
+    let project = projectId ? await findProjectById(projectId) : null;
+    if (op === "flip-seed-flipradar" && !project) {
+      const { FLIPRADAR_FLIP_CONFIG: c } = await import("./flip/flipradar");
+      const test = ["1", "true", "yes"].includes(one("test").toLowerCase());
+      project = await recordIntakeProject({
+        mode: "flip", businessName: c.businessName, domain: c.domain, niche: c.niche, businessType: c.businessType,
+        primaryGoal: c.primaryGoal, offer: c.offer, notes: c.notes, source: "factory_intake",
+        label: `${test ? "[TEST] " : ""}${c.businessName} flip`, hostOrigin: one("hostOrigin") || null,
+      });
+      const { state, created } = await flip.initFlipState(project, { ga4MeasurementId: c.ga4MeasurementId, gscProperty: c.gscProperty, launchDate: one("launchDate") || undefined, test });
+      return { ok: true, created, projectId: project.id, flip: state };
+    }
+    if (!project) return { ok: false, error: "Client project not found." };
+    if (project.mode !== "flip") {
+      project = (await updateProject(project.id, { mode: "flip" })) || project;
+    }
+    const { state, created } = await flip.initFlipState(project!, {
+      launchDate: one("launchDate") || undefined, ga4MeasurementId: one("ga4MeasurementId"), gscProperty: one("gscProperty"),
+      adsensePublisherId: one("adsensePublisherId"), test: ["1", "true", "yes"].includes(one("test").toLowerCase()),
+    });
+    return { ok: true, created, projectId: project!.id, flip: state };
+  }
+  const project = projectId ? await findProjectById(projectId) : null;
+  if (!project) return { ok: false, error: "Client project not found." };
+  if (op === "flip-run-stage") {
+    const raw = one("stage") || "all";
+    const keys = raw === "all" ? "all" : raw.split(",").map((k) => k.trim()).filter((k) => (FLIP_STAGE_ORDER as string[]).includes(k));
+    if (keys !== "all" && !keys.length) return { ok: false, error: `stage must be all or one of ${FLIP_STAGE_ORDER.join(", ")}.` };
+    let bodies: Record<string, string> = {};
+    try { bodies = one("bodies") ? JSON.parse(one("bodies")) : {}; } catch { return { ok: false, error: "bodies must be JSON {slug: text}." }; }
+    const state = await flip.runFlipStages(project, keys as never, { bodies, cityLimit: Number(one("cityLimit")) || undefined });
+    return { ok: true, projectId: project.id, flip: state };
+  }
+  const state = await flip.readFlipState(project.id);
+  if (!state) return { ok: false, error: "Flip project not initialized (run flip-init)." };
+  try {
+    if (op === "flip-add-ledger") {
+      flip.addLedgerEntry(state, { date: one("date"), type: one("type") === "expense" ? "expense" : "revenue", source: one("source"), amount: Number(one("amount")), proof: one("proof"), note: one("note") }, newId("led"));
+    } else if (op === "flip-record-snapshot") {
+      const n = (k: string) => (one(k) === "" ? undefined : Number(one(k)));
+      flip.recordSnapshot(state, one("month"), { sessions: n("sessions"), users: n("users"), pageviews: n("pageviews"), gscClicks: n("gscClicks"), gscImpressions: n("gscImpressions") });
+    } else if (op === "flip-log-change") {
+      if (!one("change")) return { ok: false, error: "change required." };
+      state.records.changeLog.push({ date: one("date") || nowIso().slice(0, 10), change: one("change").slice(0, 500), by: String(body.approvedBy || "operator") });
+    } else if (op === "flip-set-analytics") {
+      if (one("ga4MeasurementId")) {
+        if (!/^G-[A-Z0-9]{6,12}$/i.test(one("ga4MeasurementId"))) return { ok: false, error: "GA4 id must look like G-XXXXXXX." };
+        state.analytics.ga4MeasurementId = one("ga4MeasurementId").toUpperCase();
+      }
+      if (one("gscProperty")) state.analytics.gscProperty = one("gscProperty");
+      if (one("adsensePublisherId")) state.adsensePublisherId = one("adsensePublisherId");
+    } else if (op === "flip-close") {
+      state.closed = true;
+      const { updateRecordStage } = await import("@/lib/store");
+      await updateRecordStage(project.id, "closed");
+    } else {
+      return { ok: false, error: "Unknown flip action." };
+    }
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Invalid input." };
+  }
+  await flip.writeFlipState(state);
+  return { ok: true, projectId: project.id, flip: state };
 }

@@ -8,8 +8,11 @@ import {
   inferTemplateId,
   seedPagesForTemplate,
 } from "./client-templates";
+import { FLIP_GOAL, normalizeSiteMode, type SiteMode } from "./flip/presets";
 
 export type ClientBuildConfig = {
+  /** "client" = paid client build (default); "flip" = build-to-sell site Sitesinc owns. */
+  mode: SiteMode;
   businessName: string;
   contactName: string;
   email: string;
@@ -33,6 +36,7 @@ export type ClientBuildConfig = {
 };
 
 export type IntakeConfigInput = {
+  mode?: string;
   /** Legacy/public form name field. Used as the business name when businessName is absent. */
   name?: string;
   businessName?: string;
@@ -112,6 +116,7 @@ export function parseIntakeHints(text: string): {
   const phone = (blob.match(PHONE_RE) || [""])[0];
 
   const nicheHints: [RegExp, string][] = [
+    [/house.?flip|fix.?and.?flip|real.?estate.?invest|brrrr/i, "house flipping / real-estate investing"],
     [/plumb/i, "plumbing"],
     [/hvac|heating|air conditioning/i, "HVAC"],
     [/electr/i, "electrical"],
@@ -134,7 +139,8 @@ export function parseIntakeHints(text: string): {
   }
 
   let primaryGoal = "";
-  if (/call|phone|lead/i.test(blob)) primaryGoal = "Get more calls / leads";
+  if (/build.?to.?sell|flip (this|the) site|sell the site/i.test(blob)) primaryGoal = FLIP_GOAL;
+  else if (/call|phone|lead/i.test(blob)) primaryGoal = "Get more calls / leads";
   else if (/book|appoint/i.test(blob)) primaryGoal = "Get more bookings";
   else if (/sell|checkout|shop|stripe/i.test(blob)) primaryGoal = "Sell online";
   else if (/redesign|rebuild|refresh/i.test(blob)) primaryGoal = "Website redesign";
@@ -211,7 +217,8 @@ export function buildClientConfig(input: IntakeConfigInput): ClientBuildConfig {
     : inferTemplateId({ niche, businessType, goals: [offer, goals].filter(Boolean).join(" ") });
 
   // Goal: explicit field, else what the goals text says. Never the business/contact name or the label.
-  let primaryGoal = clean(input.primaryGoal, 200) || (goals ? parseIntakeHints(goals).primaryGoal : "");
+  const mode = normalizeSiteMode(input.mode);
+  let primaryGoal = (mode === "flip" ? FLIP_GOAL : "") || clean(input.primaryGoal, 200) || (goals ? parseIntakeHints(goals).primaryGoal : "");
   if (
     !primaryGoal ||
     sameText(primaryGoal, businessName) ||
@@ -235,6 +242,7 @@ export function buildClientConfig(input: IntakeConfigInput): ClientBuildConfig {
   });
 
   return {
+    mode,
     businessName,
     contactName,
     email,
@@ -263,6 +271,7 @@ export function applyConfigToProject(
   return {
     ...project,
     label: project.label || config.businessName,
+    mode: config.mode,
     monitoringInterest: config.monitoringInterest ?? project.monitoringInterest,
     businessName: config.businessName,
     contactName: config.contactName || project.contactName,
@@ -286,6 +295,7 @@ export function applyConfigToProject(
 
 export function configFromProject(project: ClientProject): ClientBuildConfig {
   return buildClientConfig({
+    mode: project.mode,
     businessName: project.businessName,
     name: project.businessName || project.label,
     contactName: project.contactName,

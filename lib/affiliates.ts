@@ -10,7 +10,7 @@
  * Example shape (Impact): https://namecheap.pxf.io/c/<your-ids>?u={url}
  */
 
-export type AffiliateCategory = "registrar" | "tool";
+export type AffiliateCategory = "registrar" | "tool" | "lender" | "software" | "insurance" | "ads";
 
 export type AffiliateProgram = {
   slug: string;
@@ -75,8 +75,26 @@ export function normalizeDomain(raw: unknown): string {
   return DOMAIN_PATTERN.test(d) ? d : "";
 }
 
+/**
+ * Flip-site partner programs (FlipRadar plan). Resolvable by /go/[slug] for click logging; not listed on /tools.
+ * Untracked (plain home URL) until Tony is approved and sets AFFILIATE_<SLUG>_URL_TEMPLATE.
+ */
+export const FLIP_PARTNER_PROGRAMS: AffiliateProgram[] = [
+  ["kiavi", "Kiavi", "lender", "https://www.kiavi.com/", "Fix-and-flip and rental loans."],
+  ["new-silver", "New Silver", "lender", "https://newsilver.com/", "Fix-and-flip loans with online application."],
+  ["lima-one", "Lima One Capital", "lender", "https://www.limaone.com/", "Investor loans for flips and rentals."],
+  ["offermarket", "OfferMarket", "lender", "https://www.offermarket.us/", "Investor lending marketplace."],
+  ["dealmachine", "DealMachine", "software", "https://www.dealmachine.com/", "Driving-for-dollars and lead lists."],
+  ["resimpli", "REsimpli", "software", "https://resimpli.com/", "CRM for real-estate investors."],
+  ["propstream", "PropStream", "software", "https://www.propstream.com/", "Property data and comps."],
+  ["steadily", "Steadily", "insurance", "https://www.steadily.com/", "Landlord and vacant-property insurance."],
+].map(([slug, name, category, homeUrl, blurb]) => ({
+  slug, name, category: category as AffiliateCategory, homeUrl, blurb,
+  envVar: `AFFILIATE_${slug.toUpperCase().replace(/-/g, "_")}_URL_TEMPLATE`,
+}));
+
 export function getProgram(slug: string): AffiliateProgram | undefined {
-  return AFFILIATE_PROGRAMS.find((p) => p.slug === slug);
+  return AFFILIATE_PROGRAMS.find((p) => p.slug === slug) || FLIP_PARTNER_PROGRAMS.find((p) => p.slug === slug);
 }
 
 function template(program: AffiliateProgram, env: Record<string, string | undefined>): string {

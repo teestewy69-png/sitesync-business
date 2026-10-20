@@ -198,6 +198,8 @@ export type FactoryPage = {
   status: PageStatus;
   briefId: string;
   wordCount: number;
+  /** General factory feature: target length window check (max 1,500 words). */
+  lengthCheck?: import("./content-length").ContentLengthCheck;
   headings: string[];
   body: string;
   noindex: boolean;
@@ -404,6 +406,7 @@ export type ClientAutomationState = {
 };
 export type ClientWorkspaceContext = {
   clientProjectId: string;
+  mode?: "client" | "flip";
   businessName: string;
   niche: string;
   city: string;

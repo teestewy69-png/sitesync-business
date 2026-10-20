@@ -481,3 +481,15 @@ export const DISCLAIMERS = {
   production: "Production stays live until staging passes QA and an operator explicitly approves deploy.",
   backlinks: "Do not automate spam links or record links that were not actually earned.",
 };
+
+/**
+ * Flip-site (build-to-sell) stages, run in this order for projects with mode "flip".
+ * Implementation: lib/factory/flip/model.ts (pure) + lib/factory/flip/store.ts (runner).
+ */
+export const FLIP_STAGE_DEFS = [
+  { key: "traffic", order: 1, name: "Traffic", requiredInputs: ["Niche preset", "City Launch picks (city/ZIP pages)", "Calculator/tool templates", "Content plan"] },
+  { key: "content", order: 2, name: "Content", requiredInputs: ["Content plan", "Target length window (max 1,500 words)", "AI writing key or operator copy"] },
+  { key: "monetization", order: 3, name: "Monetization", requiredInputs: ["Affiliate programs (apply/pending)", "/go/[slug] click-logged links", "Ad slots + AdSense publisher ID"] },
+  { key: "data_recording", order: 4, name: "Data Recording", requiredInputs: ["GA4 measurement ID", "Search Console property", "Monthly snapshots from launch", "Revenue ledger, P&L, change log"] },
+  { key: "buyer_handoff", order: 5, name: "Buyer Handoff", requiredInputs: ["Asset list", "Transfer checklist", "How-to-run SOP", "Escrow steps", "Data history export"] },
+] as const;
