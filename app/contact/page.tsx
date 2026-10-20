@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_IMAGE } from "@/lib/og-image";
 import content from "@/content.json";
 import EmailCapture from "@/components/EmailCapture";
 import SitePage from "@/components/SitePage";
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Contact | Sitesinc",
     description: content.contact.subtitle,
-    url: "/contact",
+    url: "/contact", images: [OG_IMAGE],
   },
 };
 

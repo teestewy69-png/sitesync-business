@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_IMAGE } from "@/lib/og-image";
 import { Check } from "lucide-react";
 import content from "@/content.json";
 import Pricing from "@/components/Pricing";
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Website build services | Sitesinc",
     description: "Everything in the $1,995 Sitesinc website build: custom Next.js design, on-page SEO, lead capture, hosting setup and domain connection. 50% to start.",
-    url: "/services",
+    url: "/services", images: [OG_IMAGE],
   },
 };
 

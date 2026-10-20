@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_IMAGE } from "@/lib/og-image";
 import content from "@/content.json";
 import Process from "@/components/Process";
 import SitePage from "@/components/SitePage";
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "About | Sitesinc",
     description: "Sitesinc builds real working websites for small and local businesses: custom design, SEO, lead capture and hosting, with full code you own. $1,995 flat.",
-    url: "/about",
+    url: "/about", images: [OG_IMAGE],
   },
 };
 
