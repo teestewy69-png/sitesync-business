@@ -3,6 +3,7 @@ import { posts } from "@/data/posts";
 import type { Metadata } from "next";
 import { OG_IMAGE } from "@/lib/og-image";
 import SitePage from "@/components/SitePage";
+import OrgJsonLd from "@/components/OrgJsonLd";
 
 export const metadata: Metadata = {
   title: "Sitesinc Blog | Small Business Website Guides",
@@ -16,6 +17,7 @@ export default function BlogIndex() {
 
   return (
     <SitePage>
+      <OrgJsonLd />
       <section className="mx-auto max-w-4xl px-6 py-16">
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
           Sitesinc Blog

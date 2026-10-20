@@ -142,6 +142,30 @@ export const CLIENT_TEMPLATES: ClientTemplate[] = [
   },
 ];
 
+/** Niches where an "Emergency / urgent" page is a real search intent. */
+export const EMERGENCY_NICHE_RE =
+  /plumb|hvac|heating|air condition|\bac\b|electric|roof|locksmith|towing|tow truck|water damage|restoration|flood|pest|garage door|glass|auto repair|mechanic|dentist|dental|vet|veterinar|tree service|sewer|drain|septic|bail|emergency|urgent|24\/7/i;
+
+export function isEmergencyNiche(niche?: string): boolean {
+  return EMERGENCY_NICHE_RE.test(niche || "");
+}
+
+const ABOUT_PAGE: ClientTemplatePageDef = {
+  slug: "about",
+  path: "/about",
+  title: "About",
+  purpose: "Who runs the business, how you work, and why to trust you.",
+  keywordPattern: "about {businessName}",
+};
+
+/** Template pages for a niche: drops "Emergency / urgent" for non-emergency niches (replaced by About). */
+export function templatePagesFor(templateId: string | undefined, niche?: string): ClientTemplatePageDef[] {
+  const template = getClientTemplate(templateId);
+  if (isEmergencyNiche(niche)) return template.pages;
+  const hasAbout = template.pages.some((p) => p.slug === "about");
+  return template.pages.flatMap((p) => (p.slug === "emergency" ? (hasAbout ? [] : [ABOUT_PAGE]) : [p]));
+}
+
 export function getClientTemplate(id: string | undefined): ClientTemplate {
   return CLIENT_TEMPLATES.find((t) => t.id === id) || CLIENT_TEMPLATES[2];
 }
@@ -188,7 +212,7 @@ export function seedPagesForTemplate(
     city: ctx.city,
     state: ctx.state,
   };
-  return template.pages.map((page) => {
+  return templatePagesFor(templateId, ctx.niche).map((page) => {
     const keyword = fill(page.keywordPattern, vars).replace(/\s+/g, " ").trim();
     const title =
       page.slug === "home"

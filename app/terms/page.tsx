@@ -2,17 +2,19 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { OG_IMAGE } from "@/lib/og-image";
 import SitePage from "@/components/SitePage";
+import OrgJsonLd from "@/components/OrgJsonLd";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | Sitesinc",
+  title: "Terms of Service | Sitesinc Website Builds",
   description: "The terms for Sitesinc website builds: $1,995 flat, 50% to start and 50% at launch, revisions, ownership, and monitored SEO at $129/mo after month one.",
   alternates: { canonical: "/terms" },
-  openGraph: { title: "Terms of Service | Sitesinc", description: "The terms for Sitesinc website builds: $1,995 flat, 50% to start and 50% at launch, revisions, ownership, and monitored SEO at $129/mo after month one.", url: "/terms", images: [OG_IMAGE] },
+  openGraph: { title: "Terms of Service | Sitesinc Website Builds", description: "The terms for Sitesinc website builds: $1,995 flat, 50% to start and 50% at launch, revisions, ownership, and monitored SEO at $129/mo after month one.", url: "/terms", images: [OG_IMAGE] },
 };
 
 export default function TermsPage() {
   return (
     <SitePage>
+      <OrgJsonLd />
       <div className="mx-auto max-w-4xl px-6 py-16">
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
           Terms of Service

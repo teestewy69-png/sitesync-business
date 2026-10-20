@@ -187,27 +187,13 @@ export function draftFromClientBrief(
         pricingLine,
         supplied,
       })
-    : [
-        [
-          headings[0],
-          [`${config.businessName} focuses on ${lowerFirst(offer)}. Goal for this site: ${lowerFirst(config.primaryGoal)}.`],
-        ],
-        [
-          headings[1] || "Who this is for",
-          [locationLine || "[Client to describe who uses this and why, in their own words.]"],
-        ],
-        [headings[2] || "How to get started", [contactLine, pricingLine]],
-      ];
+    : fullClientSections(brief.slug, headings, { config, offer, niche, loc, contactLine, pricingLine, locationLine });
 
   const body = [
     intro,
     "This page is a factory draft seeded from intake. Replace bracketed notes with the client's real facts, photos and wording before approval.",
     "",
     ...sections.flatMap(([heading, lines]) => [`## ${heading}`, "", ...lines.filter(Boolean), ""]),
-    "## What this draft is not",
-    "",
-    "Not published anywhere. Prices, ratings and other claims appear only if the client provides them. Competitor analysis belongs on the brief's competitorUrls field (analyze top 3). Rankings are not guaranteed.",
-    "",
     brief.competitorUrls.length
       ? `Competitor URLs on brief: ${brief.competitorUrls.join(", ")}`
       : "Competitor URLs: none attached yet - fill competitorUrls on the brief before treating research as done.",
@@ -227,6 +213,74 @@ export function draftFromClientBrief(
     headings,
     body,
   };
+}
+
+type SectionCtx = { config: ClientBuildConfig; offer: string; niche: string; loc: string; contactLine: string; pricingLine: string; locationLine: string };
+
+/**
+ * Full-page client draft sections (target 900-1500 words for content pages) built only from intake facts.
+ * Unknown facts stay as [bracketed] operator notes; never invents prices, reviews, phones or addresses.
+ */
+export function fullClientSections(slug: string, headings: string[], c: SectionCtx): [string, string[]][] {
+  const { config, offer, niche, loc, contactLine, pricingLine, locationLine } = c;
+  const name = config.businessName;
+  const where = loc ? ` in ${loc}` : "";
+  const goal = lowerFirst(config.primaryGoal || "get more calls and leads");
+  const price = pricingLine || "[Pricing: client to confirm what to publish (exact price, from-price, or 'quote on request').]";
+  const process: [string, string[]] = ["How it works", [
+    `1. Get in touch. ${contactLine}`,
+    `2. Talk it through. ${name} asks what you need, what you have now, and what a good result looks like for you, then explains the options in plain language.`,
+    `3. Clear scope and price. Before any work starts you get the scope in writing${pricingLine ? " and the price shown on this page" : ""}, so there are no surprises later.`,
+    `4. The work gets done. ${name} handles the ${niche} work and keeps you updated at each step, with a clear point of contact.`,
+    `5. Follow-up. After the job, ${name} checks that everything works the way you expected and answers any questions.`,
+  ]];
+  const faq: [string, string[]] = ["Frequently asked questions", [
+    `**What does ${name} do?** ${name} provides ${lowerFirst(offer)}${where}. The focus is doing the core work well rather than upselling extras you do not need.`,
+    `**How much does it cost?** ${pricingLine || "[Client to confirm the pricing answer before review.]"}`,
+    `**Where do you work?** ${locationLine || "[Client to list the cities / service area.]"}`,
+    `**How do I get started?** ${contactLine}`,
+    `**How long does it take?** [Client to give a typical timeline; do not publish a promise the client has not confirmed.]`,
+    `**What do I need to have ready?** A short description of what you need, any examples you like, and the best way to reach you. ${name} will ask for anything else.`,
+  ]];
+  const why: [string, string[]] = [`Why people choose ${name}`, [
+    `People looking for ${niche}${where} usually want three things: a straight answer on price, someone who shows up and communicates, and work that holds up. ${name} is built around those three.`,
+    `Every claim on this page comes from ${name}'s own intake details. Reviews, awards, licenses and photos are added only when the client provides real ones. [Client: add real reviews / photos / credentials here.]`,
+    `The goal of this site is simple: ${goal}. Each page points to one next step so visitors are never left guessing what to do.`,
+  ]];
+  const cta: [string, string[]] = [headings[2] || "Ready to get started?", [
+    `${name} makes it easy to take the next step. ${contactLine}`,
+    price,
+  ]];
+  const area: [string, string[]] = [loc ? `Serving ${loc}` : "Service area", [
+    locationLine || "[Client to list the service area.]",
+    `Local search works best when the page says plainly where the business works. ${name} lists only areas it actually serves; extra city pages are created only through City Launch with unique local copy.`,
+  ]];
+  if (slug === "contact") {
+    return [
+      [headings[0] || `Contact ${name}`, [contactLine, `${name} replies as quickly as possible during business hours. [Client to confirm hours.]`]],
+      area,
+      ["What to include in your message", ["A short description of what you need, your timeline, and the best way to reach you. The more detail you give, the more accurate the first answer will be."]],
+      faq,
+    ];
+  }
+  if (slug === "about") {
+    return [
+      [headings[0] || `About ${name}`, [`${name} provides ${lowerFirst(offer)}${where}. [Client to add the owner's story: who runs it, how long, and why.]`, `The way ${name} works is straightforward: clear pricing, plain-language communication, and doing the job right the first time.`]],
+      why, process, area, cta,
+    ];
+  }
+  if (slug === "services") {
+    return [
+      [headings[0] || `What ${name} offers`, [`${name} offers ${lowerFirst(offer)}${where}.`, `[Client to list each service with one or two sentences on what is included.]`, price]],
+      ["What is included", [`Every ${niche} job from ${name} includes a clear written scope, a single point of contact, and a check at the end to make sure the result matches what was agreed. [Client to confirm inclusions.]`]],
+      process, why, area, faq, cta,
+    ];
+  }
+  return [
+    [headings[0] || `What ${name} offers`, [`${name} focuses on ${lowerFirst(offer)}${where}. Goal for this site: ${goal}.`, price]],
+    [headings[1] || "Who this is for", [locationLine || "[Client to describe who uses this and why, in their own words.]", `It is for people${where} who want ${niche} done properly, explained clearly, and priced upfront.`]],
+    why, process, area, faq, cta,
+  ];
 }
 
 export function wordCount(body: string): number {

@@ -15,10 +15,12 @@ export type CompetitorPage = {
 export type CompetitorAnalysis = {
   keyword: string; provider: "serper" | "brave" | "manual" | "none";
   status: "ok" | "no_provider" | "search_failed";
-  competitors: CompetitorPage[]; weaknesses: string[]; gaps: string[]; analyzedAt: string; detail?: string;
+  competitors: CompetitorPage[]; weaknesses: string[]; gaps: string[]; analyzedAt: string; detail?: string; mode?: string;
 };
 
 const SKIP_HOSTS = /(^|\.)(youtube\.com|facebook\.com|instagram\.com|tiktok\.com|pinterest\.com|reddit\.com|quora\.com|x\.com|twitter\.com|linkedin\.com|amazon\.com|flipradar\.co)$/i;
+/** Directories / review aggregators / marketplaces: not real competitor pages (often 403). Skipped; next result is taken. */
+export const DIRECTORY_HOSTS = /(^|\.)(yelp\.com|angi\.com|angieslist\.com|homeadvisor\.com|thumbtack\.com|bbb\.org|yellowpages\.com|superpages\.com|manta\.com|mapquest\.com|nextdoor\.com|porch\.com|houzz\.com|bark\.com|upwork\.com|fiverr\.com|clutch\.co|designrush\.com|expertise\.com|upcity\.com|goodfirms\.co|sortlist\.com|themanifest\.com|g2\.com|capterra\.com|trustpilot\.com|tripadvisor\.com|chamberofcommerce\.com|birdeye\.com|google\.com|maps\.apple\.com|zillow\.com|realtor\.com|redfin\.com)$/i;
 
 export function searchProvider(env: Env): { id: "serper" | "brave"; key: string } | null {
   if ((env.SERPER_API_KEY || "").trim()) return { id: "serper", key: env.SERPER_API_KEY!.trim() };
@@ -30,7 +32,7 @@ export function pickTopUrls(urls: string[], n = 3): string[] {
   const out: string[] = []; const hosts = new Set<string>();
   for (const u of urls) {
     let h = ""; try { h = new URL(u).hostname.replace(/^www\./, ""); } catch { continue; }
-    if (SKIP_HOSTS.test(h) || hosts.has(h)) continue;
+    if (SKIP_HOSTS.test(h) || DIRECTORY_HOSTS.test(h) || hosts.has(h)) continue;
     hosts.add(h); out.push(u); if (out.length >= n) break;
   }
   return out;
@@ -65,21 +67,57 @@ export function parseCompetitorHtml(url: string, html: string): CompetitorPage {
   return { url, title, words, headings, questions, years, hasCta, hasCalculator, fetched: true };
 }
 
-/** Topics a strong page in this niche should cover; anything all three competitors miss is a gap. */
-const TOPICS: [string, RegExp][] = [
+type Topic = [string, RegExp];
+const COMMON_TOPICS: Topic[] = [
   ["worked example with numbers", /example|e\.g\./i],
   ["FAQ section", /faq|frequently asked/i],
+  ["risks and common mistakes", /mistake|risk|pitfall/i],
+];
+/** Flip / real-estate investing topics: only for flip mode or real-estate niches. */
+export const FLIP_TOPICS: Topic[] = [
   ["repair / rehab cost estimating", /rehab|repair cost|renovation budget/i],
   ["holding and closing costs", /holding cost|closing cost/i],
   ["financing (hard money / private money)", /hard money|private money|lender/i],
   ["ARV and comps", /\barv\b|after repair value|comps|comparable/i],
   ["the 70% rule", /70%|70 percent/i],
   ["permits and local rules", /permit|zoning|code/i],
-  ["risks and common mistakes", /mistake|risk|pitfall/i],
   ["taxes on flip profits", /capital gains|tax/i],
 ];
+export const WEB_DESIGN_TOPICS: Topic[] = [
+  ["clear upfront pricing", /\$\s?\d|price|pricing|cost/i],
+  ["ownership (you own the site, no lock-in)", /own (your|the)|ownership|no (lock|contract)|lock-in/i],
+  ["timeline / how long it takes", /how long|timeline|weeks|days to/i],
+  ["process steps", /process|how (it|we) work|step/i],
+  ["local SEO / Google Business Profile", /local seo|google business|map pack|gbp/i],
+  ["mobile speed / Core Web Vitals", /speed|core web vitals|page ?speed|mobile/i],
+  ["hosting, maintenance and monthly fees", /hosting|maintenance|monthly|per month|\/mo/i],
+  ["portfolio / real examples", /portfolio|our work|case stud|examples/i],
+  ["reviews / testimonials", /review|testimonial/i],
+  ["service area cities", /serving|service area|cities|nearby/i],
+];
+export const LOCAL_SERVICE_TOPICS: Topic[] = [
+  ["pricing / estimates", /\$\s?\d|price|pricing|cost|estimate|quote/i],
+  ["service area cities", /serving|service area|cities|nearby/i],
+  ["licensing / insurance / guarantees", /licen|insur|guarantee|warranty/i],
+  ["process / what to expect", /process|what to expect|how (it|we) work|step/i],
+  ["reviews / testimonials", /review|testimonial/i],
+  ["hours / response time", /hours|same.day|24\/7|response time/i],
+];
 
-export function findWeaknesses(pages: CompetitorPage[], nowYear = new Date().getFullYear()): { weaknesses: string[]; gaps: string[] } {
+export function isFlipNiche(mode?: string, niche?: string): boolean {
+  return mode === "flip" || /flip|real estate invest|house hack|wholesal|\barv\b|rehab/i.test(niche || "");
+}
+
+/** Niche-aware topic list. Flip topics only for flip mode / real-estate niches. */
+export function topicsFor(opts: { mode?: string; niche?: string } = {}): Topic[] {
+  const n = opts.niche || "";
+  if (isFlipNiche(opts.mode, n)) return [...COMMON_TOPICS, ...FLIP_TOPICS];
+  if (/web ?(site|design|develop)|seo|digital marketing|website/i.test(n)) return [...COMMON_TOPICS, ...WEB_DESIGN_TOPICS];
+  if (n.trim()) return [...COMMON_TOPICS, ...LOCAL_SERVICE_TOPICS];
+  return COMMON_TOPICS;
+}
+
+export function findWeaknesses(pages: CompetitorPage[], nowYear = new Date().getFullYear(), topicOpts: { mode?: string; niche?: string } = { mode: "flip" }): { weaknesses: string[]; gaps: string[] } {
   const weaknesses: string[] = [];
   for (const p of pages) {
     const host = (() => { try { return new URL(p.url).hostname.replace(/^www\./, ""); } catch { return p.url; } })();
@@ -93,13 +131,13 @@ export function findWeaknesses(pages: CompetitorPage[], nowYear = new Date().get
   }
   const fetched = pages.filter((p) => p.fetched);
   const blob = fetched.map((p) => `${p.title} ${p.headings.join(" ")} ${p.questions.join(" ")}`);
-  const gaps = fetched.length ? TOPICS.filter(([, re]) => blob.filter((b) => re.test(b)).length <= 1).map(([t]) => t) : [];
+  const gaps = fetched.length ? topicsFor(topicOpts).filter(([, re]) => blob.filter((b) => re.test(b)).length <= 1).map(([t]) => t) : [];
   return { weaknesses, gaps };
 }
 
-export async function analyzeCompetitors(keyword: string, opts: { env?: Env; fetchImpl?: FetchLike; manualUrls?: string[]; nowYear?: number } = {}): Promise<CompetitorAnalysis> {
+export async function analyzeCompetitors(keyword: string, opts: { env?: Env; fetchImpl?: FetchLike; manualUrls?: string[]; nowYear?: number; mode?: string; niche?: string } = {}): Promise<CompetitorAnalysis> {
   const env = opts.env || process.env; const f = (opts.fetchImpl || (fetch as unknown as FetchLike));
-  const base = { keyword, analyzedAt: new Date().toISOString() };
+  const base = { keyword, analyzedAt: new Date().toISOString(), ...(opts.niche && !isFlipNiche(opts.mode, opts.niche) ? { mode: opts.mode || "client" } : {}) };
   let urls = pickTopUrls(opts.manualUrls || []); let provider: CompetitorAnalysis["provider"] = urls.length ? "manual" : "none";
   if (!urls.length) {
     const p = searchProvider(env);
@@ -117,7 +155,7 @@ export async function analyzeCompetitors(keyword: string, opts: { env?: Env; fet
       competitors.push({ url, title: "", words: 0, headings: [], questions: [], years: [], hasCta: false, hasCalculator: false, fetched: false, error: String((e as Error).message) });
     }
   }
-  return { ...base, provider, status: urls.length ? "ok" : "search_failed", competitors, ...findWeaknesses(competitors, opts.nowYear) };
+  return { ...base, provider, status: urls.length ? "ok" : "search_failed", competitors, ...findWeaknesses(competitors, opts.nowYear, { mode: opts.mode ?? (opts.niche ? undefined : "flip"), niche: opts.niche }) };
 }
 
 /** Prompt block handed to the writer so the page beats the top 3. Empty when no analysis is available. */
@@ -129,6 +167,6 @@ export function competitorPromptBlock(a?: CompetitorAnalysis | null): string {
   if (a.gaps.length) lines.push("Topics they cover poorly or not at all (cover these well):", ...a.gaps.map((g) => `- ${g}`));
   const qs = [...new Set(a.competitors.flatMap((c) => c.questions))].slice(0, 12);
   if (qs.length) lines.push("Reader questions seen on competitor pages (answer them better in your FAQ):", ...qs.map((q) => `- ${q}`));
-  lines.push("Do not copy competitor wording or name competitors. Use current information only; include a clear call to action to the site's free calculators.");
+  lines.push("Do not copy competitor wording or name competitors. Use current information only; include a clear call to action" + (a.mode === "flip" || !a.mode ? " to the site's free calculators." : "."));
   return lines.join("\n");
 }

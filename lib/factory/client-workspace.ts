@@ -1,4 +1,5 @@
-﻿import {
+﻿import { checkBusinessFacts, checkPageLength } from "./client-checks";
+import {
   StoreError,
   isStoreConflict,
   readDoc,
@@ -130,6 +131,8 @@ export function autoSeedClientDraftPages(
       headings: draft.headings,
       body,
       wordCount: clientWordCount(body),
+      lengthCheck: checkPageLength(page.slug, draft.body),
+      factCheck: checkBusinessFacts(draft.body, config, page.slug),
       status: "ready_for_review" as const,
       briefId: brief.id,
       noindex: true,

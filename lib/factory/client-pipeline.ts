@@ -8,7 +8,7 @@ import type {
 } from "./types";
 import { STAGE_DEFS, emptyStage } from "./pipeline";
 import type { ClientBuildConfig } from "./client-config";
-import { getClientTemplate } from "./client-templates";
+import { getClientTemplate, templatePagesFor } from "./client-templates";
 
 function place(parts: string[]): string {
   return parts.filter(Boolean).join(", ");
@@ -104,8 +104,7 @@ export function seedClientClusters(config: ClientBuildConfig): TopicCluster[] {
 }
 
 export function seedClientBlueprint(config: ClientBuildConfig): BlueprintPage[] {
-  const template = getClientTemplate(config.templateId);
-  return template.pages.map((page) => ({
+  return templatePagesFor(config.templateId, config.niche).map((page) => ({
     slug: page.slug,
     path: page.path,
     title:

@@ -1,17 +1,19 @@
 import type { Metadata } from "next";
 import { OG_IMAGE } from "@/lib/og-image";
 import SitePage from "@/components/SitePage";
+import OrgJsonLd from "@/components/OrgJsonLd";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | Sitesinc",
+  title: "Privacy Policy | Sitesinc Small Business Websites",
   description: "How Sitesinc collects, uses, stores and protects the information you share through our website, request forms and emails, and how to contact us about it.",
   alternates: { canonical: "/privacy" },
-  openGraph: { title: "Privacy Policy | Sitesinc", description: "How Sitesinc collects, uses, stores and protects the information you share through our website, request forms and emails, and how to contact us about it.", url: "/privacy", images: [OG_IMAGE] },
+  openGraph: { title: "Privacy Policy | Sitesinc Small Business Websites", description: "How Sitesinc collects, uses, stores and protects the information you share through our website, request forms and emails, and how to contact us about it.", url: "/privacy", images: [OG_IMAGE] },
 };
 
 export default function PrivacyPage() {
   return (
     <SitePage>
+      <OrgJsonLd />
       <div className="mx-auto max-w-4xl px-6 py-16">
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
           Privacy Policy

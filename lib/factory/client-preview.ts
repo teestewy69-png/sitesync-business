@@ -13,7 +13,7 @@ import {
   previewWorks,
   type PreviewWork,
 } from "./client-content";
-import { getClientTemplate, plannedPagePurpose } from "./client-templates";
+import { getClientTemplate, templatePagesFor, plannedPagePurpose } from "./client-templates";
 import type { ClientContent, FactoryPage } from "./types";
 
 export type ClientPreviewSection = {
@@ -114,7 +114,7 @@ export function buildClientPreviewModel(rawConfig: ClientBuildConfig, supplied?:
       ? { label: `Call ${config.phone}`, href: `tel:${config.phone.replace(/[^\d+]/g, "")}` }
       : null;
 
-  const sections: ClientPreviewSection[] = template.pages
+  const sections: ClientPreviewSection[] = templatePagesFor(template.id, config.niche)
     .filter((page) => page.slug !== "home")
     .map((page) => {
       const copy = copyFor(page.slug);

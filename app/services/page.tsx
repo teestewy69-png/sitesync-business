@@ -4,6 +4,7 @@ import { Check } from "lucide-react";
 import content from "@/content.json";
 import Pricing from "@/components/Pricing";
 import SitePage from "@/components/SitePage";
+import OrgJsonLd from "@/components/OrgJsonLd";
 
 export const metadata: Metadata = {
   title: "Website build services | Sitesinc",
@@ -21,6 +22,7 @@ export default function ServicesPage() {
 
   return (
     <SitePage>
+      <OrgJsonLd />
       <section className="mx-auto max-w-4xl px-6 py-16">
         <p className="text-xs font-semibold uppercase tracking-wider text-brand-300">Services</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">{included.title}</h1>

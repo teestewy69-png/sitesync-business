@@ -200,6 +200,8 @@ export type FactoryPage = {
   wordCount: number;
   /** General factory feature: target length window check (max 1,500 words). */
   lengthCheck?: import("./content-length").ContentLengthCheck;
+  /** Client drafts: business facts (price, phone, address) checked against project config. */
+  factCheck?: import("./client-checks").FactCheck;
   headings: string[];
   body: string;
   noindex: boolean;
