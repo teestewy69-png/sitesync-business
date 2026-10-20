@@ -1,3 +1,4 @@
+import OrgJsonLd from "@/components/OrgJsonLd";
 import type { Metadata } from "next";
 import { notFound, unstable_rethrow } from "next/navigation";
 import SitePage from "@/components/SitePage";
@@ -76,7 +77,7 @@ export function FactoryArticle({ page, staged = false }: { page: FactoryPage; st
         Sitesinc factory
       </p>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-        {page.title}
+        {page.title.replace(/\s*\|\s*Sitesinc$/, "")}
       </h1>
       {page.metaDescription ? (
         <p className="mt-3 text-base text-slate-300">{page.metaDescription}</p>
@@ -118,6 +119,7 @@ export async function PublishedOrNotFound({ slug }: { slug: string }) {
   if (!page) notFound();
   return (
     <SitePage>
+      <OrgJsonLd />
       <FactoryArticle page={page} staged={preview || page.noindex} />
     </SitePage>
   );
