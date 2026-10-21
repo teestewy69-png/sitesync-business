@@ -202,7 +202,7 @@ test("catalog: no fake bundles, retired bundle hidden, drafts unlisted, old shop
     assert.ok(!slugs.includes(gone), gone);
     assert.equal(catalog.getCatalogEntry(gone), undefined, gone);
   }
-  assert.deepEqual(slugs, [], "nothing in the paused SiteFlow catalog is public");
+  assert.deepEqual(slugs, ["website-monitoring"], "only priced monitoring is public");
   for (const p of catalog.getPublicProducts()) assert.ok(p.contactOnly || p.price, `${p.slug} listed without a price`);
 });
 

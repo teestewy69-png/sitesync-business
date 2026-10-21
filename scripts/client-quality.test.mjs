@@ -90,3 +90,15 @@ test("Sitesinc hub pages (6) match the offer facts: $1,995 50/50, monitoring 1st
     assert.doesNotMatch(text, /1,548|721-5236/);
   }
 });
+
+test("store: only priced monitoring is public, 1st month free trial; DomainIQ and unpriced items hidden", async () => {
+  const P = await import("../data/products.ts");
+  const pub = P.getPublicProducts().map((p) => p.slug);
+  assert.deepEqual(pub, ["website-monitoring"]);
+  assert.equal(P.getProduct("domainiq-domain-report"), undefined);
+  assert.equal(P.getProduct("website-monitoring").price, "1st month free, then $129.00/mo");
+  const S = await import("../lib/stripe-checkout.ts");
+  const params = S.buildCheckoutParams({ origin: "https://sitesinc.co", order: { id: "o1", email: "a@b.co", mode: "subscription", items: [{ slug: "website-monitoring", name: "Website monitoring", quantity: 1, unitAmount: 129, unitAmountCents: 12900, lineTotal: 129, kind: "subscription", interval: "month", trialDays: 30 }] } });
+  assert.equal(params.subscription_data.trial_period_days, 30);
+  assert.equal(params.line_items[0].price_data.unit_amount, 12900);
+});

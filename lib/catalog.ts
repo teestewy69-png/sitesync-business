@@ -116,6 +116,7 @@ export function quoteCart(lines: CartLineInput[]): QuotedCart {
       lineTotal: Number(((unitAmountCents * quantity) / 100).toFixed(2)),
       kind: product.kind,
       ...(product.kind === "subscription" ? { interval: product.interval || "month" } : {}),
+      ...(product.kind === "subscription" && product.trialDays ? { trialDays: product.trialDays } : {}),
       ...(product.stripeLookupKey ? { stripeLookupKey: product.stripeLookupKey } : {}),
     });
   }

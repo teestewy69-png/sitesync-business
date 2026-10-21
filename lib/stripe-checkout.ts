@@ -70,7 +70,8 @@ export function buildCheckoutParams(opts: {
     params.shipping_address_collection = { allowed_countries: ["US"] };
   }
   if (mode === "subscription") {
-    params.subscription_data = { metadata };
+    const trial = Math.max(0, ...order.items.map((i) => (i.kind === "subscription" ? i.trialDays || 0 : 0)));
+    params.subscription_data = trial > 0 ? { metadata, trial_period_days: trial } : { metadata };
   } else {
     params.payment_intent_data = { metadata };
     params.customer_creation = "always";

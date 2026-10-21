@@ -144,6 +144,8 @@ export type OrderItem = {
   unitAmountCents?: number;
   kind?: "digital" | "subscription" | "service" | "affiliate_out";
   interval?: "month" | "year";
+  /** Subscriptions: free trial days before the first charge. */
+  trialDays?: number;
   stripeLookupKey?: string;
 };
 

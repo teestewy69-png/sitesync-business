@@ -54,6 +54,8 @@ export type CatalogEntry = {
   priceCents?: number;
   /** Subscriptions only. */
   interval?: "month" | "year";
+  /** Subscriptions only: free trial days before the first charge ("1st month free"). */
+  trialDays?: number;
   /** Stripe price lookup key (stable; the sync script and checkout use it). */
   stripeLookupKey?: string;
   deliverable?: Deliverable;
@@ -94,10 +96,11 @@ export const catalog: CatalogEntry[] = [
     name: "Website monitoring",
     category: "Subscriptions",
     kind: "subscription",
-    listed: false,
-    // $129/month is already the public monitoring price (content.json).
+    // Public: the only priced product. Matches the public offer: 1st month free, then $129/mo.
+    listed: true,
     priceCents: 12900,
     interval: "month",
+    trialDays: 30,
     stripeLookupKey: "sitesinc_monitoring_monthly",
     deliverable: {
       type: "manual",
@@ -107,7 +110,7 @@ export const catalog: CatalogEntry[] = [
       { key: "siteUrl", label: "Website to monitor", placeholder: "https://example.com", required: true, kind: "url", maxLength: 200 },
     ],
     description:
-      "Optional monitoring: uptime checks, basic technical updates, and two to three small text or image changes a month. Cancel anytime.",
+      "Optional monitored SEO: 1st month free, then $129/mo. Uptime checks, basic technical updates, and two to three small text or image changes a month. Cancel anytime.",
     image: "/logo.png",
   },
   {
@@ -168,7 +171,10 @@ export function formatCents(cents: number): string {
 export function displayPrice(entry: CatalogEntry): string | undefined {
   if (typeof entry.priceCents !== "number") return undefined;
   const base = formatCents(entry.priceCents);
-  if (entry.kind === "subscription") return `${base}/${entry.interval === "year" ? "yr" : "mo"}`;
+  if (entry.kind === "subscription") {
+    const per = `${base}/${entry.interval === "year" ? "yr" : "mo"}`;
+    return entry.trialDays === 30 && entry.interval !== "year" ? `1st month free, then ${per}` : entry.trialDays ? `${entry.trialDays} days free, then ${per}` : per;
+  }
   return base;
 }
 

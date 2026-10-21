@@ -143,8 +143,8 @@ test("shop removed: pages, components, inquiry form, /api/products, /api/inquiry
   assert.doesNotMatch(blob, /jewel|gold|financial|affiliate sources/i);
   for (const slug of SHOP_ITEMS) assert.equal(products.getCatalogEntry(slug), undefined, slug);
   // Paused SiteFlow catalog: nothing public, nothing purchasable, checkout refuses while paused.
-  assert.deepEqual(products.getPublicProducts(), []);
-  for (const p of products.products) assert.equal(products.isPurchasable(p), false, p.slug);
+  assert.deepEqual(products.getPublicProducts().map((p) => p.slug), ["website-monitoring"]); // only priced item (store live 2026-10-20)
+  for (const p of products.products) assert.equal(products.isPurchasable(p), p.slug === "website-monitoring", p.slug);
   withEnv(undefined, () => assert.throws(() => quoteCart([{ slug: "website-monitoring", quantity: 1 }]), /not available/));
 });
 
