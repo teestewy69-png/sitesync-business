@@ -56,6 +56,8 @@ export type CatalogEntry = {
   interval?: "month" | "year";
   /** Subscriptions only: free trial days before the first charge ("1st month free"). */
   trialDays?: number;
+  /** Billing disclosure shown on the cart, checkout and Stripe Checkout page. */
+  disclosure?: string;
   /** Stripe price lookup key (stable; the sync script and checkout use it). */
   stripeLookupKey?: string;
   deliverable?: Deliverable;
@@ -72,6 +74,9 @@ export type CatalogEntry = {
 
 /** Derived shape used by the paused cart/checkout UI. `price` is display text derived from `priceCents`. */
 export type Product = CatalogEntry & { price?: string };
+
+export const MONITORING_DISCLOSURE =
+  "1st month free. Your card is charged $129/mo starting on day 31 unless you cancel before then.";
 
 export const catalog: CatalogEntry[] = [
   // --- Planned SiteFlow products (phase 2, paused): unlisted drafts, never public while paused -----
@@ -101,6 +106,7 @@ export const catalog: CatalogEntry[] = [
     priceCents: 12900,
     interval: "month",
     trialDays: 30,
+    disclosure: MONITORING_DISCLOSURE,
     stripeLookupKey: "sitesinc_monitoring_monthly",
     deliverable: {
       type: "manual",
@@ -227,6 +233,17 @@ export function getProduct(slug: string): Product | undefined {
 /** Internal lookup (orders, fulfillment, the factory bay): includes unlisted entries. */
 export function getCatalogEntry(slug: string): Product | undefined {
   return products.find((p) => p.slug === slug);
+}
+
+/** Recurring/one-off unit price in dollars (from priceCents, never from display text). */
+export function unitPrice(product: CatalogEntry): number {
+  return typeof product.priceCents === "number" ? product.priceCents / 100 : 0;
+}
+
+/** Amount charged today: 0 for subscriptions still in their free trial. */
+export function dueToday(product: CatalogEntry): number {
+  if (product.kind === "subscription" && product.trialDays) return 0;
+  return unitPrice(product);
 }
 
 /** Parse "$24.99" → 24.99. Returns 0 for contact-only / missing prices. */

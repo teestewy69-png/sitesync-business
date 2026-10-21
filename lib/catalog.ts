@@ -117,6 +117,7 @@ export function quoteCart(lines: CartLineInput[]): QuotedCart {
       kind: product.kind,
       ...(product.kind === "subscription" ? { interval: product.interval || "month" } : {}),
       ...(product.kind === "subscription" && product.trialDays ? { trialDays: product.trialDays } : {}),
+      ...(product.disclosure ? { disclosure: product.disclosure } : {}),
       ...(product.stripeLookupKey ? { stripeLookupKey: product.stripeLookupKey } : {}),
     });
   }

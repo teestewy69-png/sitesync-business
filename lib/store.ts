@@ -146,6 +146,8 @@ export type OrderItem = {
   interval?: "month" | "year";
   /** Subscriptions: free trial days before the first charge. */
   trialDays?: number;
+  /** Billing disclosure (shown on Stripe Checkout via custom_text). */
+  disclosure?: string;
   stripeLookupKey?: string;
 };
 

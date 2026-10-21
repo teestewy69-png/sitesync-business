@@ -230,8 +230,13 @@ export default function CheckoutPage() {
                 <span>{product.price}</span>
               </div>
             ))}
+            {items.filter(({ product }) => product.disclosure).map(({ line, product }) => (
+              <p key={`d-${line.slug}`} className="text-xs text-amber-200" data-disclosure="billing">
+                {product.disclosure}
+              </p>
+            ))}
             <div className="flex justify-between border-t border-white/10 pt-3 font-semibold text-slate-50">
-              <span>Total</span>
+              <span>Due today</span>
               <span>{formatMoney(subtotal)}</span>
             </div>
           </div>

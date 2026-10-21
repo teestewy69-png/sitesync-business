@@ -9,7 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { getProduct, parsePrice, type Product } from "@/data/products";
+import { dueToday, getProduct, type Product } from "@/data/products";
 
 export type CartLine = {
   slug: string;
@@ -112,7 +112,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     () =>
       lines.reduce((sum, l) => {
         const product = getProduct(l.slug);
-        return sum + (product ? parsePrice(product.price) * l.quantity : 0);
+        return sum + (product ? dueToday(product) * l.quantity : 0);
       }, 0),
     [lines]
   );

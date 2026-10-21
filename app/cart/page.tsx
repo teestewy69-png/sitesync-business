@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useCart } from "@/components/siteflow/CartProvider";
 import ProductImage from "@/components/siteflow/ProductImage";
-import { formatMoney, parsePrice } from "@/data/products";
+import { dueToday, formatMoney } from "@/data/products";
 
 export default function CartPage() {
   const { lines, subtotal, setQuantity, removeItem, getLineProduct } = useCart();
@@ -70,9 +70,14 @@ export default function CartPage() {
                     <p className="mt-1 text-sm text-slate-400">
                       {product.price}
                     </p>
+                    {product.disclosure ? (
+                      <p className="mt-1 text-xs text-amber-200" data-disclosure="billing">
+                        {product.disclosure}
+                      </p>
+                    ) : null}
                   </div>
                   <p className="text-lg font-semibold text-slate-50">
-                    {formatMoney(parsePrice(product.price) * line.quantity)}
+                    {formatMoney(dueToday(product) * line.quantity)}
                   </p>
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -116,7 +121,7 @@ export default function CartPage() {
               <span>$0.00</span>
             </div>
             <div className="flex justify-between border-t border-white/10 pt-3 font-semibold text-slate-50">
-              <span>Total</span>
+              <span>Due today</span>
               <span>{formatMoney(subtotal)}</span>
             </div>
           </div>

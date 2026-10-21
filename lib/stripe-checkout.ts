@@ -65,6 +65,8 @@ export function buildCheckoutParams(opts: {
     metadata,
     line_items: lineItems,
   };
+  const disclosures = [...new Set(order.items.map((i) => i.disclosure).filter(Boolean))] as string[];
+  if (disclosures.length) params.custom_text = { submit: { message: disclosures.join(" ").slice(0, 1200) } };
   // Postal address only for physical goods. Digital/service carts never ask for one.
   if (order.requiresShipping) {
     params.shipping_address_collection = { allowed_countries: ["US"] };
