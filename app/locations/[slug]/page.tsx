@@ -5,7 +5,7 @@ import content from "@/content.json";
 import SitePage from "@/components/SitePage";
 import OrgJsonLd from "@/components/OrgJsonLd";
 import { OG_IMAGE } from "@/lib/og-image";
-import { getLocationCities, getLocationCity, locationUrl, relatedCities } from "@/lib/locations";
+import { getLocationCities, getLocationCity, locationRobots, locationUrl, relatedCities } from "@/lib/locations";
 
 type Params = { slug: string };
 
@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
     title,
     description,
     alternates: { canonical: url },
-    robots: { index: true, follow: true },
+    robots: locationRobots(slug),
     openGraph: { title, description, url, type: "website", images: [OG_IMAGE] },
   };
 }

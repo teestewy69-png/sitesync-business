@@ -33,6 +33,51 @@ test("home and terms meta descriptions are ~150-160 characters", async () => {
   assert.ok(match[1].length >= 145 && match[1].length <= 165, `terms description ${match[1].length}: ${match[1]}`);
 });
 
+test("20 CA city pages stay indexable; the other 480 are noindex,follow and stay out of the sitemap", async () => {
+  const { LOCATION_SLUGS } = await import("../data/location-slugs.ts");
+  const {
+    INDEXABLE_LOCATION_SLUGS,
+    getLocationCities,
+    getIndexableLocationCities,
+    isIndexableLocation,
+    locationRobots,
+  } = await import("../lib/locations.ts");
+  assert.equal(LOCATION_SLUGS.length, 500);
+  assert.equal(INDEXABLE_LOCATION_SLUGS.length, 20);
+  assert.equal(new Set(INDEXABLE_LOCATION_SLUGS).size, 20);
+  for (const slug of INDEXABLE_LOCATION_SLUGS) {
+    assert.ok(LOCATION_SLUGS.includes(slug), slug);
+    assert.equal(isIndexableLocation(slug), true, slug);
+    assert.deepEqual(locationRobots(slug), { index: true, follow: true });
+  }
+  const cities = getLocationCities();
+  assert.equal(cities.length, 500);
+  const kept = getIndexableLocationCities();
+  assert.equal(kept.length, 20);
+  assert.ok(kept.every((c) => c.state === "CA"));
+  const noindex = cities.filter((c) => !isIndexableLocation(c.slug));
+  assert.equal(noindex.length, 480);
+  for (const city of noindex) {
+    assert.deepEqual(locationRobots(city.slug), { index: false, follow: true });
+  }
+
+  process.env.SITESINC_STORE = "local";
+  const { default: sitemap } = await import("../app/sitemap.ts");
+  const urls = (await sitemap()).map((e) => e.url);
+  const locationUrls = urls.filter((u) => u.startsWith("https://sitesinc.co/locations/"));
+  assert.equal(locationUrls.length, 20);
+  assert.ok(urls.includes("https://sitesinc.co/locations"));
+  for (const slug of INDEXABLE_LOCATION_SLUGS) {
+    assert.ok(urls.includes(`https://sitesinc.co/locations/${slug}`), slug);
+  }
+  assert.ok(!urls.includes("https://sitesinc.co/locations/new-york-ny"));
+
+  const robots = readFileSync(path.join(ROOT, "app/robots.ts"), "utf8");
+  assert.doesNotMatch(robots, /\/locations/);
+  const cityPage = readFileSync(path.join(ROOT, "app/locations/[slug]/page.tsx"), "utf8");
+  assert.match(cityPage, /locationRobots\(slug\)/);
+});
+
 test("city page titles drop the $1,995 / Sitesinc tail and stay under 60 chars", async () => {
   const src = readFileSync(path.join(ROOT, "app/locations/[slug]/page.tsx"), "utf8");
   assert.doesNotMatch(src, /\|\s*\$1,995 Flat\s*\|\s*Sitesinc/);

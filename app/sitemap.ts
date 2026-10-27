@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { PUBLIC_PATHS } from "@/lib/factory/pipeline";
 import { readPublicWorkspace } from "@/lib/factory/workspace";
 import { isStagingEnv } from "@/lib/site-env";
-import { getLocationCities } from "@/lib/locations";
+import { getIndexableLocationCities } from "@/lib/locations";
 import { lastmodFor } from "@/lib/sitemap-dates";
 
 export const dynamic = "force-dynamic";
@@ -25,7 +25,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   );
   for (const extra of EXTRA_LEGAL) paths.add(extra);
   paths.add("/locations");
-  for (const city of getLocationCities()) paths.add(`/locations/${city.slug}`);
+  for (const city of getIndexableLocationCities()) paths.add(`/locations/${city.slug}`);
   const workspace = await readPublicWorkspace();
   if (workspace) {
     for (const page of workspace.pages) {
