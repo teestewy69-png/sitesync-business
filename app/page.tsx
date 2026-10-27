@@ -7,6 +7,7 @@ import About from "@/components/About";
 import ContentEngine from "@/components/ContentEngine";
 import Proof from "@/components/Proof";
 import FAQ from "@/components/FAQ";
+import HubLinks from "@/components/HubLinks";
 import EmailCapture from "@/components/EmailCapture";
 import Footer from "@/components/Footer";
 import SeoJsonLd from "@/components/SeoJsonLd";
@@ -46,6 +47,7 @@ export default function Home() {
       <DesignShowcase />
       <PickYourDesign />
       <Pricing />
+      <HubLinks />
       <Outcomes />
       <Process />
       <About />

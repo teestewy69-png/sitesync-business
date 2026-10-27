@@ -6,9 +6,9 @@ import OrgJsonLd from "@/components/OrgJsonLd";
 
 export const metadata: Metadata = {
   title: "Terms of Service | Sitesinc Website Builds",
-  description: "The terms for Sitesinc website builds: $1,995 flat, 50% to start and 50% at launch, revisions, ownership, and optional monitored SEO (1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days).",
+  description: "Terms of Service for Sitesinc website builds: $1,995 flat, 50% to start and 50% at launch, one revision round, ownership, and optional monitored SEO.",
   alternates: { canonical: "/terms" },
-  openGraph: { title: "Terms of Service | Sitesinc Website Builds", description: "The terms for Sitesinc website builds: $1,995 flat, 50% to start and 50% at launch, revisions, ownership, and optional monitored SEO (1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days).", url: "/terms", images: [OG_IMAGE] },
+  openGraph: { title: "Terms of Service | Sitesinc Website Builds", description: "Terms of Service for Sitesinc website builds: $1,995 flat, 50% to start and 50% at launch, one revision round, ownership, and optional monitored SEO.", url: "/terms", images: [OG_IMAGE] },
 };
 
 export default function TermsPage() {
@@ -301,6 +301,14 @@ export default function TermsPage() {
               <span className="font-medium text-slate-100">
                 Sitesinc
               </span>
+              <br />
+              1986 South Coast Hwy #3632
+              <br />
+              Laguna Beach, CA 92651
+              <br />
+              <a href="tel:+19093786404" className="text-brand-300 hover:underline">
+                (909) 378-6404
+              </a>
               <br />
               <a
                 href="https://sitesinc.co"

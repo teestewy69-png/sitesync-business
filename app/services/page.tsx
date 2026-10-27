@@ -5,14 +5,16 @@ import content from "@/content.json";
 import Pricing from "@/components/Pricing";
 import SitePage from "@/components/SitePage";
 import OrgJsonLd from "@/components/OrgJsonLd";
+import ServiceJsonLd from "@/components/ServiceJsonLd";
+import HubLinks from "@/components/HubLinks";
 
 export const metadata: Metadata = {
-  title: "Website build services | Sitesinc",
-  description: "Everything in the $1,995 Sitesinc website build: custom Next.js design, on-page SEO, lead capture, hosting setup and domain connection. 50% to start.",
+  title: "Affordable Website Design Services | Sitesinc",
+  description: "Everything in the $1,995 Sitesinc website build: custom Next.js design, SEO for small business, lead capture, hosting setup and domain connection. 50% to start.",
   alternates: { canonical: "/services" },
   openGraph: {
-    title: "Website build services | Sitesinc",
-    description: "Everything in the $1,995 Sitesinc website build: custom Next.js design, on-page SEO, lead capture, hosting setup and domain connection. 50% to start.",
+    title: "Affordable Website Design Services | Sitesinc",
+    description: "Everything in the $1,995 Sitesinc website build: custom Next.js design, SEO for small business, lead capture, hosting setup and domain connection. 50% to start.",
     url: "/services", images: [OG_IMAGE],
   },
 };
@@ -23,10 +25,19 @@ export default function ServicesPage() {
   return (
     <SitePage>
       <OrgJsonLd />
+      <ServiceJsonLd
+        name="Website build services"
+        description={metadata.description as string}
+        path="/services"
+      />
       <section className="mx-auto max-w-4xl px-6 py-16">
         <p className="text-xs font-semibold uppercase tracking-wider text-brand-300">Services</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">{included.title}</h1>
         <p className="mt-3 text-base text-slate-300">{pricing.subtitle}</p>
+        <p className="mt-3 text-base text-slate-300">
+          Affordable website design for contractors, plumbers, barbers, and other local shops: the same $1,995
+          flat build, with SEO for small business set up on the pages we launch.
+        </p>
         <ul className="mt-8 space-y-3">
           {included.items.map((item) => (
             <li key={item} className="flex items-start gap-3 text-base text-slate-300">
@@ -55,6 +66,7 @@ export default function ServicesPage() {
         </div>
       </section>
 
+      <HubLinks heading="Related website pages" />
       <Pricing />
     </SitePage>
   );

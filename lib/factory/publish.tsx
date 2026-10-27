@@ -1,11 +1,17 @@
 import OrgJsonLd from "@/components/OrgJsonLd";
+import ServiceJsonLd from "@/components/ServiceJsonLd";
 import type { Metadata } from "next";
 import { notFound, unstable_rethrow } from "next/navigation";
+import Link from "next/link";
 import SitePage from "@/components/SitePage";
 import { PAGE_DRAFTS } from "@/lib/factory/drafts";
 import { readPublicWorkspace } from "@/lib/factory/workspace";
 import type { FactoryPage } from "@/lib/factory/types";
 import { findRetiredOfferClaim } from "@/lib/offer-copy";
+import { metadataForFactoryPage } from "@/lib/factory/page-metadata";
+import { SITE_HUB_LINKS } from "@/lib/site-nav";
+
+export { metadataForFactoryPage } from "@/lib/factory/page-metadata";
 
 // Public readers degrade: if the store fails or the workspace is corrupt they log and return null
 // (-> notFound / noindex metadata) instead of a 500. /app pages stay strict.
@@ -57,11 +63,7 @@ export async function factoryPageMetadata(slug: string): Promise<Metadata> {
     return { robots: { index: false, follow: false } };
   }
   const blockIndexing = preview || isStagingEnv();
-  return {
-    title: page.title,
-    description: page.metaDescription,
-    robots: blockIndexing ? { index: false, follow: false } : { index: true, follow: true },
-  };
+  return metadataForFactoryPage(page, { blockIndexing });
 }
 
 export function FactoryArticle({ page, staged = false }: { page: FactoryPage; staged?: boolean }) {
@@ -101,6 +103,18 @@ export function FactoryArticle({ page, staged = false }: { page: FactoryPage; st
           return <p key={block}>{block}</p>;
         })}
       </div>
+      <nav aria-label="Related Sitesinc pages" className="mt-10 border-t border-white/10 pt-6">
+        <p className="text-sm font-medium text-slate-200">Related pages</p>
+        <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-sm">
+          {SITE_HUB_LINKS.filter((link) => link.href !== page.path && link.href !== `/${page.slug}`).map((link) => (
+            <li key={link.href}>
+              <Link href={link.href} className="text-brand-300 hover:underline">
+                {link.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
     </article>
   );
 }
@@ -120,6 +134,11 @@ export async function PublishedOrNotFound({ slug }: { slug: string }) {
   return (
     <SitePage>
       <OrgJsonLd />
+      <ServiceJsonLd
+        name={page.title.replace(/\s*\|\s*Sitesinc$/, "")}
+        description={page.metaDescription}
+        path={page.path || `/${page.slug}`}
+      />
       <FactoryArticle page={page} staged={preview || page.noindex} />
     </SitePage>
   );
