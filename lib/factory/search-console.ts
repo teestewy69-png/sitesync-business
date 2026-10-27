@@ -1,10 +1,23 @@
+import { SCOPE_SEARCH_CONSOLE, getServiceAccountToken, serviceAccountConfigured } from "./google-auth";
 import type { IndexingRecord, IndexingState } from "./types";
 
+/** A credential exists: a manual access token (override) or a service-account key file. */
+export function gscCredentialPresent(): boolean {
+  return Boolean(process.env.GOOGLE_SEARCH_CONSOLE_ACCESS_TOKEN) || serviceAccountConfigured();
+}
+
 export function gscConfigured(): boolean {
-  return Boolean(
-    process.env.GOOGLE_SEARCH_CONSOLE_ACCESS_TOKEN &&
-      process.env.GOOGLE_SEARCH_CONSOLE_SITE_URL
-  );
+  return Boolean(process.env.GOOGLE_SEARCH_CONSOLE_SITE_URL) && gscCredentialPresent();
+}
+
+/**
+ * Bearer token for Search Console. GOOGLE_SEARCH_CONSOLE_ACCESS_TOKEN wins when set (manual override,
+ * you own its ~1 hour expiry). Otherwise a token is minted from the service account and cached/refreshed.
+ */
+export async function resolveGscToken(): Promise<string> {
+  const manual = process.env.GOOGLE_SEARCH_CONSOLE_ACCESS_TOKEN;
+  if (manual) return manual;
+  return getServiceAccountToken(SCOPE_SEARCH_CONSOLE);
 }
 
 type Inspection = {
@@ -16,20 +29,20 @@ type Inspection = {
 
 export async function inspectUrl(url: string): Promise<Inspection> {
   const lastChecked = new Date().toISOString();
-  const token = process.env.GOOGLE_SEARCH_CONSOLE_ACCESS_TOKEN || "";
   const siteUrl = process.env.GOOGLE_SEARCH_CONSOLE_SITE_URL || "";
 
-  if (!token || !siteUrl) {
+  if (!siteUrl || !gscCredentialPresent()) {
     return {
       state: "not_submitted",
       source: "not_configured",
       lastChecked,
       notes:
-        "Search Console is not configured. This URL is not marked indexed. Add GOOGLE_SEARCH_CONSOLE_ACCESS_TOKEN and GOOGLE_SEARCH_CONSOLE_SITE_URL to verify.",
+        "Search Console is not configured. This URL is not marked indexed. Set GOOGLE_SEARCH_CONSOLE_SITE_URL plus GOOGLE_SERVICE_ACCOUNT_KEY_FILE (or GOOGLE_SEARCH_CONSOLE_ACCESS_TOKEN) to verify.",
     };
   }
 
   try {
+    const token = await resolveGscToken();
     const res = await fetch(
       "https://searchconsole.googleapis.com/v1/urlInspection/index:inspect",
       {

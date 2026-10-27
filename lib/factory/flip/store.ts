@@ -1,5 +1,6 @@
 /** Flip-mode persistence + stage runner. One doc per flip project: factory/flip/<projectId>. */
 import { readDoc, writeDoc } from "@/lib/persistence";
+import { gscCredentialPresent } from "../search-console";
 import type { ClientProject } from "@/lib/store";
 import { describeLlmProvider } from "@/lib/city-launch/llm";
 import { pickCities } from "../city-launch";
@@ -57,7 +58,7 @@ export function runFlipStageSync(state: FlipState, key: FlipStageKey, project: C
   }
   if (key === "content") return runContentStage(state, input.bodies || {});
   if (key === "monetization") return runMonetizationStage(state);
-  if (key === "data_recording") return runDataRecordingStage(state, { gscTokenPresent: Boolean(process.env.GOOGLE_SEARCH_CONSOLE_ACCESS_TOKEN) });
+  if (key === "data_recording") return runDataRecordingStage(state, { gscTokenPresent: gscCredentialPresent() });
   const out = runHandoffStage(state);
   out.socialDrafts = buildSocialDrafts(out);
   return out;
