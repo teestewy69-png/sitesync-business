@@ -1,5 +1,7 @@
 ﻿import { isMailConfigured } from "@/lib/mail";
 import { docStoreHealth } from "@/lib/persistence";
+import { publicAnalyticsMeasurementId } from "@/lib/site-env";
+import { gscConfigured } from "./search-console";
 import { newId, storeWritable } from "@/lib/store";
 import { PRODUCTION_ORIGIN } from "./pipeline";
 import { crawlablePath, enqueue, newDiscovery, robotsDisallows } from "./crawl-discovery";
@@ -377,8 +379,10 @@ export async function captureBaseline(opts?: {
     ? Math.round(timed.reduce((sum, p) => sum + p.ttfbMs, 0) / timed.length)
     : null;
 
-  const ga = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "";
-  const gsc = process.env.GOOGLE_SEARCH_CONSOLE_SITE_URL || "";
+  // Same resolver the live site uses (env var, or the production default), so this flag matches reality.
+  const ga = publicAnalyticsMeasurementId();
+  const gscSite = process.env.GOOGLE_SEARCH_CONSOLE_SITE_URL || "";
+  const gscReady = gscConfigured();
 
   const allInternal = pageInventory.flatMap((p) => p.internalLinks);
 
@@ -420,20 +424,22 @@ export async function captureBaseline(opts?: {
       note: "Lighthouse/CrUX is not wired. This is request timing only â€” labeled in progress for lab scores.",
     },
     indexing: {
-      configured: Boolean(gsc),
-      source: gsc ? "env:GOOGLE_SEARCH_CONSOLE_SITE_URL" : "not configured",
+      configured: gscReady,
+      source: gscReady ? "env:GOOGLE_SEARCH_CONSOLE_SITE_URL + Google credential" : gscSite ? "property named, no credential" : "not configured",
       lastChecked: capturedAt,
-      note: gsc
-        ? "Search Console property is named in env. Live index counts are not pulled until API credentials are added."
-        : "Search Console credentials are not configured. Indexing status is operator-maintained only.",
+      note: gscReady
+        ? "Search Console is connected. Per-URL index status comes from URL Inspection checks in the indexing workflow, not from this crawl."
+        : gscSite
+          ? "Search Console property is named in env but no credential is set (GOOGLE_SERVICE_ACCOUNT_KEY_FILE). Indexing status is operator-maintained only."
+          : "Search Console credentials are not configured. Indexing status is operator-maintained only.",
     },
     analytics: {
       configured: Boolean(ga),
       source: ga ? "GA4 measurement id present" : "not configured",
       lastChecked: capturedAt,
       note: ga
-        ? "GA4 is installed on the public site. This snapshot does not import numeric reports (in progress)."
-        : "NEXT_PUBLIC_GA_MEASUREMENT_ID is empty. No analytics metrics claimed.",
+        ? "GA4 is installed on the public site. This snapshot does not import numeric reports; the GA4 card on /app/seo reads them live when GA4_PROPERTY_ID and a service account are set."
+        : "No GA4 measurement id resolves for this environment. No analytics metrics claimed.",
     },
     intakeFormHealth: demo || opts?.skipIntake || !sitesincSite
       ? {

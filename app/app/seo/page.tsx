@@ -1,6 +1,7 @@
 import Link from "next/link";
 import CaptureButton from "@/components/factory/CaptureButton";
 import { Pill } from "@/components/factory/Shell";
+import GaSummaryCard from "@/components/factory/GaSummaryCard";
 import SeoWorkspace, { siteFromSearchParams } from "@/components/factory/SeoWorkspace";
 
 export const dynamic = "force-dynamic";
@@ -53,6 +54,8 @@ export default async function SeoOverviewPage({
               note={model.backlinkCount ? "Operator-recorded only" : "Empty on purpose"}
             />
           </div>
+
+          {model.site.kind === "production" ? <GaSummaryCard /> : null}
 
           <section className="rounded-2xl border border-white/10 p-5">
             <h2 className="text-lg font-semibold">Site architecture</h2>
