@@ -1,11 +1,17 @@
 import OrgJsonLd from "@/components/OrgJsonLd";
+import ServiceJsonLd from "@/components/ServiceJsonLd";
 import type { Metadata } from "next";
 import { notFound, unstable_rethrow } from "next/navigation";
+import Link from "next/link";
 import SitePage from "@/components/SitePage";
 import { PAGE_DRAFTS } from "@/lib/factory/drafts";
 import { readPublicWorkspace } from "@/lib/factory/workspace";
 import type { FactoryPage } from "@/lib/factory/types";
 import { findRetiredOfferClaim } from "@/lib/offer-copy";
+import { metadataForFactoryPage } from "@/lib/factory/page-metadata";
+import { SITE_HUB_LINKS } from "@/lib/site-nav";
+
+export { metadataForFactoryPage } from "@/lib/factory/page-metadata";
 
 // Public readers degrade: if the store fails or the workspace is corrupt they log and return null
 // (-> notFound / noindex metadata) instead of a 500. /app pages stay strict.
@@ -16,16 +22,17 @@ export async function getPublishedPage(slug: string): Promise<FactoryPage | null
   if (!page) return null;
   if (page.status !== "published" || page.noindex) return null;
   if (!page.body.trim()) return null;
-  // Path A guard: a page published before the offer cleanup may still carry retired claims (Stripe checkout,
-  // monetization placeholders, digital products...). Serve the current reviewed draft for that slug instead,
-  // or nothing if there is no draft. Re-publishing from /app replaces the stored copy for good.
-  const stale = findRetiredOfferClaim(`${page.title}\n${page.metaDescription}\n${page.body}`);
-  if (stale) {
-    const draft = PAGE_DRAFTS[slug];
-    if (!draft) return null;
-    console.warn(`Published page ${slug} carries retired offer copy; serving the current draft.`);
+  // In-repo PAGE_DRAFTS are the current reviewed public copy for hub slugs. Prefer them over a
+  // stale workspace document so title/canonical/copy fixes ship without a factory republish.
+  // Re-publishing from /app still updates the stored copy for good.
+  const draft = PAGE_DRAFTS[slug];
+  if (draft) {
+    const stale = findRetiredOfferClaim(`${page.title}\n${page.metaDescription}\n${page.body}`);
+    if (stale) console.warn(`Published page ${slug} carries retired offer copy; serving the current draft.`);
     return { ...page, ...draft };
   }
+  const stale = findRetiredOfferClaim(`${page.title}\n${page.metaDescription}\n${page.body}`);
+  if (stale) return null;
   return page;
 }
 
@@ -57,11 +64,7 @@ export async function factoryPageMetadata(slug: string): Promise<Metadata> {
     return { robots: { index: false, follow: false } };
   }
   const blockIndexing = preview || isStagingEnv();
-  return {
-    title: page.title,
-    description: page.metaDescription,
-    robots: blockIndexing ? { index: false, follow: false } : { index: true, follow: true },
-  };
+  return metadataForFactoryPage(page, { blockIndexing });
 }
 
 export function FactoryArticle({ page, staged = false }: { page: FactoryPage; staged?: boolean }) {
@@ -101,6 +104,18 @@ export function FactoryArticle({ page, staged = false }: { page: FactoryPage; st
           return <p key={block}>{block}</p>;
         })}
       </div>
+      <nav aria-label="Related Sitesinc pages" className="mt-10 border-t border-white/10 pt-6">
+        <p className="text-sm font-medium text-slate-200">Related pages</p>
+        <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-sm">
+          {SITE_HUB_LINKS.filter((link) => link.href !== page.path && link.href !== `/${page.slug}`).map((link) => (
+            <li key={link.href}>
+              <Link href={link.href} className="text-brand-300 hover:underline">
+                {link.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
     </article>
   );
 }
@@ -120,6 +135,11 @@ export async function PublishedOrNotFound({ slug }: { slug: string }) {
   return (
     <SitePage>
       <OrgJsonLd />
+      <ServiceJsonLd
+        name={page.title.replace(/\s*\|\s*Sitesinc$/, "")}
+        description={page.metaDescription}
+        path={page.path || `/${page.slug}`}
+      />
       <FactoryArticle page={page} staged={preview || page.noindex} />
     </SitePage>
   );

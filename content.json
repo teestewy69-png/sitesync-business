@@ -6,26 +6,26 @@
     "domain": "sitesinc.co"
   },
   "seo": {
-    "title": "Sitesinc – Real Small Business Websites for $1,995 Flat",
-    "description": "We build real, working websites, not subscriptions. $1,995 flat: 50% to start, 50% at launch. Monitored SEO: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days (optional).",
+    "title": "Affordable Website Design, $1,995 Flat | Sitesinc",
+    "description": "We build real, working websites, not subscriptions like the rest. Affordable website design for $1,995 flat. Optional SEO for small business from $129/mo.",
     "url": "https://sitesinc.co",
     "siteName": "Sitesinc",
     "locale": "en_US",
     "image": "https://sitesinc.co/og-image.png",
     "og": {
-      "title": "Sitesinc – Real Working Websites for $1,995 Flat",
-      "description": "We build real, working websites, not subscriptions. $1,995 flat: 50% to start, 50% at launch. Monitored SEO: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days (optional)."
+      "title": "Affordable Website Design, $1,995 Flat | Sitesinc",
+      "description": "We build real, working websites, not subscriptions like the rest. Affordable website design for $1,995 flat. Optional SEO for small business from $129/mo."
     },
     "twitter": {
       "card": "summary_large_image",
-      "title": "Sitesinc – Real Working Websites for $1,995 Flat",
-      "description": "We build real, working websites, not subscriptions. $1,995 flat: 50% to start, 50% at launch. Monitored SEO: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days (optional)."
+      "title": "Affordable Website Design, $1,995 Flat | Sitesinc",
+      "description": "We build real, working websites, not subscriptions like the rest. Affordable website design for $1,995 flat. Optional SEO for small business from $129/mo."
     }
   },
   "hero": {
     "overline": "Done-for-you small business websites",
     "headline": "We build real, working websites, not subscriptions like the rest.",
-    "subheadline": "Sitesinc Website Factory builds dark, glossy, high-converting sites for the “little guy” who never got their website quite right. One-time build, SEO-ready, built to turn visitors into calls and leads, and fully yours.",
+    "subheadline": "Affordable website design for the “little guy” who never got the site quite right — contractors, plumbers, barbers, and other local shops. One-time $1,995 build, SEO for small business from day one, built to turn visitors into calls, and fully yours.",
     "offer": {
       "title": "For $1,995 flat.",
       "subtitle": "50% to start, 50% at launch. Monitored SEO is not included in the $1,995 build: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days."
@@ -40,7 +40,7 @@
     },
     "pricingLine": "$1,995 flat · 50% to start, 50% at launch · Monitored SEO: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days",
     "stackLine": "Timeline confirmed in writing before work starts • Next.js + Tailwind • Netlify hosting included • You own the full code.",
-    "trustLine": "Perfect for barbers, cleaners, food trucks, contractors, coaches, solo pros, and side hustles."
+    "trustLine": "Website design for contractors, plumbers, barbers, cleaners, food trucks, coaches, and solo pros."
   },
   "techStack": {
     "title": "Built with modern tech that big brands use",
@@ -165,7 +165,7 @@
     "title": "Built for the “little guy” who's tired of feeling left behind online.",
     "paragraphs": [
       "Sitesinc exists for small and local businesses who know they need a real website—but never had the time, budget, or tech help to get it done right. We don't sell drag-and-drop templates or half-finished sites. We build dark, glossy, ultra-modern websites that look like they belong to a big brand, but are tailored to the shop around the corner.",
-      "Whether you're a barber, cleaner, contractor, food truck, lash tech, coach, or solo pro, we handle the hard stuff: design, development, SEO, lead capture, and hosting. You pay 50% to start and 50% at launch, we build it, connect your domain, and hand you the full code so you truly own your online home."
+      "Whether you need website design for contractors, plumbers, barbers, cleaners, food trucks, coaches, or other solo pros, we handle the hard stuff: design, development, SEO for small business, lead capture, and hosting. You pay 50% to start and 50% at launch, we build it, connect your domain, and hand you the full code so you truly own your online home."
     ]
   },
   "cta": {

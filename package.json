@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "city-launch": "node --env-file=.env.local scripts/city-launch/run-standalone.mjs",
-    "test": "node --test --test-reporter=spec scripts/backlink-actions.test.mjs scripts/baseline-pick.test.mjs scripts/city-launch-background.test.mjs scripts/city-launch.test.mjs scripts/client-automation.test.mjs scripts/client-baseline.test.mjs scripts/client-content.test.mjs scripts/client-domain.test.mjs scripts/client-intake.test.mjs scripts/client-quality.test.mjs scripts/domainiq.test.mjs scripts/factory-fixes.test.mjs scripts/flip-competitors.test.mjs scripts/flip-mode.test.mjs scripts/google-monitoring.test.mjs scripts/migrate-factory-state.test.mjs scripts/offer-copy.test.mjs scripts/revisioned-docs.test.mjs scripts/site-audit.test.mjs scripts/run-kurtis-factory.test.mjs scripts/siteflow.test.mjs scripts/workshop-bays.test.mjs"
+    "test": "node --test --test-reporter=spec scripts/backlink-actions.test.mjs scripts/baseline-pick.test.mjs scripts/city-launch-background.test.mjs scripts/city-launch.test.mjs scripts/client-automation.test.mjs scripts/client-baseline.test.mjs scripts/client-content.test.mjs scripts/client-domain.test.mjs scripts/client-intake.test.mjs scripts/client-quality.test.mjs scripts/domainiq.test.mjs scripts/factory-fixes.test.mjs scripts/flip-competitors.test.mjs scripts/flip-mode.test.mjs scripts/google-monitoring.test.mjs scripts/migrate-factory-state.test.mjs scripts/offer-copy.test.mjs scripts/revisioned-docs.test.mjs scripts/seo-fixes.test.mjs scripts/site-audit.test.mjs scripts/run-kurtis-factory.test.mjs scripts/siteflow.test.mjs scripts/workshop-bays.test.mjs"
   },
   "dependencies": {
     "@netlify/blobs": "^11.1.0",

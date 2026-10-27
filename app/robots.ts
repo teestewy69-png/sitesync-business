@@ -17,6 +17,5 @@ export default function robots(): MetadataRoute.Robots {
       },
     ],
     sitemap: "https://sitesinc.co/sitemap.xml",
-    host: "https://sitesinc.co",
   };
 }

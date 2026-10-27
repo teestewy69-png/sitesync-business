@@ -4,9 +4,9 @@ type Draft = Pick<FactoryPage, "title" | "metaDescription" | "headings" | "body"
 
 export const PAGE_DRAFTS: Record<string, Draft> = {
   "website-design": {
-    title: "Small Business Website Design, $1,995 Flat | Sitesinc",
+    title: "Affordable Website Design, $1,995 Flat | Sitesinc",
     metaDescription:
-      "What a custom Sitesinc Next.js site includes for a shop that needs calls, not a template. One-time build. You own the code.",
+      "Affordable website design for small shops that need calls, not a template. $1,995 flat Next.js build. You own the code.",
     headings: [
       "What a small-business site has to do in the first 5 seconds",
       "Custom Next.js vs drag-and-drop",
@@ -14,7 +14,7 @@ export const PAGE_DRAFTS: Record<string, Draft> = {
       "What we need from you",
       "When this is the wrong fit",
     ],
-    body: `A small-business website has one job in the first five seconds: tell a stranger what you do, who it’s for, and how to reach you. If they have to hunt for a phone number or a price, they leave.
+    body: `Affordable website design for a small shop has one job in the first five seconds: tell a stranger what you do, who it’s for, and how to reach you. If they have to hunt for a phone number or a price, they leave.
 
 ## What a small-business site has to do in the first 5 seconds
 
@@ -29,6 +29,8 @@ That also means we are not a “change this block yourself every Tuesday” tool
 ## What we actually build
 
 Website builds are $1,995 — a flat fee. No negotiation. Pay 50% to start and 50% at launch. Monitored SEO is optional: 1st month free, then $129/mo. The package includes a complete custom site, a choice of eight design directions, on-page SEO setup, a lead form, hosting setup, domain connection, one round of revisions, and a 5–7 business day turnaround after we have your content. Those numbers must match the homepage. We will not invent a different price here.
+
+This is the same affordable website design we build for contractors, plumbers, and barbers: a working site, not a subscription.
 
 ## What we need from you
 
@@ -105,9 +107,9 @@ If you have no photos, no offer, and no time to answer onboarding questions, wai
 Related reading: our blog posts on what a real small-business site needs and DIY vs done-for-you. This page will not claim a redesign raises revenue. It claims a clearer site is easier to use.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional monitored SEO: 1st month free, then $129/mo. Questions? Call (909) 378-6404 or email save@sitesinc.co.`,
   },
   "seo-ready-websites": {
-    title: "SEO-Ready Small Business Websites | Sitesinc",
+    title: "SEO for Small Business: Ready Websites | Sitesinc",
     metaDescription:
-      "What SEO-ready means at Sitesinc: titles, one H1, sitemap, robots, canonicals, forms that notify someone. Indexing is not guaranteed.",
+      "SEO for small business at Sitesinc: titles, one H1, sitemap, robots, canonicals, forms that notify someone. Indexing is not guaranteed.",
     headings: [
       "Titles, descriptions, and one H1",
       "Sitemap, robots, canonicals",
@@ -115,7 +117,7 @@ Related reading: our blog posts on what a real small-business site needs and DIY
       "Forms that actually notify someone",
       "What SEO-ready does not mean",
     ],
-    body: `SEO-ready at Sitesinc means the site launches with the on-page pieces Google’s public starter guide already asks for. It does not mean we rank you. Google decides what to crawl and index.
+    body: `SEO for small business at Sitesinc means the site launches with the on-page pieces Google’s public starter guide already asks for. It does not mean we rank you. Google decides what to crawl and index. An SEO-ready website is the starting point, not a ranking promise.
 
 ## Titles, descriptions, and one H1
 
@@ -165,9 +167,9 @@ You can host the handed-off repo yourself and never pay the care plan. The build
 This page will not scare you into a subscription. The homepage already says the care plan is optional. We repeat that here so a search for website monitoring does not hide the opt-out.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional monitored SEO: 1st month free, then $129/mo. Questions? Call (909) 378-6404 or email save@sitesinc.co.`,
   },
   "for-local-service-businesses": {
-    title: "Websites for Local Service Businesses | Sitesinc",
+    title: "Websites for Contractors, Plumbers, Barbers | Sitesinc",
     metaDescription:
-      "How Sitesinc builds sites for barbers, contractors, food trucks, and coaches — one useful page, not a city doorway farm.",
+      "Website design for contractors, plumbers, and barbers — one useful page, not a city doorway farm. $1,995 flat.",
     headings: [
       "What local service sites forget",
       "Barbers and personal care",
@@ -176,7 +178,7 @@ This page will not scare you into a subscription. The homepage already says the 
       "Coaches and solo pros",
       "One factory, not 50 doorways",
     ],
-    body: `Local service businesses do not need 40 city landing pages. They need a site that gets a real person to call.
+    body: `Local service businesses do not need 40 city landing pages. Website design for contractors, plumbers, and barbers should get a real person to call.
 
 ## What local service sites forget
 
@@ -188,7 +190,7 @@ Show the chair, the work, and how to book. Put the phone and Instagram where the
 
 ## Contractors and trades
 
-Lead with the emergency or how to reach you. License and insurance if you have them. Before/after photos you actually shot. A form that emails you the same hour.
+Lead with the emergency or how to reach you. License and insurance if you have them. Before/after photos you actually shot. A form that emails you the same hour. Website design for contractors and plumbers is the same $1,995 build as every other local shop — not a different package.
 
 ## Food trucks and hospitality
 

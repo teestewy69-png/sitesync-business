@@ -5,7 +5,7 @@ import content from "@/content.json";
 import SitePage from "@/components/SitePage";
 import OrgJsonLd from "@/components/OrgJsonLd";
 import { OG_IMAGE } from "@/lib/og-image";
-import { getLocationCities, getLocationCity, locationUrl, relatedCities } from "@/lib/locations";
+import { getLocationCities, getLocationCity, locationRobots, locationUrl, relatedCities } from "@/lib/locations";
 
 type Params = { slug: string };
 
@@ -22,14 +22,14 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const { slug } = await params;
   const city = getLocationCity(slug);
   if (!city) return {};
-  const title = `Small Business Websites in ${city.name}, ${city.state} | $1,995 Flat | Sitesinc`;
+  const title = `Small Business Websites in ${city.name}, ${city.state}`;
   const description = `Sitesinc builds real, working websites for small businesses in ${city.name}, ${city.state}. $1,995 flat, one time. No long-term contract. You own your website.`;
   const url = locationUrl(city.slug);
   return {
     title,
     description,
     alternates: { canonical: url },
-    robots: { index: true, follow: true },
+    robots: locationRobots(slug),
     openGraph: { title, description, url, type: "website", images: [OG_IMAGE] },
   };
 }
@@ -98,7 +98,8 @@ export default async function LocationPage({ params }: { params: Promise<Params>
         </h1>
         <p className="mt-4 text-base text-slate-300">
           We build real, working websites, not subscriptions like the rest. For $1,995 flat, a {city.name}{" "}
-          business gets a custom website it owns outright.
+          business gets affordable website design it owns outright — the same build we do for contractors,
+          plumbers, and barbers.
         </p>
         <p className="mt-3 text-base text-slate-300">
           {city.name} is a city in {city.stateName} with an estimated {pop} residents (U.S. Census Bureau, 2024
@@ -148,6 +149,17 @@ export default async function LocationPage({ params }: { params: Promise<Params>
           <h2 className="text-xl font-semibold">Request a website for your {city.name} business</h2>
           <p className="mx-auto mt-2 max-w-xl text-base text-slate-300">
             Submitting the form is a request, not a purchase. If we accept your project, we email a $997.50 start invoice.
+          </p>
+          <p className="mx-auto mt-4 max-w-xl text-sm text-slate-400">
+            Read{" "}
+            <Link href="/website-design" className="text-brand-300 hover:underline">
+              affordable website design
+            </Link>{" "}
+            and{" "}
+            <Link href="/packages" className="text-brand-300 hover:underline">
+              packages
+            </Link>{" "}
+            for what is included and how the $1,995 invoices work.
           </p>
           <div className="mt-4 flex flex-wrap justify-center gap-3">
             <Link

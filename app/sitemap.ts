@@ -2,14 +2,8 @@ import type { MetadataRoute } from "next";
 import { PUBLIC_PATHS } from "@/lib/factory/pipeline";
 import { readPublicWorkspace } from "@/lib/factory/workspace";
 import { isStagingEnv } from "@/lib/site-env";
-import { posts } from "@/data/posts";
-import { getLocationCities } from "@/lib/locations";
-
-/** Real last-content-change dates per path (update when a page's copy changes). Unlisted paths fall back to SITE_UPDATED. */
-const SITE_UPDATED = "2026-10-27";
-const LASTMOD: Record<string, string> = {
-  ...Object.fromEntries(posts.map((p) => [`/blog/${p.slug}`, p.updated ?? p.date])),
-};
+import { getIndexableLocationCities } from "@/lib/locations";
+import { lastmodFor } from "@/lib/sitemap-dates";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +25,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   );
   for (const extra of EXTRA_LEGAL) paths.add(extra);
   paths.add("/locations");
-  for (const city of getLocationCities()) paths.add(`/locations/${city.slug}`);
+  for (const city of getIndexableLocationCities()) paths.add(`/locations/${city.slug}`);
   const workspace = await readPublicWorkspace();
   if (workspace) {
     for (const page of workspace.pages) {
@@ -42,7 +36,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
   return [...paths].map((path) => ({
     url: `${origin}${path === "/" ? "" : path}`,
-    lastModified: LASTMOD[path] ?? SITE_UPDATED,
+    lastModified: lastmodFor(path),
     changeFrequency: path === "/" ? "weekly" : "monthly",
     priority: path === "/" ? 1 : 0.7,
   }));
