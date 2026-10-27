@@ -37,12 +37,12 @@ export const faqItems: FaqItem[] = [
   {
     question: "How much does it cost? Are there any subscriptions?",
     answer:
-      "Website builds are $1,995 — a flat fee. No negotiation. You pay 50% ($997.50) to start and 50% at launch. There is no required subscription or builder lock-in. Monitored SEO is not included in the build: if you want us to handle monitoring, tech updates and small content changes. Monitoring terms: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days. You can cancel it. There is no long-term contract.",
+      "Website builds are $1,995 — a flat fee. No negotiation. You pay 50% ($997.50) to start and 50% at launch. There is no required subscription or builder lock-in. Monitored SEO is not included in the build. It is optional, if you want us to handle monitoring, tech updates and small content changes. Monitoring terms: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days. You can cancel it. There is no long-term contract.",
   },
   {
     question: "How does the 50% to start / 50% at launch payment work?",
     answer:
-      "The website build is $1,995. Submitting the website form is a request, not a purchase. If we accept the project, you receive a $997.50 start invoice by email. The remaining $997.50 is due at launch. Monitored SEO is not included: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days, cancel anytime. It is and is never required to keep the site.",
+      "The website build is $1,995. Submitting the website form is a request, not a purchase. If we accept the project, you receive a $997.50 start invoice by email. The remaining $997.50 is due at launch. Monitored SEO is not included: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days, cancel anytime. It is never required to keep the site.",
   },
   {
     question: "What\u2019s included in the $1,995 website build?",
