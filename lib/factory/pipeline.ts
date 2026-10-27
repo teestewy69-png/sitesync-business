@@ -18,6 +18,10 @@ export const PUBLIC_PATHS = [
   "/blog",
   "/blog/real-small-business-website-needs",
   "/blog/diy-vs-done-for-you-websites",
+  "/free-website-audit",
+  "/compare/hibu-alternative",
+  "/compare/thryv-alternative",
+  "/compare/web-com-alternative",
   // No shop (removed 2026-10-05; /shop 301s to /). /cart and /checkout are paused SiteFlow routes and 404.
   // Factory hub pages (/website-design, /packages, …) join the sitemap only after they are published.
   "/privacy",

@@ -245,6 +245,12 @@ const PUBLIC_SOURCES = [
   "app/privacy/page.tsx",
   "lib/factory/drafts.ts",
   "lib/design-styles.ts",
+  "lib/compare.ts",
+  "lib/site-audit.ts",
+  "app/free-website-audit/page.tsx",
+  "app/compare/hibu-alternative/page.tsx",
+  "app/compare/thryv-alternative/page.tsx",
+  "app/compare/web-com-alternative/page.tsx",
   ...walk(path.join(ROOT, "app/blog")).map((f) => path.relative(ROOT, f)),
   ...readdirSync(path.join(ROOT, "components"))
     .filter((n) => n.endsWith(".tsx"))

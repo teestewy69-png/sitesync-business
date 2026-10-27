@@ -1,5 +1,5 @@
 import content from "@/content.json";
-import { SITE_HASH_LINKS, SITE_NAV } from "@/lib/site-nav";
+import { SITE_COMPARE_LINKS, SITE_HASH_LINKS, SITE_NAV } from "@/lib/site-nav";
 
 export default function Footer() {
   const { site, footer } = content;
@@ -49,6 +49,11 @@ export default function Footer() {
 
         <div className="flex flex-wrap items-center gap-3 text-sm text-slate-400 sm:justify-end sm:text-base">
           {SITE_NAV.map((link) => (
+            <a key={link.href} href={link.href} className="transition hover:text-brand-300">
+              {link.label}
+            </a>
+          ))}
+          {SITE_COMPARE_LINKS.map((link) => (
             <a key={link.href} href={link.href} className="transition hover:text-brand-300">
               {link.label}
             </a>
