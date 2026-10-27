@@ -10,9 +10,11 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 test("factory shell exposes SiteGrow, DomainIQ, and ScaleQuan tabs", () => {
   const shell = readFileSync(path.join(ROOT, "components/factory/Shell.tsx"), "utf8");
-  assert.match(shell, /href: "\/app\/clients".*SiteGrow/s);
-  assert.match(shell, /DomainIQ/);
-  assert.match(shell, /ScaleQuan/);
+  assert.match(shell, /FactoryRail/);
+  const rail = readFileSync(path.join(ROOT, "components/factory/FactoryRail.tsx"), "utf8");
+  assert.match(rail, /href: "\/app\/clients"/);
+  assert.match(rail, /DomainIQ/);
+  assert.match(rail, /ScaleQuan/);
 });
 
 test("factory home mounts all three bays", () => {
@@ -22,14 +24,16 @@ test("factory home mounts all three bays", () => {
   assert.match(home, /CityLaunchBay/);
 });
 
-test("ScaleQuan bay is labeled as ScaleQuan · City Launch", () => {
+test("City Launch bay is the green Cities station and names ScaleQuan", () => {
   const bay = readFileSync(path.join(ROOT, "components/factory/CityLaunchBay.tsx"), "utf8");
-  assert.match(bay, /ScaleQuan · City Launch/);
+  assert.match(bay, /3\. Cities/);
+  assert.match(bay, /ScaleQuan/);
 });
 
 test("SiteGrow bay exists and points at client factory routes", () => {
   const bay = readFileSync(path.join(ROOT, "components/factory/SiteGrowBay.tsx"), "utf8");
-  assert.match(bay, /SiteGrow · client website factory/);
+  assert.match(bay, /1\. Build/);
+  assert.match(bay, /SiteGrow/);
   assert.match(bay, /\/app\/clients\//);
   assert.match(bay, /\/demo\/client\//);
 });
