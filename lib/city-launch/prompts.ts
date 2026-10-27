@@ -12,6 +12,8 @@
  * Pure + erasable TypeScript so `node --test` can import it.
  */
 
+import { isSitesincBusiness, sitesincMentionMode, sitesincPromptRules, SITESINC_OFFER_CONTEXT } from "./sitesinc-credit";
+
 export const DEFAULT_TITLE_TEMPLATE = "{keyword} in {city}, {state}";
 export const DEFAULT_PROMPT_TEMPLATE =
   "Write a helpful, locally-relevant landing page for {keyword} in {city}, {state}. Use a friendly expert tone.";
@@ -74,6 +76,8 @@ export type CityPromptSettings = {
   includeFaq: boolean;
   /** Operator-verified local notes (with sources), e.g. from a utility water-quality report. Optional. */
   localFacts?: string;
+  /** Quiet Sitesinc credit on client pages (default on). Off = no name-drop in the prompt. */
+  sitesincMention?: boolean;
 };
 
 /** ScaleQuan fill_placeholders. */
@@ -131,7 +135,12 @@ export function systemPrompt(settings: CityPromptSettings, city: CityPromptCity)
     "- FAQ or copy about licensing, insurance, pricing, guarantees, availability (24/7, same-day) or experience: unless the context states it, do not assert it; tell the reader to ask or call to confirm.",
     "- Describe the service area honestly: the business serves this city from its base location unless the context says otherwise.",
     "- Follow the VOICE block in the user message exactly: the business's location is its base city, nothing else.",
-  ].join("\n");
+    settings.sitesincMention === false
+      ? ""
+      : "Follow the SITESINC block in the user message: client pages get one or two quiet Sitesinc credits; a Sitesinc-as-business page does not add a 'built by' line.",
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
 
 function ordinal(n: number): string {
@@ -219,12 +228,27 @@ export function userPrompt(
     "BUSINESS / WEBSITE CONTEXT:",
     settings.websiteContent || defaultWebsiteContent(business),
     "",
+    sitesincPromptRules(sitesincMentionMode({ enabled: settings.sitesincMention, businessName: business.businessName })),
+    "",
     "INSTRUCTIONS:",
     instructions,
-  ].join("\n");
+  ]
+    .filter((line, i, all) => !(line === "" && all[i - 1] === ""))
+    .join("\n");
 }
 
 export function defaultWebsiteContent(business: CityPromptBusiness): string {
+  if (isSitesincBusiness(business.businessName)) {
+    return [
+      SITESINC_OFFER_CONTEXT,
+      business.baseCity ? `Based in ${[business.baseCity, business.baseState].filter(Boolean).join(", ")}.` : "",
+      business.phone ? `Phone: ${business.phone}.` : "",
+      business.primaryGoal ? `Primary goal of the website: ${business.primaryGoal}.` : "",
+      business.notes ? `Notes from intake: ${business.notes}` : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+  }
   return [
     `${business.businessName} - ${business.niche || "local service"} business`,
     business.baseCity ? `Based in ${[business.baseCity, business.baseState].filter(Boolean).join(", ")}.` : "",

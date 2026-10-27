@@ -113,7 +113,7 @@ export default function ClientConfigForm({
   }
 
   return (
-    <section className="mt-4 rounded-2xl border border-white/10 p-5" id="edit-client">
+    <section className="mt-10 rounded-2xl border border-white/10 p-6" id="edit-client">
       <h3 className="text-base font-semibold">{creating ? "New client project" : "Edit client details"}</h3>
       <p className="mt-1 text-xs text-slate-400">
         {creating

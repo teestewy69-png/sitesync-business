@@ -1,20 +1,4 @@
-import Link from "next/link";
-
-const NAV = [
-  { href: "/app", label: "Pipeline" },
-  { href: "/app/clients", label: "SiteGrow" },
-  { href: "/app/flips", label: "Flip Mode" },
-  { href: "/app#domainiq-bay", label: "DomainIQ" },
-  { href: "/app#city-launch-bay", label: "ScaleQuan" },
-  { href: "/app/baseline", label: "Baseline" },
-  { href: "/app/content", label: "Briefs & drafts" },
-  { href: "/app/staging", label: "Staging" },
-  { href: "/app/seo", label: "SEO Intelligence" },
-  { href: "/app/inbox", label: "Inbox" },
-  { href: "/app/case-study", label: "Case study" },
-  { href: "/app/release", label: "QA / release" },
-  { href: "/app/qa", label: "Operator QA" },
-];
+import FactoryRail from "@/components/factory/FactoryRail";
 
 export default function FactoryShell({
   title,
@@ -24,33 +8,17 @@ export default function FactoryShell({
   children: React.ReactNode;
 }) {
   return (
-    <main className="min-h-screen bg-black text-white">
-      <div className="border-b border-white/10 bg-canvas">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-6 py-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-brand-300">
-              Internal · Sitesinc Builds Sitesinc
-            </p>
-            <h1 className="text-lg font-semibold">{title}</h1>
-          </div>
-          <Link href="/" className="text-sm text-slate-400 hover:text-brand-300">
-            Public site
-          </Link>
-        </div>
-        <nav className="mx-auto flex max-w-6xl flex-wrap gap-2 px-6 pb-4">
-          {NAV.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="rounded-full border border-white/10 px-3 py-1 text-sm text-slate-300 hover:border-brand-400/50 hover:text-white"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-      </div>
-      <div className="mx-auto max-w-6xl px-6 py-8">{children}</div>
-    </main>
+    <div className="warehouse min-h-screen text-zinc-100 lg:grid lg:grid-cols-[240px_minmax(0,1fr)]">
+      <aside className="border-b border-white/10 lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto lg:border-b-0 lg:border-r">
+        <FactoryRail />
+      </aside>
+      <main className="min-w-0">
+        <header className="border-b border-white/10 px-6 py-5 lg:px-10">
+          <h1 className="text-2xl font-semibold tracking-tight text-white">{title}</h1>
+        </header>
+        <div className="mx-auto max-w-5xl px-6 py-10 lg:px-10">{children}</div>
+      </main>
+    </div>
   );
 }
 

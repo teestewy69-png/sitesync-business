@@ -44,6 +44,8 @@ export type BatchSettings = CityPromptSettings & {
   concurrency: number;
   requestsPerMinute: number;
   maxAttempts: number;
+  /** Alternate two models across the batch (default on when a second writer is configured). */
+  twoModels?: boolean;
 };
 
 export type CityLaunchBatch = {
@@ -55,7 +57,7 @@ export type CityLaunchBatch = {
   settings: BatchSettings;
   pick: { mode: "radius" | "top_states" | "csv" | "mixed"; detail: string };
   items: BatchItem[];
-  provider: { envKey: string; label: string; model: string } | null;
+  provider: { envKey: string; label: string; model: string; roster?: Array<{ envKey: string; label: string; model: string }> } | null;
   lease?: { owner: string; until: string } | null;
   ticks: number;
   /** Netlify Background Function hand-offs: requested by the app, started by the function. */

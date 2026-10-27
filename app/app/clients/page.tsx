@@ -15,10 +15,10 @@ export default async function SiteGrowClientsPage() {
   }
 
   return (
-    <FactoryShell title="SiteGrow · client website factory">
-      <p className="max-w-3xl text-sm text-slate-400">
-        Every live intake that creates a project lands here. Open a client to run DomainIQ, ScaleQuan (City
-        Launch), baseline crawl, and content. Previews stay on /demo/client/... until Tony publishes.
+    <FactoryShell title="Build">
+      <p className="max-w-3xl text-sm text-zinc-400">
+        Purple station. Every intake that creates a project lands here. Open a client for DomainIQ, ScaleQuan
+        city pages, the baseline crawl, and content. Previews stay on /demo/client until a manual publish.
       </p>
       <ul className="mt-8 space-y-2">
         {projects.length === 0 ? (
@@ -43,7 +43,7 @@ export default async function SiteGrowClientsPage() {
                   </div>
                 </div>
                 <span className="flex flex-wrap gap-3 text-sm">
-                  <Link href={`/app/clients/${item.id}`} className="text-brand-300 hover:underline">
+                  <Link href={`/app/clients/${item.id}`} className="text-purple-300 hover:underline">
                     Open factory
                   </Link>
                   <Link href={`/demo/client/${item.id}`} className="text-slate-400 hover:text-white">

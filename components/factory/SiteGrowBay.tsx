@@ -4,13 +4,12 @@ import type { ClientProject } from "@/lib/store";
 export default function SiteGrowBay({ projects }: { projects: ClientProject[] }) {
   const withWorkspace = projects.filter((p) => p.factoryWorkspaceId || p.templateId).length;
   return (
-    <section className="mt-10 rounded-2xl border border-brand-400/30 bg-white/5 p-5" id="sitegrow-bay">
+    <section className="mt-16 rounded-2xl border border-purple-400/40 bg-purple-500/5 p-6" id="sitegrow-bay">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-brand-300">Factory bay</p>
-          <h2 className="mt-1 text-xl font-semibold">SiteGrow · client website factory</h2>
+          <h2 className="text-2xl font-semibold text-purple-200">1. Build</h2>
           <p className="mt-1 max-w-3xl text-sm text-slate-400">
-            The website-build path inside this workshop. A public intake lead becomes a client project with
+            Purple is the client-site build. A public intake lead becomes a client project with
             template, design, seeded pages, preview, and its own baseline crawl. This is not a separate SiteGrow
             app and not an auto-publish to the client&apos;s domain.
           </p>
@@ -22,7 +21,7 @@ export default function SiteGrowBay({ projects }: { projects: ClientProject[] })
         {[
           ["Client projects", projects.length],
           ["Factory initialized", withWorkspace],
-          ["Open in SiteGrow", projects.length],
+          ["Ready to open", projects.length],
         ].map(([label, value]) => (
           <div key={String(label)} className="rounded-xl border border-white/10 px-3 py-2">
             <p className="text-2xl font-semibold text-white">{value}</p>
