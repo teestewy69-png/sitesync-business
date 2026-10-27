@@ -1,5 +1,5 @@
 const TICKER_COPY =
-  "Website builds are $1,995 · $997.50 to start · $997.50 at launch · Monitored SEO (optional) · 1st month free, then $129/mo · Request, not a purchase";
+  "Website builds are $1,995 · $997.50 to start · $997.50 at launch · Monitored SEO (optional) · 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days · Request, not a purchase";
 
 export default function AnnouncementTicker() {
   // Duplicate segments for a seamless CSS loop (translate -50%).

@@ -207,7 +207,7 @@ export default function DiyVsDoneForYouWebsites() {
                     SEO basics and lead capture built in
                   </li>
                   <li>
-                    Launched in 5–7 business days once we have your info
+                    Timeline confirmed in writing before work starts
                   </li>
                 </ul>
               </div>

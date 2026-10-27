@@ -1,7 +1,7 @@
 /**
  * Path A offer guard (Tony, 2026-10-05). The public offer is ONLY:
  *   - website builds are $1,995 (flat fee), paid 50% to start and 50% at launch (invoiced by hand)
- *   - monitored SEO NOT included in the build: 1st month free, then $129/mo (Tony, 2026-10-20)
+ *   - monitored SEO NOT included in the build: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days (Tony, 2026-10-20)
  * Public copy must not promise digital-product delivery, Stripe checkout, affiliate or monetization
  * placeholders, discounts/strike-through prices, scarcity, or "pay in full". scripts/offer-copy.test.mjs scans
  * the public sources with these patterns, and published factory pages are checked at render time.
@@ -11,7 +11,7 @@ export const PATH_A_OFFER = {
   buildFrom: "$1,995",
   startDue: "$997.50",
   launchDue: "$997.50",
-  monitoring: "1st month free, then $129/mo",
+  monitoring: "1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days",
 } as const;
 
 export const RETIRED_OFFER_PATTERNS: RegExp[] = [

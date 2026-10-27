@@ -2,24 +2,24 @@
   "site": {
     "name": "Sitesinc",
     "tagline": "Small business approved",
-    "description": "Custom Next.js + Tailwind websites with dark, glossy, animated designs. Built in 5-7 business days. You own the code. Hosting included.",
+    "description": "Custom Next.js + Tailwind websites with dark, glossy, animated designs. You own the code. Hosting included.",
     "domain": "sitesinc.co"
   },
   "seo": {
     "title": "Sitesinc – Real Small Business Websites for $1,995 Flat",
-    "description": "We build real, working websites, not subscriptions. $1,995 flat: 50% to start, 50% at launch. Monitored SEO: 1st month free, then $129/mo (optional).",
+    "description": "We build real, working websites, not subscriptions. $1,995 flat: 50% to start, 50% at launch. Monitored SEO: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days (optional).",
     "url": "https://sitesinc.co",
     "siteName": "Sitesinc",
     "locale": "en_US",
     "image": "https://sitesinc.co/og-image.png",
     "og": {
       "title": "Sitesinc – Real Working Websites for $1,995 Flat",
-      "description": "We build real, working websites, not subscriptions. $1,995 flat: 50% to start, 50% at launch. Monitored SEO: 1st month free, then $129/mo (optional)."
+      "description": "We build real, working websites, not subscriptions. $1,995 flat: 50% to start, 50% at launch. Monitored SEO: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days (optional)."
     },
     "twitter": {
       "card": "summary_large_image",
       "title": "Sitesinc – Real Working Websites for $1,995 Flat",
-      "description": "We build real, working websites, not subscriptions. $1,995 flat: 50% to start, 50% at launch. Monitored SEO: 1st month free, then $129/mo (optional)."
+      "description": "We build real, working websites, not subscriptions. $1,995 flat: 50% to start, 50% at launch. Monitored SEO: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days (optional)."
     }
   },
   "hero": {
@@ -28,7 +28,7 @@
     "subheadline": "Sitesinc Website Factory builds dark, glossy, high-converting sites for the “little guy” who never got their website quite right. One-time build, SEO-ready, built to turn visitors into calls and leads, and fully yours.",
     "offer": {
       "title": "For $1,995 flat.",
-      "subtitle": "50% to start, 50% at launch. Monitored SEO is not included in the $1,995 build: 1st month free, then $129/mo."
+      "subtitle": "50% to start, 50% at launch. Monitored SEO is not included in the $1,995 build: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days."
     },
     "primaryCta": {
       "label": "Start a website build",
@@ -38,8 +38,8 @@
       "label": "See 8 Designs",
       "target": "designs"
     },
-    "pricingLine": "$1,995 flat · 50% to start, 50% at launch · Monitored SEO: 1st month free, then $129/mo",
-    "stackLine": "5-7 business day turnaround • Next.js + Tailwind • Netlify hosting included • You own the full code.",
+    "pricingLine": "$1,995 flat · 50% to start, 50% at launch · Monitored SEO: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days",
+    "stackLine": "Timeline confirmed in writing before work starts • Next.js + Tailwind • Netlify hosting included • You own the full code.",
     "trustLine": "Perfect for barbers, cleaners, food trucks, contractors, coaches, solo pros, and side hustles."
   },
   "techStack": {
@@ -75,13 +75,12 @@
       "Basic funnel setup (lead capture form + email signup flow)",
       "Domain connection",
       "Full code handoff + Netlify hosting setup",
-      "1 round of revisions after the first draft",
-      "5-7 business day turnaround once content is received"
+      "1 round of revisions after the first draft"
     ]
   },
   "pricing": {
     "title": "Simple, transparent pricing",
-    "subtitle": "The website build is $1,995 flat. Pay 50% to start, 50% at launch. Monitored SEO is not included in the $1,995 build: 1st month free, then $129/mo. You own the code.",
+    "subtitle": "The website build is $1,995 flat. Pay 50% to start, 50% at launch. Monitored SEO is not included in the $1,995 build: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days. You own the code.",
     "build": {
       "name": "Website build",
       "price": "$1,995",
@@ -96,8 +95,8 @@
     },
     "maintenance": {
       "name": "Monitored SEO (not included in the build)",
-      "price": "1st month free, then $129/mo",
-      "detail": "Monitored SEO is not part of the $1,995 build. Your first month is free, then it is $129/mo. Cancel anytime. No long-term contract. Your site works without it.",
+      "price": "1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days",
+      "detail": "Monitored SEO is not part of the $1,995 build. Monitoring: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days. Cancel anytime. No long-term contract. Your site works without it.",
       "features": [
         "Technical updates and security",
         "Uptime and SEO monitoring, plus basic fixes",
@@ -134,7 +133,7 @@
         "text": "A baseline SEO check of your site at launch, so you know where it stands and what to work on next."
       },
       {
-        "title": "Monitored SEO: 1st month free, then $129/mo",
+        "title": "Monitored SEO: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days",
         "text": "Not included in the $1,995 build. Uptime and SEO monitoring, technical updates and security, basic fixes, and 2-3 small text or image updates each month. Cancel anytime."
       }
     ],
@@ -160,7 +159,7 @@
       "Any photos you want used",
       "Your main offer or goal (calls, bookings, sales, leads)"
     ],
-    "note": "Submitting the form is a request, not a purchase. If we accept the project, Sitesinc emails a $997.50 start invoice. The remaining $997.50 is due at launch. Monitored SEO is not included in the $1,995 build: 1st month free, then $129/mo."
+    "note": "Submitting the form is a request, not a purchase. If we accept the project, Sitesinc emails a $997.50 start invoice. The remaining $997.50 is due at launch. Monitored SEO is not included in the $1,995 build: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days."
   },
   "about": {
     "title": "Built for the “little guy” who's tired of feeling left behind online.",
@@ -171,7 +170,7 @@
   },
   "cta": {
     "title": "The website build is $1,995",
-    "subtitle": "Pay 50% to start, 50% at launch. Monitored SEO is not included in the $1,995 build: 1st month free, then $129/mo.",
+    "subtitle": "Pay 50% to start, 50% at launch. Monitored SEO is not included in the $1,995 build: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days.",
     "primaryCta": {
       "label": "Request a build",
       "href": "#checklist"
@@ -182,33 +181,26 @@
     }
   },
   "proof": {
-    "overline": "Proof",
-    "title": "Real businesses. Real results.",
-    "subtitle": "Don’t take our word for it—watch a sample client site get built the same way yours will: content in, lead-ready site out.",
+    "overline": "Our guarantee",
+    "title": "Plain terms. No surprises.",
+    "subtitle": "We are a new service, so we are not going to show you made-up reviews or numbers. Here is exactly what you get and what you do not get.",
     "outcomes": [
       {
-        "stat": "5–7 days",
-        "label": "Typical turnaround",
-        "detail": "From content received to a live, hosted site—not months in a page builder."
+        "stat": "$1,995",
+        "label": "Flat, one-time price",
+        "detail": "One price for the website build. 50% to start, 50% at launch. No hourly billing and no surprise add-ons."
       },
       {
-        "stat": "100%",
-        "label": "Code you own",
-        "detail": "Full Next.js handoff. No platform lock-in. Any developer can pick it up later."
+        "stat": "No contract",
+        "label": "No long-term commitment",
+        "detail": "No subscription is required to keep your website live. Optional monitoring can be canceled."
       },
       {
-        "stat": "Lead-ready",
-        "label": "Built to convert",
-        "detail": "Clear CTA, lead capture, tap-to-call, and SEO basics from day one."
+        "stat": "You own it",
+        "label": "Your website, your code",
+        "detail": "We hand over the full code and content when the build is complete. You are never locked in."
       }
     ],
-    "sample": {
-      "badge": "Sample build",
-      "business": "Smith Plumbing & Heating",
-      "niche": "Emergency plumber",
-      "result": "Call-first homepage, 24/7 service focus, reviews block, and tap-to-call CTA—the kind of site that answers the phone instead of looking pretty and silent.",
-      "note": "Demo of our per-client workflow using the same stack and content.json system we ship to paying customers."
-    },
     "cta": {
       "label": "See pricing & start a build",
       "target": "pricing"
@@ -228,14 +220,14 @@
     "placeholder": "you@email.com",
     "buttonLabel": "Submit a request",
     "privacyLabel": "I agree to the privacy policy so you can contact me about this request.",
-    "monitoringLabel": "I’m interested in monitored SEO (1st month free, then $129/mo, cancel anytime).",
+    "monitoringLabel": "I’m interested in monitored SEO (1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days, cancel anytime).",
     "finePrint": "No charge on submit. We store your name and email privately so we can follow up. Contact us anytime at"
   },
   "footer": {
     "legalName": "Sitesinc",
     "email": "save@sitesinc.co",
     "trustTitle": "Transparent pricing, invoiced in two parts.",
-    "trustLine": "$1,995 flat • 50% to start, 50% at launch • Monitored SEO (optional): 1st month free, then $129/mo • You own your site code.",
+    "trustLine": "$1,995 flat • 50% to start, 50% at launch • Monitored SEO (optional): 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days • You own your site code.",
     "scrollLinks": [
       {
         "label": "Pricing",
@@ -252,18 +244,38 @@
     ],
     "legalLinks": [
       {
-        "label": "Privacy",
+        "label": "Privacy Policy",
         "href": "/privacy"
       },
       {
-        "label": "Terms",
+        "label": "Terms of Service",
         "href": "/terms"
+      },
+      {
+        "label": "Disclaimer",
+        "href": "/disclaimer"
+      },
+      {
+        "label": "Cookie Policy",
+        "href": "/cookie-policy"
+      },
+      {
+        "label": "DMCA",
+        "href": "/dmca"
+      },
+      {
+        "label": "Locations",
+        "href": "/locations"
+      },
+      {
+        "label": "Sitemap",
+        "href": "/sitemap.xml"
       }
     ],
     "phone": "(909) 378-6404",
     "phoneHref": "tel:+19093786404",
     "address": {
-      "street": "1986 South Coast Hwy #3632",
+      "street": "1968 South Coast Hwy #3632",
       "city": "Laguna Beach",
       "region": "CA",
       "postalCode": "92651",

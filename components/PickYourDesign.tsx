@@ -36,7 +36,7 @@ export default function PickYourDesign() {
           </h2>
           <p className="text-base text-slate-300">
             Type your name and service — the live preview fills in headlines,
-            priced services, testimonials, and CTAs across all 8 layouts.
+            service sections, placeholder review slots, and CTAs across all 8 layouts.
           </p>
         </div>
 

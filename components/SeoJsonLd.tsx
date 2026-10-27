@@ -44,7 +44,7 @@ export default function SeoJsonLd() {
           price: "1995",
           priceCurrency: "USD",
           description:
-            "Website builds are $1,995. Pay 50% to start, 50% at launch. Monitored SEO is not included in the $1,995 build: 1st month free, then $129/mo.",
+            "Website builds are $1,995. Pay 50% to start, 50% at launch. Monitored SEO is not included in the $1,995 build: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days.",
         },
       },
       {

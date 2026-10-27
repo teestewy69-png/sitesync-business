@@ -3,14 +3,18 @@ import { PUBLIC_PATHS } from "@/lib/factory/pipeline";
 import { readPublicWorkspace } from "@/lib/factory/workspace";
 import { isStagingEnv } from "@/lib/site-env";
 import { posts } from "@/data/posts";
+import { getLocationCities } from "@/lib/locations";
 
 /** Real last-content-change dates per path (update when a page's copy changes). Unlisted paths fall back to SITE_UPDATED. */
-const SITE_UPDATED = "2026-10-20";
+const SITE_UPDATED = "2026-10-27";
 const LASTMOD: Record<string, string> = {
   ...Object.fromEntries(posts.map((p) => [`/blog/${p.slug}`, p.updated ?? p.date])),
 };
 
 export const dynamic = "force-dynamic";
+
+/** Legal pages that exist as real routes but may not be in PUBLIC_PATHS. */
+const EXTRA_LEGAL = ["/disclaimer", "/cookie-policy", "/dmca"];
 
 const BLOCKED = new Set(["/cart", "/checkout", "/thank-you", "/case-study", "/app"]);
 
@@ -25,6 +29,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const paths = new Set<string>(
     PUBLIC_PATHS.filter((path) => !BLOCKED.has(path) && !path.startsWith("/app"))
   );
+  for (const extra of EXTRA_LEGAL) paths.add(extra);
+  paths.add("/locations");
+  for (const city of getLocationCities()) paths.add(`/locations/${city.slug}`);
   const workspace = await readPublicWorkspace();
   if (workspace) {
     for (const page of workspace.pages) {

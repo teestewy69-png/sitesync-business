@@ -6,9 +6,9 @@ import OrgJsonLd from "@/components/OrgJsonLd";
 
 export const metadata: Metadata = {
   title: "Terms of Service | Sitesinc Website Builds",
-  description: "The terms for Sitesinc website builds: $1,995 flat, 50% to start and 50% at launch, revisions, ownership, and monitored SEO at $129/mo after month one.",
+  description: "The terms for Sitesinc website builds: $1,995 flat, 50% to start and 50% at launch, revisions, ownership, and optional monitored SEO (1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days).",
   alternates: { canonical: "/terms" },
-  openGraph: { title: "Terms of Service | Sitesinc Website Builds", description: "The terms for Sitesinc website builds: $1,995 flat, 50% to start and 50% at launch, revisions, ownership, and monitored SEO at $129/mo after month one.", url: "/terms", images: [OG_IMAGE] },
+  openGraph: { title: "Terms of Service | Sitesinc Website Builds", description: "The terms for Sitesinc website builds: $1,995 flat, 50% to start and 50% at launch, revisions, ownership, and optional monitored SEO (1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days).", url: "/terms", images: [OG_IMAGE] },
 };
 
 export default function TermsPage() {
@@ -82,7 +82,7 @@ export default function TermsPage() {
             </ul>
             <p className="mt-2">
               Exact deliverables depend on the written scope we confirm with you
-              before work starts. Optional monitoring ($129/month) is separate
+              before work starts. Optional monitoring ($129/month; 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days) is separate
               and not required for your site to remain live.
             </p>
           </section>
@@ -93,7 +93,7 @@ export default function TermsPage() {
             </h2>
             <p className="mt-2">
               Website builds are $1,995 — a flat fee. No negotiation.
-              Optional monitoring is $129/month. We may change published prices
+              Optional monitoring is $129/month (1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days). We may change published prices
               for future projects; the $1,995 fee for an accepted project does
               not change after you accept it.
             </p>

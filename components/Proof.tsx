@@ -1,5 +1,4 @@
 import content from "@/content.json";
-import BuildDemo from "@/components/BuildDemo";
 
 export default function Proof() {
   const { proof } = content;
@@ -40,8 +39,6 @@ export default function Proof() {
             </div>
           ))}
         </div>
-
-        <BuildDemo />
 
         <div className="flex justify-start">
           <a

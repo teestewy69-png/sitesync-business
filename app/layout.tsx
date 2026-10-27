@@ -52,7 +52,7 @@ export const metadata: Metadata = {
   },
   ...(isStagingEnv()
     ? { robots: { index: false, follow: false, nocache: true } }
-    : {}),
+    : { robots: { index: true, follow: true } }),
 };
 
 export default function RootLayout({

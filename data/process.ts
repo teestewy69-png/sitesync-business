@@ -22,7 +22,7 @@ export const processSteps: ProcessStep[] = [
   },
   {
     step: "04",
-    title: "Review, refine & launch in 5–7 days",
+    title: "Review, refine & launch",
     text: "You get a preview, request one round of tweaks, and we go live. You receive the full codebase and a short walkthrough video so you fully own your new website.",
   },
 ];

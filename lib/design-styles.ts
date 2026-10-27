@@ -73,7 +73,7 @@ export const SITESINC_SITE: MiniSiteContent = {
     {
       name: "Monitored SEO",
       price: "1st mo free",
-      blurb: "Not included in the build: 1st month free, then $129/mo. Cancel anytime.",
+      blurb: "Not included in the build: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days. Cancel anytime.",
     },
   ],
   testimonials: [
@@ -85,17 +85,17 @@ export const SITESINC_SITE: MiniSiteContent = {
     {
       name: "Payment",
       quote:
-        "Website builds are $1,995. Pay 50% to start, 50% at launch. Monitored SEO (optional): 1st month free, then $129/mo. You own the code.",
+        "Website builds are $1,995. Pay 50% to start, 50% at launch. Monitored SEO (optional): 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days. You own the code.",
     },
     {
       name: "Turnaround",
       quote:
-        "5–7 business days from content received to a hosted, lead-ready site.",
+        "Timeline is confirmed in writing before work starts.",
     },
   ],
   trustSignals: [
     "You own the code",
-    "5–7 day turnaround",
+    "Clear written timeline",
     "SEO basics built in",
     "Hosting included",
   ],
@@ -108,8 +108,8 @@ export function buildPreviewContent(
   const business = businessName.trim() || "Your Business";
   const serviceWord = keyword.trim() || "services";
   const tagline = keyword.trim()
-    ? `Professional ${keyword.trim()} that turns visitors into booked jobs.`
-    : "A polished online presence that turns visitors into booked jobs.";
+    ? `A clear, mobile-friendly website for your ${keyword.trim()} business.`
+    : "A clear, mobile-friendly website for your business.";
 
   return {
     business,
@@ -120,44 +120,45 @@ export function buildPreviewContent(
       {
         name: keyword.trim() ? `${capitalize(serviceWord)} Consult` : "Starter Package",
         price: "Your price",
-        blurb: `Quick intro call to map the right ${serviceWord} plan.`,
+        blurb: `Describe your intro or consult offer here.`,
       },
       {
         name: keyword.trim() ? `${capitalize(serviceWord)} Core` : "Core Service",
         price: "Your price",
-        blurb: `The most-booked ${serviceWord} option for busy customers.`,
+        blurb: `Describe your main ${serviceWord} offer here.`,
       },
       {
         name: "Premium Bundle",
         price: "Your price",
-        blurb: "Priority scheduling, extras, and white-glove follow-up.",
+        blurb: "Describe any extras or add-ons here.",
       },
       {
         name: "Free Estimate",
         price: "Free",
-        blurb: "No-pressure estimate tailored to your project.",
+        blurb: "Describe how customers can request an estimate.",
       },
     ],
     testimonials: [
       {
-        name: "Alex M.",
-        quote: `${business} made booking effortless — clear pricing and fast replies.`,
+        name: "Placeholder",
+        quote: `Your real customer reviews would appear here. This preview does not show real reviews.`,
       },
       {
-        name: "Sam T.",
-        quote: `We found ${business} online and hired them the same day. Highly recommend.`,
+        name: "Placeholder",
+        quote: `Reviews are added only from real customers of ${business}.`,
       },
       {
-        name: "Riley C.",
-        quote: `Professional ${serviceWord}, honest communication, and a site that feels trustworthy.`,
+        name: "Placeholder",
+        quote: `Sample layout for ${serviceWord}: your logo, photos and services replace this text.`,
       },
     ],
     trustSignals: [
-      "Trusted locally",
-      "Fast response",
-      "Transparent pricing",
-      "Satisfaction focused",
+      "Tap-to-call button",
+      "Clear pricing section",
+      "Mobile-first layout",
+      "Contact form",
     ],
+
   };
 }
 

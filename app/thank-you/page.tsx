@@ -23,7 +23,7 @@ const REQUEST_COPY: Record<RequestKey, { title: string; body: string }> = {
   },
   maintenance: {
     title: "Thanks — monitoring request received",
-    body: "Optional monitoring is $129/month and can be enrolled manually after a website is accepted. Cancel anytime. No long-term contract.",
+    body: "Optional monitoring is $129/month and can be enrolled manually after a website is accepted (1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days). Cancel anytime. No long-term contract.",
   },
 };
 
