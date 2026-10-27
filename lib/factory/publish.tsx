@@ -22,16 +22,17 @@ export async function getPublishedPage(slug: string): Promise<FactoryPage | null
   if (!page) return null;
   if (page.status !== "published" || page.noindex) return null;
   if (!page.body.trim()) return null;
-  // Path A guard: a page published before the offer cleanup may still carry retired claims (Stripe checkout,
-  // monetization placeholders, digital products...). Serve the current reviewed draft for that slug instead,
-  // or nothing if there is no draft. Re-publishing from /app replaces the stored copy for good.
-  const stale = findRetiredOfferClaim(`${page.title}\n${page.metaDescription}\n${page.body}`);
-  if (stale) {
-    const draft = PAGE_DRAFTS[slug];
-    if (!draft) return null;
-    console.warn(`Published page ${slug} carries retired offer copy; serving the current draft.`);
+  // In-repo PAGE_DRAFTS are the current reviewed public copy for hub slugs. Prefer them over a
+  // stale workspace document so title/canonical/copy fixes ship without a factory republish.
+  // Re-publishing from /app still updates the stored copy for good.
+  const draft = PAGE_DRAFTS[slug];
+  if (draft) {
+    const stale = findRetiredOfferClaim(`${page.title}\n${page.metaDescription}\n${page.body}`);
+    if (stale) console.warn(`Published page ${slug} carries retired offer copy; serving the current draft.`);
     return { ...page, ...draft };
   }
+  const stale = findRetiredOfferClaim(`${page.title}\n${page.metaDescription}\n${page.body}`);
+  if (stale) return null;
   return page;
 }
 
