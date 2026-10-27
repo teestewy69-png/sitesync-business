@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import Link from "next/link";
 import ClientConfigForm from "@/components/factory/ClientConfigForm";
 import ActionForm from "@/components/factory/ActionForm";
 import CityLaunchBay from "@/components/factory/CityLaunchBay";
@@ -38,49 +39,11 @@ export default async function FactoryHome() {
   }
 
   return (
-    <FactoryShell title="Sitesinc Growth Case Study">
-      <p className="max-w-3xl text-base text-slate-300">
-        Internal factory project linked to {workspace.project.productionUrl}. Production homepage stays live.
-        Staging is noindex. This is a 90-day living study — Day 0 is the baseline, not a one-day makeover.
+    <FactoryShell title="Warehouse">
+      <p className="max-w-3xl text-lg text-zinc-300">
+        Start with a client, then walk the line. Purple builds the site. Blue is DomainIQ. Green is ScaleQuan city
+        pages. Red monitors and releases.
       </p>
-
-      <div className="mt-6 grid gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-          <p className="text-xs text-slate-400">Project</p>
-          <p className="mt-1 font-semibold">{workspace.project.name}</p>
-          <p className="text-sm text-slate-400">{workspace.project.id}</p>
-        </div>
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-          <p className="text-xs text-slate-400">Latest baseline</p>
-          <p className="mt-1 font-semibold">{baseline ? baseline.capturedAt.slice(0, 19) : "Not captured"}</p>
-          <p className="text-sm text-slate-400">{baseline ? `${baseline.pageInventory.length} pages` : "Required before research"}</p>
-        </div>
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-          <p className="text-xs text-slate-400">Study horizon</p>
-          <p className="mt-1 font-semibold">{workspace.study.horizonDays} days</p>
-          <p className="text-sm text-slate-400">Started {workspace.study.startedAt.slice(0, 10)}</p>
-        </div>
-      </div>
-
-      <div className="mt-6 flex flex-wrap gap-3">
-        <CaptureButton origin={PRODUCTION_ORIGIN} />
-        <ActionForm op="advance-research" label="Complete research + blueprint" fields={{ approvedBy: "operator" }} />
-        <ActionForm op="kickoff-to-staging" label="Run briefs → drafts → staging" fields={{ approvedBy: "operator" }} />
-        <ActionForm
-          op="kickoff-to-publish"
-          label="Stage → convert-check → publish → submit"
-          fields={{
-            approvedBy: "operator",
-            origin: process.env.NEXT_PUBLIC_SITE_URL || "http://127.0.0.1:3000",
-          }}
-        />
-        <ActionForm
-          op="record-intake"
-          label="Convert intake → internal project"
-          tone="muted"
-          fields={{ source: "factory_intake", label: "Operator factory intake (no PII)" }}
-        />
-      </div>
 
       <ClientConfigForm />
 
@@ -90,12 +53,34 @@ export default async function FactoryHome() {
 
       <CityLaunchBay summary={cityBay} />
 
+      <section className="mt-16 rounded-2xl border border-rose-400/40 bg-rose-500/5 p-6" id="ship-bay">
+        <h2 className="text-2xl font-semibold text-rose-200">4. Ship</h2>
+        <p className="mt-1 max-w-3xl text-sm text-slate-400">
+          Red is the end of the line. Capture a baseline, check staging, read SEO, then release. A client domain
+          still needs a manual production deploy.
+        </p>
+        <ul className="mt-5 grid gap-2 sm:grid-cols-2">
+          {[
+            ["/app/baseline", "Baseline", baseline ? `${baseline.pageInventory.length} pages in the Sitesinc study crawl` : "Sitesinc study crawl not captured yet"],
+            ["/app/staging", "Staging", "Preview stays noindex"],
+            ["/app/seo", "SEO", "Monitor from the dated baseline"],
+            ["/app/release", "Release", "QA gate before anything goes live"],
+          ].map(([href, label, detail]) => (
+            <li key={href}>
+              <Link href={href} className="block rounded-xl border border-rose-400/20 px-4 py-3 hover:bg-rose-500/10">
+                <span className="font-semibold text-rose-100">{label}</span>
+                <span className="mt-1 block text-sm text-zinc-400">{detail}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+
       {!siteflowOn ? (
         <section className="mt-10 rounded-2xl border border-white/10 bg-white/5 p-5" id="siteflow-bay">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Factory bay</p>
-              <h2 className="mt-1 text-xl font-semibold">SiteFlow</h2>
+              <h2 className="text-xl font-semibold">SiteFlow</h2>
               <p className="mt-1 max-w-3xl text-sm text-slate-400">
                 Paused for phase 2 (Path A). The public offer is only the website build ($1,995, 50% to start, 50%
                 at launch) and optional $129/mo monitoring, invoiced by hand. Product checkout, the Stripe webhook, digital
@@ -114,6 +99,32 @@ export default async function FactoryHome() {
         <p className="mt-10 rounded-xl border border-amber-400/30 px-4 py-3 text-sm text-amber-200">SiteFlow bay unavailable (store error).</p>
       )}
 
+      <h2 className="mt-20 text-xl font-semibold text-zinc-200">Sitesinc case study</h2>
+      <p className="mt-2 max-w-3xl text-sm text-zinc-400">
+        {workspace.project.name} ┬╖ {workspace.study.horizonDays}-day study started {workspace.study.startedAt.slice(0, 10)}.
+        Production stays at {workspace.project.productionUrl}.
+        {baseline ? ` Latest baseline ${baseline.capturedAt.slice(0, 10)}, ${baseline.pageInventory.length} pages.` : " Baseline not captured yet."}
+      </p>
+      <div className="mt-4 flex flex-wrap gap-3">
+        <CaptureButton origin={PRODUCTION_ORIGIN} />
+        <ActionForm op="advance-research" label="Complete research + blueprint" fields={{ approvedBy: "operator" }} />
+        <ActionForm op="kickoff-to-staging" label="Run briefs ΓåÆ drafts ΓåÆ staging" fields={{ approvedBy: "operator" }} />
+        <ActionForm
+          op="kickoff-to-publish"
+          label="Stage ΓåÆ convert-check ΓåÆ publish ΓåÆ submit"
+          fields={{
+            approvedBy: "operator",
+            origin: process.env.NEXT_PUBLIC_SITE_URL || "http://127.0.0.1:3000",
+          }}
+        />
+        <ActionForm
+          op="record-intake"
+          label="Convert intake ΓåÆ internal project"
+          tone="muted"
+          fields={{ source: "factory_intake", label: "Operator factory intake (no PII)" }}
+        />
+      </div>
+
       <h2 className="mt-10 text-xl font-semibold">Pipeline</h2>
       <div className="mt-4 divide-y divide-white/10 rounded-2xl border border-white/10">
         {workspace.stages.map((stage) => (
@@ -126,14 +137,14 @@ export default async function FactoryHome() {
                   {stage.status}
                 </Pill>
               </div>
-              <p className="mt-1 text-sm text-slate-400">Needs: {stage.requiredInputs.join(" · ")}</p>
+              <p className="mt-1 text-sm text-slate-400">Needs: {stage.requiredInputs.join(" ┬╖ ")}</p>
               {stage.artifacts.length ? (
                 <p className="mt-1 text-sm text-slate-500">Artifacts: {stage.artifacts.join(", ")}</p>
               ) : null}
               {stage.notes ? <p className="mt-1 text-sm text-slate-400">{stage.notes}</p> : null}
               <p className="mt-1 text-xs text-slate-600">
                 Approval: {stage.operatorApproval ? `${stage.approvedBy} @ ${stage.approvedAt.slice(0, 16)}` : "required"}
-                {stage.completedAt ? ` · Done ${stage.completedAt.slice(0, 16)}` : ""}
+                {stage.completedAt ? ` ┬╖ Done ${stage.completedAt.slice(0, 16)}` : ""}
               </p>
             </div>
             <ActionForm
@@ -151,7 +162,7 @@ export default async function FactoryHome() {
         {workspace.visibleGaps.map((gap) => (
           <li key={gap.id} className="rounded-xl border border-white/10 px-4 py-3 text-sm text-slate-300">
             <Pill>{gap.area}</Pill>{" "}
-            <span className="font-medium text-white">{gap.owner}</span> — {gap.detail}
+            <span className="font-medium text-white">{gap.owner}</span> ΓÇö {gap.detail}
           </li>
         ))}
       </ul>

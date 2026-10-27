@@ -4,13 +4,12 @@ import type { CityLaunchBaySummary } from "@/lib/factory/city-launch";
 export default function CityLaunchBay({ summary }: { summary: CityLaunchBaySummary }) {
   const { provider, totals, rows, dataset } = summary;
   return (
-    <section className="mt-10 rounded-2xl border border-brand-400/30 bg-white/5 p-5" id="city-launch-bay">
+    <section className="mt-16 rounded-2xl border border-emerald-400/40 bg-emerald-500/5 p-6" id="city-launch-bay">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-brand-300">Factory bay</p>
-          <h2 className="text-xl font-semibold">ScaleQuan · City Launch</h2>
+          <h2 className="text-2xl font-semibold text-emerald-200">3. Cities</h2>
           <p className="mt-1 max-w-3xl text-sm text-slate-400">
-            ScaleQuan Content Studio, in this workshop. Up to 500 animated city landing pages per client per batch.
+            Green is ScaleQuan. Up to 500 animated city landing pages per client per batch.
             Real cities ({dataset.count.toLocaleString()} U.S. places, Census {dataset.populationYear} population + Gazetteer
             coordinates), LLM-written per city, blocked by the uniqueness gate if near-duplicate, human-approved, then live
             on the client preview automatically. Real-domain publish = Tony&apos;s sign-off + manual production deploy.

@@ -67,3 +67,6 @@ tailwindcss-*.log
 # SiteFlow local state (orders ledger, partners, commissions, clicks) and private deliverables
 /data/siteflow/**
 /data/private/**
+
+# local operator secrets — never commit
+/Attachments/

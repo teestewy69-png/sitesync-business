@@ -112,6 +112,21 @@ body {
   color: white;
 }
 
+/* Warehouse (/app) only. Public site keeps the gold canvas. */
+.warehouse {
+  --neon-purple: #c084fc;
+  --neon-blue: #7dd3fc;
+  --neon-green: #4ade80;
+  --neon-red: #fb7185;
+  background: #07060d;
+  color: #f4f0ff;
+}
+
+.warehouse ::selection {
+  background: rgb(192 132 252 / 0.45);
+  color: white;
+}
+
 /* Client real domains (app/client-domain/*): never show Sitesinc's own pricing ticker. */
 body:has([data-client-site]) .announcement-ticker {
   display: none;

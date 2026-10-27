@@ -83,13 +83,12 @@ export default function DomainIQBay({
   );
 
   return (
-    <section className="mt-10 rounded-2xl border border-brand-400/30 bg-white/5 p-5" id="domainiq-bay">
+    <section className="mt-16 rounded-2xl border border-sky-400/40 bg-sky-500/5 p-6" id="domainiq-bay">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-brand-300">Factory bay</p>
-          <h2 className="mt-1 text-xl font-semibold">DomainIQ · client domains</h2>
+          <h2 className="text-2xl font-semibold text-sky-200">2. Domain</h2>
           <p className="mt-1 max-w-3xl text-sm text-slate-400">
-            Runs automatically for every new client project (after setup, like the auto baseline): generates and
+            Blue is DomainIQ. It runs for every new client project: generates and
             scores domain candidates from niche, business name and city, then checks availability via free public
             RDAP + DNS. Operator picks; Tony signs off; purchase stays manual. Engine {summary.engine} ·{" "}
             {summary.mode} · no server, no API key · availability {summary.availabilityEnabled ? "on (keyless)" : "off"}.
