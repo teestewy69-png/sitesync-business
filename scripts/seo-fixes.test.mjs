@@ -89,6 +89,18 @@ test("city page titles drop the $1,995 / Sitesinc tail and stay under 60 chars",
   }
 });
 
+test("factory hub drafts stay in the sitemap even without a workspace document", async () => {
+  process.env.SITESINC_STORE = "local";
+  const { PAGE_DRAFTS } = await import("../lib/factory/drafts.ts");
+  const { default: sitemap } = await import("../app/sitemap.ts");
+  const urls = (await sitemap()).map((e) => e.url);
+  for (const slug of Object.keys(PAGE_DRAFTS)) {
+    assert.ok(urls.includes(`https://sitesinc.co/${slug}`), slug);
+  }
+  const publish = readFileSync(path.join(ROOT, "lib/factory/publish.tsx"), "utf8");
+  assert.match(publish, /pageFromDraft\(slug\)/);
+});
+
 test("factory hub metadata is self-referencing (canonical + og:url)", async () => {
   const { metadataForFactoryPage } = await import("../lib/factory/page-metadata.ts");
   for (const slug of HUB_PATHS.map((p) => p.slice(1))) {
@@ -176,7 +188,8 @@ test("business address is 1986 South Coast Hwy #3632 everywhere it is stated", (
   assert.equal(content.footer.address.city, "Laguna Beach");
   assert.equal(content.footer.address.region, "CA");
   assert.equal(content.footer.address.postalCode, "92651");
-  assert.equal(content.footer.phone, "(909) 378-6404");
+  assert.equal(content.footer.phone, "(909) 232-3536");
+  assert.equal(content.footer.phoneHref, "tel:+19092323536");
   assert.equal(content.footer.email, "save@sitesinc.co");
   const schema = readFileSync(path.join(ROOT, "components/OrgJsonLd.tsx"), "utf8")
     + readFileSync(path.join(ROOT, "components/SeoJsonLd.tsx"), "utf8")
@@ -207,4 +220,53 @@ test("keywords appear in titles and copy without changing the $1,995 hook", asyn
   assert.match(PAGE_DRAFTS["for-local-service-businesses"].title, /Contractors, Plumbers, Barbers/);
   assert.match(PAGE_DRAFTS["website-design"].body, /affordable website design/i);
   assert.match(PAGE_DRAFTS["for-local-service-businesses"].body, /plumbers/);
+});
+
+test("public copy does not promise a 5-7 business day turnaround", () => {
+  const files = [
+    "data/faq.ts",
+    "data/process.ts",
+    "app/terms/page.tsx",
+    "components/Process.tsx",
+    "lib/factory/drafts.ts",
+    "lib/factory/pipeline.ts",
+    "content.json",
+    "app/locations/[slug]/page.tsx",
+    "data/city-page-content.ts",
+  ];
+  for (const rel of files) {
+    const text = readFileSync(path.join(ROOT, rel), "utf8");
+    assert.doesNotMatch(text, /5\s*[–-]\s*7/, rel);
+    assert.doesNotMatch(text, /5\\u20137/, rel);
+    assert.doesNotMatch(text, /five to seven/i, rel);
+    assert.doesNotMatch(text, /about a week/i, rel);
+  }
+});
+
+test("20 indexed city pages have unique local intro, trades, areas, and 3-4 FAQs", async () => {
+  const { INDEXABLE_LOCATION_SLUGS } = await import("../data/indexable-location-slugs.ts");
+  const { CITY_PAGE_CONTENT, getCityPageCopy } = await import("../data/city-page-content.ts");
+  assert.equal(Object.keys(CITY_PAGE_CONTENT).length, 20);
+  const intros = new Set();
+  for (const slug of INDEXABLE_LOCATION_SLUGS) {
+    const copy = getCityPageCopy(slug);
+    assert.ok(copy, slug);
+    assert.ok(copy.intro.length > 80, `${slug} intro too short`);
+    assert.ok(copy.trades.length > 80, `${slug} trades too short`);
+    assert.ok(copy.areas.length > 80, `${slug} areas too short`);
+    assert.ok(copy.faqs.length >= 3 && copy.faqs.length <= 4, `${slug} faq count ${copy.faqs.length}`);
+    assert.match(copy.intro + copy.trades + copy.areas, /\$1,995|website design|Sitesinc/);
+    assert.ok(copy.faqs.some((f) => /\$1,995/.test(f.a)), `${slug} needs a $1,995 FAQ`);
+    assert.doesNotMatch(JSON.stringify(copy), /we have an office in/i);
+    assert.doesNotMatch(JSON.stringify(copy), /\b\d+% of\b|\b\d+ customers\b|\btestimonial\b/i);
+    intros.add(copy.intro);
+  }
+  assert.equal(intros.size, 20, "each city intro must be unique");
+  assert.equal(getCityPageCopy("new-york-ny"), null);
+
+  const page = readFileSync(path.join(ROOT, "app/locations/[slug]/page.tsx"), "utf8");
+  assert.match(page, /getCityPageCopy/);
+  assert.match(page, /local\.intro/);
+  assert.match(page, /href="\/website-design"/);
+  assert.match(page, /href="\/packages"/);
 });

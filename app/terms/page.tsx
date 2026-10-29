@@ -134,8 +134,7 @@ export default function TermsPage() {
             <p className="mt-2">
               You represent that you own or have rights to use all content you
               provide, and that it does not infringe others’ rights or violate
-              law. Delays in providing content or feedback may delay delivery
-              beyond the stated turnaround.
+              law. Delays in providing content or feedback may delay delivery.
             </p>
           </section>
 
@@ -144,11 +143,12 @@ export default function TermsPage() {
               6. Turnaround and Revisions
             </h2>
             <p className="mt-2">
-              Typical turnaround is about 5–7 business days after we receive
-              required content and the start payment. Timelines are estimates, not
-              guarantees. Standard builds include one round of revisions after
-              the first draft. Additional revision rounds or scope changes may
-              require extra fees, which we will confirm before doing the work.
+              We begin the build after we receive required content and the start
+              payment. The schedule is confirmed in writing before work starts
+              and is an estimate, not a guarantee. Standard builds include one
+              round of revisions after the first draft. Additional revision
+              rounds or scope changes may require extra fees, which we will
+              confirm before doing the work.
             </p>
           </section>
 
@@ -306,8 +306,8 @@ export default function TermsPage() {
               <br />
               Laguna Beach, CA 92651
               <br />
-              <a href="tel:+19093786404" className="text-brand-300 hover:underline">
-                (909) 378-6404
+              <a href="tel:+19092323536" className="text-brand-300 hover:underline">
+                (909) 232-3536
               </a>
               <br />
               <a

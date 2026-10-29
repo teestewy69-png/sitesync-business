@@ -27,7 +27,7 @@ export const faqItems: FaqItem[] = [
   {
     question: "How long will it take to get my website?",
     answer:
-      "Once we have your content (logo, text, images, and basic info), your website is typically ready in 5\u20137 business days. You\u2019ll get a preview, one round of revisions, and then we launch.",
+      "Once we have your content (logo, text, images, and basic info) and the start payment, we build the site, send a preview, complete one round of revisions, and then launch. We confirm the schedule in writing before work starts.",
   },
   {
     question: "I already have a domain. Can you use it?",
@@ -47,11 +47,11 @@ export const faqItems: FaqItem[] = [
   {
     question: "What\u2019s included in the $1,995 website build?",
     answer:
-      "The $1,995 build (paid 50% to start and 50% at launch) includes: a custom site built on one of 8 ultra-modern dark designs, full Next.js + Tailwind development, on-page SEO basics, lead capture (contact form and email signup), Netlify hosting setup, domain connection, a 5\u20137 business day turnaround after receiving your content, and one round of revisions. Monitored SEO is not included in the $1,995 build: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days.",
+      "The $1,995 build (paid 50% to start and 50% at launch) includes: a custom site built on one of 8 ultra-modern dark designs, full Next.js + Tailwind development, on-page SEO basics, lead capture (contact form and email signup), Netlify hosting setup, domain connection, and one round of revisions. Monitored SEO is not included in the $1,995 build: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days.",
   },
   {
     question: "What do you need from me to start?",
     answer:
-      "Submit a request on this site. If we accept the project, we send a $997.50 start invoice and a short onboarding form for your business name, services, main offers, logo, brand colors, photos, and domain info. The remaining $997.50 is due at launch. The 5\u20137 business day timeline starts after we have your content and the start payment.",
+      "Submit a request on this site. If we accept the project, we send a $997.50 start invoice and a short onboarding form for your business name, services, main offers, logo, brand colors, photos, and domain info. The remaining $997.50 is due at launch. We start the build after we have your content and the start payment.",
   },
 ];
