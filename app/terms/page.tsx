@@ -302,7 +302,7 @@ export default function TermsPage() {
                 Sitesinc
               </span>
               <br />
-              1986 South Coast Hwy #3632
+              1968 South Coast Hwy #3632
               <br />
               Laguna Beach, CA 92651
               <br />
