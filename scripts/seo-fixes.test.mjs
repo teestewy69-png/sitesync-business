@@ -89,6 +89,18 @@ test("city page titles drop the $1,995 / Sitesinc tail and stay under 60 chars",
   }
 });
 
+test("factory hub drafts stay in the sitemap even without a workspace document", async () => {
+  process.env.SITESINC_STORE = "local";
+  const { PAGE_DRAFTS } = await import("../lib/factory/drafts.ts");
+  const { default: sitemap } = await import("../app/sitemap.ts");
+  const urls = (await sitemap()).map((e) => e.url);
+  for (const slug of Object.keys(PAGE_DRAFTS)) {
+    assert.ok(urls.includes(`https://sitesinc.co/${slug}`), slug);
+  }
+  const publish = readFileSync(path.join(ROOT, "lib/factory/publish.tsx"), "utf8");
+  assert.match(publish, /pageFromDraft\(slug\)/);
+});
+
 test("factory hub metadata is self-referencing (canonical + og:url)", async () => {
   const { metadataForFactoryPage } = await import("../lib/factory/page-metadata.ts");
   for (const slug of HUB_PATHS.map((p) => p.slice(1))) {

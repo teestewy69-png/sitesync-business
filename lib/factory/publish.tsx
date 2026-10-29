@@ -4,9 +4,29 @@ import type { Metadata } from "next";
 import { notFound, unstable_rethrow } from "next/navigation";
 import Link from "next/link";
 import SitePage from "@/components/SitePage";
-import { PAGE_DRAFTS } from "@/lib/factory/drafts";
+import { PAGE_DRAFTS, wordCount } from "@/lib/factory/drafts";
 import { readPublicWorkspace } from "@/lib/factory/workspace";
 import type { FactoryPage } from "@/lib/factory/types";
+
+function pageFromDraft(slug: string): FactoryPage | null {
+  const draft = PAGE_DRAFTS[slug];
+  if (!draft) return null;
+  return {
+    slug,
+    path: `/${slug}`,
+    title: draft.title,
+    metaDescription: draft.metaDescription,
+    status: "published",
+    briefId: "",
+    wordCount: wordCount(draft.body),
+    headings: draft.headings,
+    body: draft.body,
+    noindex: false,
+    approvedBy: "repo-draft",
+    approvedAt: "",
+    publishedAt: "",
+  };
+}
 import { findRetiredOfferClaim } from "@/lib/offer-copy";
 import { metadataForFactoryPage } from "@/lib/factory/page-metadata";
 import { SITE_HUB_LINKS } from "@/lib/site-nav";
@@ -17,11 +37,11 @@ export { metadataForFactoryPage } from "@/lib/factory/page-metadata";
 // (-> notFound / noindex metadata) instead of a 500. /app pages stay strict.
 export async function getPublishedPage(slug: string): Promise<FactoryPage | null> {
   const workspace = await readPublicWorkspace();
-  if (!workspace) return null;
+  if (!workspace) return pageFromDraft(slug);
   const page = workspace.pages.find((item) => item.slug === slug);
-  if (!page) return null;
-  if (page.status !== "published" || page.noindex) return null;
-  if (!page.body.trim()) return null;
+  if (!page) return pageFromDraft(slug);
+  if (page.status !== "published" || page.noindex) return pageFromDraft(slug);
+  if (!page.body.trim()) return pageFromDraft(slug);
   // In-repo PAGE_DRAFTS are the current reviewed public copy for hub slugs. Prefer them over a
   // stale workspace document so title/canonical/copy fixes ship without a factory republish.
   // Re-publishing from /app still updates the stored copy for good.
@@ -38,9 +58,9 @@ export async function getPublishedPage(slug: string): Promise<FactoryPage | null
 
 export async function getPreviewPage(slug: string): Promise<FactoryPage | null> {
   const workspace = await readPublicWorkspace();
-  if (!workspace) return null;
+  if (!workspace) return pageFromDraft(slug);
   const page = workspace.pages.find((item) => item.slug === slug);
-  if (!page || !page.body.trim()) return null;
+  if (!page || !page.body.trim()) return pageFromDraft(slug);
   if (page.status === "staged" || page.status === "published" || page.status === "approved") {
     const draft = PAGE_DRAFTS[slug];
     return draft ? { ...page, ...draft } : page;
