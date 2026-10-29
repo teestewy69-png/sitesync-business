@@ -5,6 +5,7 @@ import content from "@/content.json";
 import SitePage from "@/components/SitePage";
 import OrgJsonLd from "@/components/OrgJsonLd";
 import { OG_IMAGE } from "@/lib/og-image";
+import { getCityPageCopy } from "@/data/city-page-content";
 import { getLocationCities, getLocationCity, locationRobots, locationUrl, relatedCities } from "@/lib/locations";
 
 type Params = { slug: string };
@@ -42,8 +43,9 @@ export default async function LocationPage({ params }: { params: Promise<Params>
   const place = `${city.name}, ${city.state}`;
   const pop = new Intl.NumberFormat("en-US").format(city.population);
   const url = locationUrl(city.slug);
+  const local = getCityPageCopy(slug);
 
-  const faqs = [
+  const faqs = local?.faqs ?? [
     {
       q: `How much does a website cost for a business in ${place}?`,
       a: `The Sitesinc website build is $1,995, a flat one-time price. You pay 50% ($997.50) to start and 50% ($997.50) at launch. Optional monitoring is separate: ${MONITORING}.`,
@@ -106,6 +108,19 @@ export default async function LocationPage({ params }: { params: Promise<Params>
           estimate). Sitesinc is based in {content.footer.address.city}, {content.footer.address.region} and builds
           websites online, so we work with small businesses in {city.name} without an in-person visit.
         </p>
+        {local ? (
+          <>
+            <p className="mt-3 text-base text-slate-300">{local.intro}</p>
+            <section className="mt-10">
+              <h2 className="text-xl font-semibold">{local.tradesHeading}</h2>
+              <p className="mt-3 text-base text-slate-300">{local.trades}</p>
+            </section>
+            <section className="mt-10">
+              <h2 className="text-xl font-semibold">{local.areasHeading}</h2>
+              <p className="mt-3 text-base text-slate-300">{local.areas}</p>
+            </section>
+          </>
+        ) : null}
 
         <section className="mt-10 rounded-2xl border border-white/10 bg-white/5 p-6">
           <h2 className="text-xl font-semibold">Our guarantee, in plain terms</h2>

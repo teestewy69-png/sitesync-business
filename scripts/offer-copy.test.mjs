@@ -244,6 +244,7 @@ const PUBLIC_SOURCES = [
   "app/terms/page.tsx",
   "app/privacy/page.tsx",
   "lib/factory/drafts.ts",
+  "data/city-page-content.ts",
   "lib/design-styles.ts",
   "lib/compare.ts",
   "lib/site-audit.ts",
