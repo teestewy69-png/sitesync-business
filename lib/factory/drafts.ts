@@ -40,7 +40,7 @@ Business name, what you sell, photos you want used, logo and colors if you have 
 
 If you need a 40-page catalog, a custom app, or same-day copywriting from thin air, say so before you pay. We will tell you no rather than ship a thin site. If a rebuild is not the right move yet, read the redesign page first.
 
-See current pricing on the homepage or the packages page. No ranking promises — a clearer site is the deliverable.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional monitored SEO: 1st month free, then $129/mo. Questions? Call (909) 378-6404 or email save@sitesinc.co.`,
+See current pricing on the homepage or the packages page. No ranking promises — a clearer site is the deliverable.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional monitored SEO: 1st month free, then $129/mo. Questions? Call (909) 232-3536 or email save@sitesinc.co.`,
   },
   packages: {
     title: "Website Packages & Pricing: $1,995 Flat | Sitesinc",
@@ -72,7 +72,7 @@ We do not sell 20 “city + service” landing pages. We do not sell guaranteed 
 
 Submitting the build form is a request, not a purchase. If we accept the project, Sitesinc emails a $997.50 start invoice; we start once it is paid and your onboarding details are in. The remaining $997.50 is invoiced at launch. If you have questions first, email save@sitesinc.co. Prices on this page must match the homepage — if they ever drift, trust the homepage and tell us.
 
-Twelve-month math, stated plainly: the $1,995 build plus optional monitored SEO (1st month free, then $129/mo) adds $1,419 (11 paid months × $129) if you keep it for the first year. A typical DIY builder plan in the $30–$50/mo range is cheaper up front and more expensive if you stay for years — and you still do not own the code. Pick the model that matches how you want to operate.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional monitored SEO: 1st month free, then $129/mo. Questions? Call (909) 378-6404 or email save@sitesinc.co.`,
+Twelve-month math, stated plainly: the $1,995 build plus optional monitored SEO (1st month free, then $129/mo) adds $1,419 (11 paid months × $129) if you keep it for the first year. A typical DIY builder plan in the $30–$50/mo range is cheaper up front and more expensive if you stay for years — and you still do not own the code. Pick the model that matches how you want to operate.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional monitored SEO: 1st month free, then $129/mo. Questions? Call (909) 232-3536 or email save@sitesinc.co.`,
   },
   "website-redesign": {
     title: "Small Business Website Redesign | Sitesinc",
@@ -104,7 +104,7 @@ The template, the theme lock-in, and the layout that hides the CTA. We rebuild i
 
 If you have no photos, no offer, and no time to answer onboarding questions, wait. If you only need a new logo, hire a designer. If you need a native app, we are the wrong shop.
 
-Related reading: our blog posts on what a real small-business site needs and DIY vs done-for-you. This page will not claim a redesign raises revenue. It claims a clearer site is easier to use.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional monitored SEO: 1st month free, then $129/mo. Questions? Call (909) 378-6404 or email save@sitesinc.co.`,
+Related reading: our blog posts on what a real small-business site needs and DIY vs done-for-you. This page will not claim a redesign raises revenue. It claims a clearer site is easier to use.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional monitored SEO: 1st month free, then $129/mo. Questions? Call (909) 232-3536 or email save@sitesinc.co.`,
   },
   "seo-ready-websites": {
     title: "SEO for Small Business: Ready Websites | Sitesinc",
@@ -139,7 +139,7 @@ A lead form that writes to a store and emails save@sitesinc.co is part of SEO-re
 
 It does not mean page-one rankings, a set number of leads, or that submitting a sitemap indexes the URL. Search Console, when connected, is how we verify status. Until then we record “submitted” or “not submitted” and we do not mark pages indexed.
 
-Google’s SEO Starter Guide is the public reference we align with. This factory case study tracks the same checklist on sitesinc.co itself.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional monitored SEO: 1st month free, then $129/mo. Questions? Call (909) 378-6404 or email save@sitesinc.co.`,
+Google’s SEO Starter Guide is the public reference we align with. This factory case study tracks the same checklist on sitesinc.co itself.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional monitored SEO: 1st month free, then $129/mo. Questions? Call (909) 232-3536 or email save@sitesinc.co.`,
   },
   "website-monitoring": {
     title: "Website Monitoring: 1st Month Free | Sitesinc",
@@ -164,7 +164,7 @@ Technical updates and security basics, uptime/monitoring and basic fixes, and tw
 
 You can host the handed-off repo yourself and never pay the care plan. The build is complete without it. If you want us to keep watching it, ask for the $129/mo monitoring plan. If you want to cancel later, you still have the code.
 
-This page will not scare you into a subscription. The homepage already says the care plan is optional. We repeat that here so a search for website monitoring does not hide the opt-out.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional monitored SEO: 1st month free, then $129/mo. Questions? Call (909) 378-6404 or email save@sitesinc.co.`,
+This page will not scare you into a subscription. The homepage already says the care plan is optional. We repeat that here so a search for website monitoring does not hide the opt-out.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional monitored SEO: 1st month free, then $129/mo. Questions? Call (909) 232-3536 or email save@sitesinc.co.`,
   },
   "for-local-service-businesses": {
     title: "Websites for Contractors, Plumbers, Barbers | Sitesinc",
@@ -204,7 +204,7 @@ One offer, one next step, proof that you have done the work. A 12-page “about 
 
 Sitesinc will not clone this page for “barber in [city]” fifty times. If we ever add a second industry page, it will have new examples, not a find-and-replace. That is a quality rule, not a slogan.
 
-The same factory that is rebuilding sitesinc.co — research, brief, human approval, staging, then publish — is the factory we run for a shop. We confirm the schedule in writing before work starts. The 90-day case study on this domain is about proving the marketing system, not delaying your build.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional monitored SEO: 1st month free, then $129/mo. Questions? Call (909) 378-6404 or email save@sitesinc.co.`,
+The same factory that is rebuilding sitesinc.co — research, brief, human approval, staging, then publish — is the factory we run for a shop. We confirm the schedule in writing before work starts. The 90-day case study on this domain is about proving the marketing system, not delaying your build.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional monitored SEO: 1st month free, then $129/mo. Questions? Call (909) 232-3536 or email save@sitesinc.co.`,
   },
 };
 

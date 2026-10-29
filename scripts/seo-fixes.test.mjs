@@ -188,7 +188,8 @@ test("business address is 1986 South Coast Hwy #3632 everywhere it is stated", (
   assert.equal(content.footer.address.city, "Laguna Beach");
   assert.equal(content.footer.address.region, "CA");
   assert.equal(content.footer.address.postalCode, "92651");
-  assert.equal(content.footer.phone, "(909) 378-6404");
+  assert.equal(content.footer.phone, "(909) 232-3536");
+  assert.equal(content.footer.phoneHref, "tel:+19092323536");
   assert.equal(content.footer.email, "save@sitesinc.co");
   const schema = readFileSync(path.join(ROOT, "components/OrgJsonLd.tsx"), "utf8")
     + readFileSync(path.join(ROOT, "components/SeoJsonLd.tsx"), "utf8")
