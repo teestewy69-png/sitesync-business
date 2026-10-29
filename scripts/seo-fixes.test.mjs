@@ -182,9 +182,9 @@ test("robots.txt has no unused Host line", () => {
   assert.match(robots, /sitemap: "https:\/\/sitesinc\.co\/sitemap\.xml"/);
 });
 
-test("business address is 1986 South Coast Hwy #3632 everywhere it is stated", () => {
+test("business address is 1968 South Coast Hwy #3632 everywhere it is stated", () => {
   const content = JSON.parse(readFileSync(path.join(ROOT, "content.json"), "utf8"));
-  assert.equal(content.footer.address.street, "1986 South Coast Hwy #3632");
+  assert.equal(content.footer.address.street, "1968 South Coast Hwy #3632");
   assert.equal(content.footer.address.city, "Laguna Beach");
   assert.equal(content.footer.address.region, "CA");
   assert.equal(content.footer.address.postalCode, "92651");
@@ -204,7 +204,7 @@ test("business address is 1986 South Coast Hwy #3632 everywhere it is stated", (
     "components/SeoJsonLd.tsx",
   ].map((f) => readFileSync(path.join(ROOT, f), "utf8")).join("\n");
   assert.doesNotMatch(scan, /1968 South Coast Hwy/);
-  assert.match(scan, /1986 South Coast Hwy #3632/);
+  assert.match(scan, /1968 South Coast Hwy #3632/);
 });
 
 test("keywords appear in titles and copy without changing the $1,995 hook", async () => {

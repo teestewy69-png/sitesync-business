@@ -34,7 +34,7 @@ export const CITY_PAGE_CONTENT: Record<IndexableLocationSlug, CityPageCopy> = {
     faqs: [
       {
         q: "Does Sitesinc have an office in Anaheim?",
-        a: "No. Sitesinc is based at 1986 South Coast Hwy #3632, Laguna Beach, CA 92651 and builds websites online. We work with Anaheim businesses remotely. Submitting the form is a request, not a purchase.",
+        a: "No. Sitesinc is based at 1968 South Coast Hwy #3632, Laguna Beach, CA 92651 and builds websites online. We work with Anaheim businesses remotely. Submitting the form is a request, not a purchase.",
       },
       {
         q: "Should an Anaheim site mention Disneyland or the Resort District?",
@@ -90,7 +90,7 @@ export const CITY_PAGE_CONTENT: Record<IndexableLocationSlug, CityPageCopy> = {
     faqs: [
       {
         q: "Is Sitesinc based in Corona?",
-        a: "No. The business address is 1986 South Coast Hwy #3632, Laguna Beach, CA 92651. We build Corona websites online and do not have a Corona office.",
+        a: "No. The business address is 1968 South Coast Hwy #3632, Laguna Beach, CA 92651. We build Corona websites online and do not have a Corona office.",
       },
       {
         q: "How should a Corona contractor describe the 91 and 15 corridor?",
@@ -482,7 +482,7 @@ export const CITY_PAGE_CONTENT: Record<IndexableLocationSlug, CityPageCopy> = {
     faqs: [
       {
         q: "Is Sitesinc based in San Bernardino?",
-        a: "No. The address is 1986 South Coast Hwy #3632, Laguna Beach, CA 92651. We build San Bernardino websites online.",
+        a: "No. The address is 1968 South Coast Hwy #3632, Laguna Beach, CA 92651. We build San Bernardino websites online.",
       },
       {
         q: "Should I mention the county or downtown government offices?",
