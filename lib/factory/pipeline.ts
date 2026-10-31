@@ -301,7 +301,7 @@ export const SEED_BRIEFS: ContentBrief[] = [
     recurringTopics: [
       "Phone/CTA above the fold",
       "You own the code",
-      "5–7 business day turnaround",
+      "Written timeline before work starts",
       "Hosting included",
     ],
     gaps: [
@@ -369,7 +369,7 @@ export const SEED_BRIEFS: ContentBrief[] = [
       "What we replace",
       "When not to redesign",
     ],
-    recurringTopics: ["Own the code", "5–7 days after content", "One round of revisions"],
+    recurringTopics: ["Own the code", "Written timeline before work starts", "One round of revisions"],
     gaps: ["Most redesign pitches never say ‘don’t rebuild yet’."],
     outline: [
       "Diagnostic questions",

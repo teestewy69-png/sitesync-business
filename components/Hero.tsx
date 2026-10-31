@@ -5,7 +5,8 @@ import SiteHeader from "@/components/SiteHeader";
 
 export default function Hero() {
   const { hero, pricing } = content;
-  const startHref = pricing.build.cta.href;
+  const startHref = "/free-website-audit";
+  void pricing;
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-black via-canvas to-black text-white">
@@ -24,6 +25,13 @@ export default function Hero() {
           <h1 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
             {hero.headline}
           </h1>
+
+          <div className="rounded-2xl border border-brand-400/40 bg-brand-500/10 p-4">
+            <p className="text-lg font-semibold text-brand-200">Free Diagnostic of Your Website</p>
+            <p className="mt-1 text-base text-slate-200">
+              One free check of your business website and how it shows up in search: titles, meta tags, speed, mobile, and schema. Plain-English results, no obligation.
+            </p>
+          </div>
 
           <p className="text-balance text-base text-slate-300">
             {hero.subheadline}
@@ -44,7 +52,7 @@ export default function Hero() {
           <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:gap-4">
             <a
               href={startHref}
-              data-analytics-cta="start_build"
+              data-analytics-cta="free_diagnostic"
               data-analytics-location="hero"
               className="group inline-flex items-center justify-center rounded-full bg-gradient-to-b from-brand-300 to-brand-600 px-6 py-3 text-sm font-semibold text-zinc-950 shadow-lg shadow-brand-500/30 transition hover:from-brand-200 hover:to-brand-500"
             >
@@ -56,7 +64,7 @@ export default function Hero() {
             <HeroScrollButton
               target={hero.secondaryCta.target}
               label={hero.secondaryCta.label}
-              analyticsCta="see_designs"
+              analyticsCta="see_before_after"
               analyticsLocation="hero"
               className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/5 px-6 py-3 text-sm font-medium text-slate-100 transition hover:border-brand-400/60 hover:bg-brand-400/5"
             />

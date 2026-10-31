@@ -45,7 +45,7 @@ test("emergency page only for emergency niches", () => {
   assert.ok(T.templatePagesFor("local-service", "plumbing").some((p) => p.slug === "emergency"));
 });
 
-const cfg = { mode: "client", businessName: "Sitesinc", contactName: "", email: "hi@sitesinc.co", niche: "small business website design", businessType: "", city: "Laguna Beach", state: "CA", phone: "(909) 378-6404", primaryGoal: "Get more calls / leads", notes: "", offer: "Websites for small businesses", pricingNote: "$1,995 flat, 50% to start and 50% at launch; monitoring first month free, then $129/mo", domain: "sitesinc.co", monitoringInterest: true, designStyleId: "funnel-ready", templateId: "local-service", seededPages: [] };
+const cfg = { mode: "client", businessName: "Sitesinc", contactName: "", email: "hi@sitesinc.co", niche: "small business website design", businessType: "", city: "Laguna Beach", state: "CA", phone: "(909) 232-3536", primaryGoal: "Get more calls / leads", notes: "", offer: "Websites for small businesses", pricingNote: "$1,995 flat, 50% to start and 50% at launch; monitoring first month free, then $129/mo", domain: "sitesinc.co", monitoringInterest: true, designStyleId: "funnel-ready", templateId: "local-service", seededPages: [] };
 
 test("content drafts are full multi-section pages built from facts; length window is reported honestly", () => {
   for (const slug of ["home", "services", "about"]) {
@@ -67,27 +67,27 @@ test("length windows: content 900-1500, contact/legal shorter", () => {
 });
 
 test("business-fact check flags wrong phone, unknown price, wrong street, missing location", () => {
-  const bad = K.checkBusinessFacts("Call (909) 721-5236. Only $999! Visit 123 Main Street.", cfg, "contact");
+  const bad = K.checkBusinessFacts("Call (909) 555-0100. Only $999! Visit 123 Main Street.", cfg, "contact");
   const facts = bad.issues.map((i) => `${i.level}:${i.fact}`);
   assert.equal(bad.status, "errors");
   assert.ok(facts.includes("error:phone") && facts.includes("error:price") && facts.includes("error:address"));
   assert.ok(facts.includes("warning:phone") && facts.includes("warning:address"));
-  const good = K.checkBusinessFacts("Sitesinc, Laguna Beach. Call (909) 378-6404. $1,995 flat; $129/mo.", cfg, "contact");
+  const good = K.checkBusinessFacts("Sitesinc, Laguna Beach. Call (909) 232-3536. $1,995 flat; $129/mo.", cfg, "contact");
   assert.equal(good.status, "ok", JSON.stringify(good.issues));
 });
 
 test("Sitesinc hub pages (6) match the offer facts: $1,995 50/50, monitoring 1st month free then $129/mo, phone", async () => {
   const { PAGE_DRAFTS } = await import("../lib/factory/drafts.ts");
-  const offer = { phone: "(909) 378-6404", pricingNote: "$1,995 flat, 50% to start ($997.50) and 50% at launch; monitored SEO 1st month free, then $129/mo; first year of monitoring $1,419 (11 x $129); DIY builder comparison $30-$50/mo" };
+  const offer = { phone: "(909) 232-3536", pricingNote: "$1,995 flat, 50% to start ($997.50) and 50% at launch; monitored SEO 1st month free, then $129/mo; first year of monitoring $1,419 (11 x $129); DIY builder comparison $30-$50/mo" };
   const slugs = ["website-design", "packages", "website-redesign", "seo-ready-websites", "website-monitoring", "for-local-service-businesses"];
   for (const slug of slugs) {
     const d = PAGE_DRAFTS[slug];
     const text = `${d.body} ${d.metaDescription}`;
     assert.equal(K.checkBusinessFacts(text, offer, slug).status, "ok", slug + JSON.stringify(K.checkBusinessFacts(text, offer, slug).issues));
-    assert.match(text, /\(909\) 378-6404/);
+    assert.match(text, /\(909\) 232-3536/);
     assert.match(text, /1st month free, then \$129\/mo/);
     assert.match(text, /50% to start and 50% at launch/);
-    assert.doesNotMatch(text, /1,548|721-5236/);
+    assert.doesNotMatch(text, /1,548/);
   }
 });
 

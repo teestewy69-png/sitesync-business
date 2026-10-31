@@ -1,5 +1,6 @@
 import dynamic from "next/dynamic";
 import Hero from "@/components/Hero";
+import BeforeAfterSeo from "@/components/BeforeAfterSeo";
 import Pricing from "@/components/Pricing";
 import Outcomes from "@/components/Outcomes";
 import Process from "@/components/Process";
@@ -44,6 +45,7 @@ export default function Home() {
     <>
       <SeoJsonLd />
       <Hero />
+      <BeforeAfterSeo />
       <DesignShowcase />
       <PickYourDesign />
       <Pricing />
