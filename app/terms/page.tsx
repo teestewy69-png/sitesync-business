@@ -306,8 +306,8 @@ export default function TermsPage() {
               <br />
               Laguna Beach, CA 92651
               <br />
-              <a href="tel:+19092323536" className="text-brand-300 hover:underline">
-                (909) 232-3536
+              <a href="tel:+19093231575" className="text-brand-300 hover:underline">
+                (909) 323-1575
               </a>
               <br />
               <a

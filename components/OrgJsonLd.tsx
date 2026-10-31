@@ -11,7 +11,7 @@ export default function OrgJsonLd() {
     name: content.site.name,
     url: origin,
     email: footer.email,
-    telephone: "+1-909-232-3536",
+    telephone: "+1-909-323-1575",
     logo: `${origin}/logo.png`,
     image: content.seo.image,
     priceRange: "$1,995",

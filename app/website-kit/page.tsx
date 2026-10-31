@@ -31,7 +31,7 @@ export default function WebsiteKitPage() {
           <p className="mt-1 text-sm text-slate-300">Bonus: your $27 is credited toward a $1,995 Sitesinc website build.</p>
           <a href={KIT_LINK} className="mt-4 inline-flex rounded-xl bg-brand-500 px-5 py-3 font-semibold text-black hover:bg-brand-400">Get the Kit – $27</a>
         </div>
-        <p className="mt-8 text-sm text-slate-400">Rather skip the DIY? <a href={DEPOSIT} className="text-brand-300 hover:underline">Start your website build</a>. Questions: <a href="mailto:save@sitesinc.co" className="text-brand-300 hover:underline">save@sitesinc.co</a> · <a href="tel:+19092323536" className="text-brand-300 hover:underline">(909) 232-3536</a></p>
+        <p className="mt-8 text-sm text-slate-400">Rather skip the DIY? <a href={DEPOSIT} className="text-brand-300 hover:underline">Start your website build</a>. Questions: <a href="mailto:save@sitesinc.co" className="text-brand-300 hover:underline">save@sitesinc.co</a> · <a href="tel:+19093231575" className="text-brand-300 hover:underline">(909) 323-1575</a></p>
       </section>
     </SitePage>
   );

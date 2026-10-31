@@ -52,7 +52,7 @@ export const SITESINC_SITE: MiniSiteContent = {
   tagline:
     "Ultra-modern websites that finally make your small business look big. Live now at sitesinc.co.",
   cta: "Request My Build",
-  phone: "(909) 232-3536",
+  phone: "(909) 323-1575",
   footerNote: "save@sitesinc.co · Live at sitesinc.co · You own the code",
   services: [
     {

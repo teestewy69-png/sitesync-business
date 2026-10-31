@@ -15,7 +15,7 @@ export default function KitThanksPage() {
           <a href="https://buy.stripe.com/4gM7sL7z74T7aX38o2a3u05" className="rounded-xl bg-brand-500 px-5 py-3 font-semibold text-black hover:bg-brand-400">Start with a deposit</a>
           <a href="https://buy.stripe.com/14AcN56v385j7KR0VAa3u07" className="rounded-xl border border-brand-400 px-5 py-3 font-semibold text-brand-300">Pay for the full build</a>
         </div>
-        <p className="mt-8 text-sm text-slate-400">Questions? <a href="mailto:save@sitesinc.co" className="text-brand-300 hover:underline">save@sitesinc.co</a> or call/text <a href="tel:+19092323536" className="text-brand-300 hover:underline">(909) 232-3536</a></p>
+        <p className="mt-8 text-sm text-slate-400">Questions? <a href="mailto:save@sitesinc.co" className="text-brand-300 hover:underline">save@sitesinc.co</a> or call/text <a href="tel:+19093231575" className="text-brand-300 hover:underline">(909) 323-1575</a></p>
       </section>
     </SitePage>
   );
