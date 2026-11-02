@@ -49,3 +49,28 @@ No PII is ever sent: no email, phone, name or message text.
 
 There is no shop (removed 2026-10-05): no `select_item`, `add_to_cart`, `begin_checkout` or `product_inquiry` events.
 Sitesinc sells website builds and optional monitoring only.
+
+## Website data dashboard (`/app/website-data`)
+
+Operator page (factory auth) that reads **real** GA4 + Search Console numbers for a picked period
+(Today / 7d / 30d / 90d or custom dates).
+
+| Metric | Source |
+|---|---|
+| Visitors | GA4 `totalUsers` |
+| Page views | GA4 `screenPageViews` |
+| Impressions / Clicks | Search Console searchAnalytics |
+| Revenue | GA4 `purchaseRevenue` (or a "not tracked" state if the metric is unavailable) |
+| Daily visitors sparkline | GA4 `totalUsers` by date |
+| Top pages | GA4 `pagePath` |
+| Top search queries | Search Console `query` |
+
+Needs the same service account as SEO (`GOOGLE_SERVICE_ACCOUNT_KEY_FILE`) plus
+`GA4_PROPERTY_ID` and `GOOGLE_SEARCH_CONSOLE_SITE_URL` (e.g. `sc-domain:sitesinc.co`).
+Missing credentials, API errors, and empty periods render a clean state — numbers are never invented.
+
+Default property is sitesinc.co. A client project is used only when it has its own
+`ga4PropertyId` / `gscSiteUrl` on the CRM record. Sitesinc's property is never borrowed.
+
+**Estimated value** is labeled as an estimate. Formula: last 12 months of GA4 `purchaseRevenue` × 2.
+If that revenue is missing or $0, the card stays a placeholder (this factory has no comparable-sale feed).

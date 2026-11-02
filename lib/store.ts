@@ -108,6 +108,16 @@ export type ClientProject = {
   domainStatus?: ClientDomainStatus;
   /** DomainIQ run + audit metadata (seed, engine version, selection / sign-off trail). */
   domainIQ?: ClientDomainIQState;
+  /**
+   * Optional GA4 numeric property id for /app/website-data.
+   * Never falls back to Sitesinc's GA4_PROPERTY_ID.
+   */
+  ga4PropertyId?: string;
+  /**
+   * Optional Search Console property (sc-domain:example.com or https://example.com/).
+   * Never falls back to Sitesinc's GOOGLE_SEARCH_CONSOLE_SITE_URL.
+   */
+  gscSiteUrl?: string;
 };
 
 export type ClientDomainIQState = {
