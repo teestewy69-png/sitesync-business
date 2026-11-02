@@ -61,6 +61,7 @@ const STATIONS: Array<{
     items: [
       { href: "/app/baseline", label: "Baseline" },
       { href: "/app/staging", label: "Staging" },
+      { href: "/app/website-data", label: "Website data" },
       { href: "/app/seo", label: "SEO" },
       { href: "/app/release", label: "Release" },
     ],

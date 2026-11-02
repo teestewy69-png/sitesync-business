@@ -63,6 +63,7 @@ export default async function FactoryHome() {
           {[
             ["/app/baseline", "Baseline", baseline ? `${baseline.pageInventory.length} pages in the Sitesinc study crawl` : "Sitesinc study crawl not captured yet"],
             ["/app/staging", "Staging", "Preview stays noindex"],
+            ["/app/website-data", "Website data", "GA4 + Search Console for the period you pick"],
             ["/app/seo", "SEO", "Monitor from the dated baseline"],
             ["/app/release", "Release", "QA gate before anything goes live"],
           ].map(([href, label, detail]) => (
