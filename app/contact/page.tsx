@@ -6,11 +6,11 @@ import SitePage from "@/components/SitePage";
 import OrgJsonLd from "@/components/OrgJsonLd";
 
 export const metadata: Metadata = {
-  title: "Contact Sitesinc | Call (909) 378-6404",
+  title: "Contact Sitesinc | Call (909) 232-3536",
   description: content.contact.subtitle,
   alternates: { canonical: "/contact" },
   openGraph: {
-    title: "Contact Sitesinc | Call (909) 378-6404",
+    title: "Contact Sitesinc | Call (909) 232-3536",
     description: content.contact.subtitle,
     url: "/contact", images: [OG_IMAGE],
   },

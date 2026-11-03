@@ -12,7 +12,7 @@ export default function SeoJsonLd() {
         name: content.site.name,
         url: origin,
         email: content.footer.email,
-        telephone: "+1-909-378-6404",
+        telephone: "+1-909-232-3536",
         logo: `${origin}/logo.png`,
         image: content.seo.image,
         priceRange: "$1,995",

@@ -241,7 +241,7 @@ test("Flip Mode screen exists, is in factory nav, and wires every control to fli
   const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
   const ui = readFileSync(path.join(root, "components/factory/FlipConsole.tsx"), "utf8");
   for (const needle of ["flip-seed-flipradar", "flip-init", "flip-run-stage", "flip-set-analytics", "flip-set-affiliate", "flip-add-ledger", "flip-record-snapshot", "flip-approve-page", "format=handoff", "format=sitegrow-json", "format=sitegrow-csv"]) assert.ok(ui.includes(needle), needle);
-  assert.match(readFileSync(path.join(root, "components/factory/Shell.tsx"), "utf8"), /\/app\/flips/);
+  assert.match(readFileSync(path.join(root, "components/factory/FactoryRail.tsx"), "utf8"), /\/app\/flips/);
   assert.match(readFileSync(path.join(root, "app/app/flips/page.tsx"), "utf8"), /mode === "flip"/);
 });
 
