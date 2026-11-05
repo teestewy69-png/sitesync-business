@@ -27,6 +27,13 @@ export default function BlogIndex() {
           business site actually earn its keep.
         </p>
 
+        <a
+          href="/website-kit"
+          className="mt-6 block rounded-2xl border border-brand-400/60 bg-brand-500/5 p-4 text-slate-200 hover:bg-brand-500/10"
+        >
+          <span className="font-semibold text-brand-300">Doing it yourself?</span> Get the Small Business Website &amp; Google Visibility Kit ($27, credited toward a Sitesinc build) →
+        </a>
+
         <div className="mt-8 space-y-4">
           {sorted.map((post) => (
             <article

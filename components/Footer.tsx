@@ -68,6 +68,8 @@ export default function Footer() {
               {link.label}
             </a>
           ))}
+          <a href="/website-kit" className="transition hover:text-brand-300">Website Kit</a>
+          <a href="/resources" className="transition hover:text-brand-300">Resources</a>
           {footer.legalLinks.map((link) => (
             <a
               key={link.href}
