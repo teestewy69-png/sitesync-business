@@ -10,20 +10,24 @@ import { findOrderById, type Order } from "@/lib/store";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Thank you | Sitesinc", robots: { index: false, follow: false } };
 
-type RequestKey = "launch" | "full" | "maintenance";
+type RequestKey = "paid" | "launch" | "full" | "maintenance";
 
 const REQUEST_COPY: Record<RequestKey, { title: string; body: string }> = {
+  paid: {
+    title: "Thanks — we received your payment",
+    body: "If you paid the $997.50 start deposit, the $997.50 launch balance, the $1,995 flat website build, or optional monitored SEO, we received it and will email next steps.",
+  },
   launch: {
     title: "Thanks — we received your request",
-    body: "Submitting a Sitesinc form is a request, not a purchase. If we accept the project, you will receive a $997.50 start invoice by email. The remaining $997.50 is due at launch.",
+    body: "Submitting a Sitesinc form is a request, not a purchase. If you already paid, we received it. If you sent a request, we will follow up from this inbox.",
   },
   full: {
     title: "Thanks — we received your request",
-    body: "This is not a website checkout. If we accept the project, Sitesinc sends the $997.50 start invoice manually.",
+    body: "If you paid the $1,995 website build, we received it. If you submitted a request form, that form is not a purchase.",
   },
   maintenance: {
     title: "Thanks — monitoring request received",
-    body: "Optional monitoring is $129/month and can be enrolled manually after a website is accepted (1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days). Cancel anytime. No long-term contract.",
+    body: "Optional monitoring is $129/month (1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days). Cancel anytime. No long-term contract.",
   },
 };
 
@@ -41,7 +45,8 @@ function first(value: string | string[] | undefined): string {
 }
 
 function resolveRequest(value: string): RequestKey {
-  return value === "full" || value === "maintenance" ? value : "launch";
+  if (value === "full" || value === "maintenance" || value === "launch") return value;
+  return "paid";
 }
 
 function viewFromStatus(order: Order, verifiedSession: boolean): OrderView {

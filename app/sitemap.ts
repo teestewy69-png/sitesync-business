@@ -14,7 +14,8 @@ const BLOCKED = new Set(["/cart", "/checkout", "/thank-you", "/case-study", "/ap
 
 /**
  * The public offer is the website build + optional monitoring. There is no shop: /shop and /shop/* 301 to /
- * (middleware.ts) and are never listed. /cart and /checkout belong to paused SiteFlow and 404.
+ * (middleware.ts) and are never listed. /cart belongs to paused SiteFlow and 404s.
+ * /checkout is the public $1,995 Payment Links page (noindex) while SiteFlow is paused.
  * Published factory hub pages are appended at runtime so the sitemap matches what actually 200s.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

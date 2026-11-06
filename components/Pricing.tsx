@@ -1,8 +1,10 @@
 import { Check, ClipboardList } from "lucide-react";
 import content from "@/content.json";
+import { paymentLinks } from "@/lib/payment-links";
 
 export default function Pricing() {
   const { pricing, onboarding } = content;
+  const pay = paymentLinks();
 
   return (
     <section
@@ -37,14 +39,40 @@ export default function Pricing() {
             <p className="mt-4 text-base leading-relaxed text-slate-400">
               {pricing.build.detail}
             </p>
-            <a
-              href={pricing.build.cta.href}
-              data-analytics-cta="start_build"
-              data-analytics-location="pricing"
-              className="mt-8 inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-b from-brand-300 to-brand-600 px-6 py-3.5 font-semibold text-zinc-950 shadow-glow transition hover:from-brand-200 hover:to-brand-500 sm:w-auto"
-            >
-              {pricing.build.cta.label}
-            </a>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <a
+                href={pay.startDeposit.url}
+                data-analytics-cta={pay.startDeposit.analytics}
+                data-analytics-location="pricing"
+                className="inline-flex items-center justify-center rounded-xl bg-gradient-to-b from-brand-300 to-brand-600 px-6 py-3.5 font-semibold text-zinc-950 shadow-glow transition hover:from-brand-200 hover:to-brand-500"
+              >
+                {pay.startDeposit.cta}
+              </a>
+              <a
+                href={pay.flatRate.url}
+                data-analytics-cta={pay.flatRate.analytics}
+                data-analytics-location="pricing"
+                className="inline-flex items-center justify-center rounded-xl bg-white/5 px-6 py-3.5 font-semibold text-white ring-1 ring-white/10 transition hover:bg-white/10"
+              >
+                {pay.flatRate.cta}
+              </a>
+            </div>
+            <p className="mt-4 text-sm text-slate-400">
+              Already paid the start deposit?{" "}
+              <a
+                href={pay.launchBalance.url}
+                data-analytics-cta={pay.launchBalance.analytics}
+                data-analytics-location="pricing"
+                className="text-brand-300 hover:underline"
+              >
+                {pay.launchBalance.cta}
+              </a>
+              . Or{" "}
+              <a href="/packages#pay" className="text-brand-300 hover:underline">
+                see every payment option
+              </a>
+              .
+            </p>
           </div>
 
           <div className="rounded-3xl bg-surface p-8 shadow-card ring-1 ring-white/10 lg:col-span-2">
@@ -67,16 +95,14 @@ export default function Pricing() {
                 </li>
               ))}
             </ul>
-            {pricing.maintenance.cta?.href && (
-              <a
-                href={pricing.maintenance.cta.href}
-                data-analytics-cta="monitoring"
-                data-analytics-location="pricing"
-                className="mt-8 inline-flex w-full items-center justify-center rounded-xl bg-white/5 px-6 py-3 font-semibold text-white ring-1 ring-white/10 transition hover:bg-white/10"
-              >
-                {pricing.maintenance.cta.label}
-              </a>
-            )}
+            <a
+              href={pay.monitoring.url}
+              data-analytics-cta={pay.monitoring.analytics}
+              data-analytics-location="pricing"
+              className="mt-8 inline-flex w-full items-center justify-center rounded-xl bg-white/5 px-6 py-3 font-semibold text-white ring-1 ring-white/10 transition hover:bg-white/10"
+            >
+              {pay.monitoring.cta}
+            </a>
           </div>
         </div>
 

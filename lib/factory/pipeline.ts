@@ -22,7 +22,8 @@ export const PUBLIC_PATHS = [
   "/compare/hibu-alternative",
   "/compare/thryv-alternative",
   "/compare/web-com-alternative",
-  // No shop (removed 2026-10-05; /shop 301s to /). /cart and /checkout are paused SiteFlow routes and 404.
+  // No shop (removed 2026-10-05; /shop 301s to /). /cart is a paused SiteFlow route and 404s.
+  // /checkout serves the public $1,995 Payment Links while SiteFlow is paused.
   // Factory hub pages (/website-design, /packages, …) join the sitemap only after they are published.
   "/privacy",
   "/terms",
@@ -348,9 +349,9 @@ export const SEED_BRIEFS: ContentBrief[] = [
       "Price table matching the homepage",
       "What’s included",
       "Optional monitoring",
-      "CTA to the build request form (requests are not purchases; start and launch invoices are sent manually)",
+      "CTA to the $1,995 Payment Links (start deposit, launch balance, or flat $1,995)",
     ],
-    citations: ["content.json pricing (50% to start / 50% at launch, invoiced manually)"],
+    citations: ["content.json pricing (50% to start / 50% at launch, or $1,995 in one payment)"],
   }),
   brief({
     id: "brief-website-redesign",

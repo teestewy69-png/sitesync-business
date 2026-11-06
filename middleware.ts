@@ -51,6 +51,7 @@ export async function middleware(req: NextRequest) {
   const siteflowOn = siteflowEnabled(process.env);
 
   // SiteFlow is paused (Path A) unless SITEFLOW_ENABLED is set: its routes do not exist on any host.
+  // Public /checkout is not a SiteFlow path: it stays available for the $1,995 Payment Links.
   if (!siteflowOn && isSiteflowPath(pathname)) return notFound();
 
   const host = requestHost(req);

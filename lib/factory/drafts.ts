@@ -70,7 +70,7 @@ We do not sell 20 “city + service” landing pages. We do not sell guaranteed 
 
 ## How payment works
 
-Submitting the build form is a request, not a purchase. If we accept the project, Sitesinc emails a $997.50 start invoice; we start once it is paid and your onboarding details are in. The remaining $997.50 is invoiced at launch. If you have questions first, email save@sitesinc.co. Prices on this page must match the homepage — if they ever drift, trust the homepage and tell us.
+Pay on this page: $997.50 to start (the start deposit), $997.50 at launch (the remaining balance), or $1,995 in one payment. We start once the start amount is paid and your onboarding details are in. If you have questions first, send a request or email save@sitesinc.co — that form is not a purchase. Prices on this page must match the homepage — if they ever drift, trust the homepage and tell us.
 
 Twelve-month math, stated plainly: the $1,995 build plus optional monitored SEO (1st month free, then $129/mo) adds $1,419 (11 paid months × $129) if you keep it for the first year. A typical DIY builder plan in the $30–$50/mo range is cheaper up front and more expensive if you stay for years — and you still do not own the code. Pick the model that matches how you want to operate.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional monitored SEO: 1st month free, then $129/mo. Questions? Call (909) 323-1575 or email save@sitesinc.co.`,
   },

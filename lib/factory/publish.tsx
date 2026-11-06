@@ -1,6 +1,7 @@
 import OrgJsonLd from "@/components/OrgJsonLd";
 import ServiceJsonLd from "@/components/ServiceJsonLd";
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { notFound, unstable_rethrow } from "next/navigation";
 import Link from "next/link";
 import SitePage from "@/components/SitePage";
@@ -67,7 +68,15 @@ export async function factoryPageMetadata(slug: string): Promise<Metadata> {
   return metadataForFactoryPage(page, { blockIndexing });
 }
 
-export function FactoryArticle({ page, staged = false }: { page: FactoryPage; staged?: boolean }) {
+export function FactoryArticle({
+  page,
+  staged = false,
+  lead,
+}: {
+  page: FactoryPage;
+  staged?: boolean;
+  lead?: ReactNode;
+}) {
   const paragraphs = page.body.split(/\n{2,}/).filter(Boolean);
   return (
     <article className="mx-auto max-w-3xl px-6 py-16">
@@ -85,6 +94,7 @@ export function FactoryArticle({ page, staged = false }: { page: FactoryPage; st
       {page.metaDescription ? (
         <p className="mt-3 text-base text-slate-300">{page.metaDescription}</p>
       ) : null}
+      {lead}
       <div className="mt-8 space-y-4 text-base leading-7 text-slate-200">
         {paragraphs.map((block) => {
           if (block.startsWith("## ")) {
@@ -120,7 +130,7 @@ export function FactoryArticle({ page, staged = false }: { page: FactoryPage; st
   );
 }
 
-export async function PublishedOrNotFound({ slug }: { slug: string }) {
+export async function PublishedOrNotFound({ slug, lead }: { slug: string; lead?: ReactNode }) {
   const { isPreviewRequest } = await import("./preview");
   let page: FactoryPage | null = null;
   let preview = false;
@@ -140,7 +150,7 @@ export async function PublishedOrNotFound({ slug }: { slug: string }) {
         description={page.metaDescription}
         path={page.path || `/${page.slug}`}
       />
-      <FactoryArticle page={page} staged={preview || page.noindex} />
+      <FactoryArticle page={page} staged={preview || page.noindex} lead={lead} />
     </SitePage>
   );
 }

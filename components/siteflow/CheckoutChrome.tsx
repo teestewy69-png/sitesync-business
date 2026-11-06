@@ -3,7 +3,8 @@ import Link from "next/link";
 import { CartProvider } from "@/components/siteflow/CartProvider";
 
 /**
- * Paused SiteFlow (phase 2): chrome for /cart and /checkout only. Those routes 404 unless SITEFLOW_ENABLED is set.
+ * SiteFlow chrome for /cart and /checkout. /cart 404s unless SITEFLOW_ENABLED is set.
+ * /checkout shows $1,995 Payment Links while paused, and this chrome when SiteFlow is on.
  * The old public shop (/shop, product pages, inquiry form, shop nav) was removed on 2026-10-05; Sitesinc sells
  * website builds and optional monitoring only. Future digital products will need their own product pages.
  */
