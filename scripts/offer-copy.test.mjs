@@ -249,6 +249,7 @@ const PUBLIC_SOURCES = [
   "app/terms/page.tsx",
   "app/privacy/page.tsx",
   "lib/factory/drafts.ts",
+  "lib/factory/seo-hub-drafts.ts",
   "lib/design-styles.ts",
   "lib/compare.ts",
   "lib/site-audit.ts",

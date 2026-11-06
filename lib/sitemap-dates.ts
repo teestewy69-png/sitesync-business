@@ -30,6 +30,9 @@ const LASTMOD: Record<string, string> = {
   "/seo-ready-websites": "2026-10-27",
   "/website-monitoring": "2026-10-27",
   "/for-local-service-businesses": "2026-10-27",
+  "/inland-empire-small-business-website-design": "2026-11-06",
+  "/affordable-small-business-website-1995": "2026-11-06",
+  "/rancho-cucamonga-small-business-web-design": "2026-11-06",
   ...Object.fromEntries(posts.map((p) => [`/blog/${p.slug}`, p.updated ?? p.date])),
 };
 

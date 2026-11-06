@@ -424,6 +424,11 @@ test("draft preview: headings render as headings, never as raw '## ' text", () =
     { type: "list", items: ["one", "two"] },
     { type: "paragraph", lines: ["After"] },
   ]);
+  assert.deepEqual(parseDraftBlocks("Intro\n\n1. first\n2. second\nAfter"), [
+    { type: "paragraph", lines: ["Intro"] },
+    { type: "list", items: ["first", "second"], ordered: true },
+    { type: "paragraph", lines: ["After"] },
+  ]);
   const src = readFileSync(path.join(ROOT, "app/demo/client/[projectId]/[slug]/page.tsx"), "utf8");
   assert.match(src, /<DraftBody body=\{body\}/);
   assert.doesNotMatch(src, /whitespace-pre-wrap[^>]*>\{body\}/);

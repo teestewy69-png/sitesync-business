@@ -9,6 +9,9 @@ const BLURBS: Record<(typeof SITE_HUB_LINKS)[number]["href"], string> = {
   "/seo-ready-websites": "What SEO for small business means on a Sitesinc site.",
   "/website-monitoring": "Optional care after launch. The site works if you skip it.",
   "/for-local-service-businesses": "Website design for contractors, plumbers, and barbers.",
+  "/inland-empire-small-business-website-design": "Inland Empire small business website design. $1,995 flat, you own it.",
+  "/affordable-small-business-website-1995": "An affordable small business website for $1,995 flat. No rental trap.",
+  "/rancho-cucamonga-small-business-web-design": "Web design for Rancho Cucamonga small businesses. $1,995 flat.",
 };
 
 export default function HubLinks({

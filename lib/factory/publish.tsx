@@ -1,16 +1,29 @@
 import OrgJsonLd from "@/components/OrgJsonLd";
 import ServiceJsonLd from "@/components/ServiceJsonLd";
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 import { notFound, unstable_rethrow } from "next/navigation";
 import Link from "next/link";
 import SitePage from "@/components/SitePage";
-import { PAGE_DRAFTS } from "@/lib/factory/drafts";
+import { PAGE_DRAFTS, PAGE_FAQS } from "@/lib/factory/drafts";
+import { parseDraftBlocks } from "@/lib/factory/draft-blocks";
 import { readPublicWorkspace } from "@/lib/factory/workspace";
 import type { FactoryPage } from "@/lib/factory/types";
 import { findRetiredOfferClaim } from "@/lib/offer-copy";
 import { metadataForFactoryPage } from "@/lib/factory/page-metadata";
 import { SITE_HUB_LINKS } from "@/lib/site-nav";
+
+function InlineText({ text }: { text: string }) {
+  const parts = text.split(/(\*\*[^*]+?\*\*)/g);
+  return (
+    <>
+      {parts.map((part, index) => {
+        const bold = /^\*\*([^*]+)\*\*$/.exec(part);
+        return bold ? <strong key={index}>{bold[1]}</strong> : <Fragment key={index}>{part}</Fragment>;
+      })}
+    </>
+  );
+}
 
 export { metadataForFactoryPage } from "@/lib/factory/page-metadata";
 
@@ -77,7 +90,7 @@ export function FactoryArticle({
   staged?: boolean;
   lead?: ReactNode;
 }) {
-  const paragraphs = page.body.split(/\n{2,}/).filter(Boolean);
+  const blocks = parseDraftBlocks(page.body);
   return (
     <article className="mx-auto max-w-3xl px-6 py-16">
       {staged && (
@@ -96,22 +109,46 @@ export function FactoryArticle({
       ) : null}
       {lead}
       <div className="mt-8 space-y-4 text-base leading-7 text-slate-200">
-        {paragraphs.map((block) => {
-          if (block.startsWith("## ")) {
+        {blocks.map((block, index) => {
+          if (block.type === "heading") {
+            if (block.level === 3) {
+              return (
+                <h3 key={index} className="pt-2 text-lg font-semibold text-white">
+                  <InlineText text={block.text} />
+                </h3>
+              );
+            }
             return (
-              <h2 key={block} className="pt-4 text-xl font-semibold text-white">
-                {block.replace(/^## /, "")}
+              <h2 key={index} className="pt-4 text-xl font-semibold text-white">
+                <InlineText text={block.text} />
               </h2>
             );
           }
-          if (block.startsWith("# ")) {
+          if (block.type === "list") {
+            const ListTag = block.ordered ? "ol" : "ul";
             return (
-              <h2 key={block} className="pt-4 text-xl font-semibold text-white">
-                {block.replace(/^# /, "")}
-              </h2>
+              <ListTag
+                key={index}
+                className={`${block.ordered ? "list-decimal" : "list-disc"} space-y-1 pl-5`}
+              >
+                {block.items.map((item, itemIndex) => (
+                  <li key={itemIndex}>
+                    <InlineText text={item} />
+                  </li>
+                ))}
+              </ListTag>
             );
           }
-          return <p key={block}>{block}</p>;
+          return (
+            <p key={index}>
+              {block.lines.map((line, lineIndex) => (
+                <Fragment key={lineIndex}>
+                  {lineIndex > 0 ? <br /> : null}
+                  <InlineText text={line} />
+                </Fragment>
+              ))}
+            </p>
+          );
         })}
       </div>
       <nav aria-label="Related Sitesinc pages" className="mt-10 border-t border-white/10 pt-6">
@@ -149,6 +186,7 @@ export async function PublishedOrNotFound({ slug, lead }: { slug: string; lead?:
         name={page.title.replace(/\s*\|\s*Sitesinc$/, "")}
         description={page.metaDescription}
         path={page.path || `/${page.slug}`}
+        faqs={PAGE_FAQS[slug] || []}
       />
       <FactoryArticle page={page} staged={preview || page.noindex} lead={lead} />
     </SitePage>
