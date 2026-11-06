@@ -238,13 +238,13 @@ export default function PrivacyPage() {
                 Sitesinc
               </span>
               <br />
-              1986 South Coast Hwy #3632
+              1968 South Coast Hwy #3632
               <br />
               Laguna Beach, CA 92651
               <br />
               Phone:{" "}
-              <a href="tel:+19093786404" className="text-brand-300 hover:underline">
-                (909) 378-6404
+              <a href="tel:+19093231575" className="text-brand-300 hover:underline">
+                (909) 323-1575
               </a>
               <br />
               Website:{" "}
