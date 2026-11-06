@@ -23,12 +23,13 @@ export default function DraftBody({ body, className = "" }: { body: string; clas
           );
         }
         if (block.type === "list") {
+          const ListTag = block.ordered ? "ol" : "ul";
           return (
-            <ul key={index} className="list-disc space-y-1 pl-5">
+            <ListTag key={index} className={`${block.ordered ? "list-decimal" : "list-disc"} space-y-1 pl-5`}>
               {block.items.map((item, i) => (
                 <li key={i}>{item}</li>
               ))}
-            </ul>
+            </ListTag>
           );
         }
         return (

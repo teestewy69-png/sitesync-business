@@ -10,6 +10,7 @@ import {
   writeDoc,
 } from "@/lib/persistence";
 import { newId } from "@/lib/store";
+import { applyRepoPublishedHubs } from "./drafts";
 import {
   BLUEPRINT,
   CLUSTERS,
@@ -160,7 +161,7 @@ export function seedWorkspace(): FactoryWorkspace {
     clusters: CLUSTERS,
     blueprint: BLUEPRINT,
     briefs: SEED_BRIEFS,
-    pages: draftPagesFromBriefs(SEED_BRIEFS),
+    pages: applyRepoPublishedHubs(draftPagesFromBriefs(SEED_BRIEFS)),
     indexing: seedIndexing(),
     backlinks: [],
     conversions: {
@@ -192,18 +193,45 @@ export function seedWorkspace(): FactoryWorkspace {
   };
 }
 
+/** Add blueprint hubs that landed in code after the stored workspace was created. */
+function mergeMissingSeeded(workspace: FactoryWorkspace, seeded: FactoryWorkspace): FactoryWorkspace {
+  const havePage = new Set(workspace.pages.map((page) => page.slug));
+  const haveBrief = new Set(workspace.briefs.map((brief) => brief.slug));
+  const haveCluster = new Set(workspace.clusters.map((cluster) => cluster.id));
+  const haveBlueprint = new Set(workspace.blueprint.map((page) => page.slug));
+  const haveIndex = new Set(workspace.indexing.map((row) => row.path));
+  const pages = [...workspace.pages, ...seeded.pages.filter((page) => !havePage.has(page.slug))];
+  const briefs = [...workspace.briefs, ...seeded.briefs.filter((brief) => !haveBrief.has(brief.slug))];
+  const clusters = [...workspace.clusters, ...seeded.clusters.filter((cluster) => !haveCluster.has(cluster.id))];
+  const blueprint = [...workspace.blueprint, ...seeded.blueprint.filter((page) => !haveBlueprint.has(page.slug))];
+  const indexing = [...workspace.indexing, ...seeded.indexing.filter((row) => !haveIndex.has(row.path))];
+  if (
+    pages.length === workspace.pages.length &&
+    briefs.length === workspace.briefs.length &&
+    clusters.length === workspace.clusters.length &&
+    blueprint.length === workspace.blueprint.length &&
+    indexing.length === workspace.indexing.length
+  ) {
+    return workspace;
+  }
+  return { ...workspace, pages, briefs, clusters, blueprint, indexing };
+}
+
 function withDefaults(workspace: FactoryWorkspace): FactoryWorkspace {
   const seeded = seedWorkspace();
-  return {
-    ...seeded,
-    ...workspace,
-    intakeProjects: workspace.intakeProjects || [],
-    study: workspace.study || seeded.study,
-    visibleGaps: workspace.visibleGaps?.length ? workspace.visibleGaps : seeded.visibleGaps,
-    screenshots: workspace.screenshots || [],
-    productionRelease: workspace.productionRelease || seeded.productionRelease,
-    latestBaselineBySite: workspace.latestBaselineBySite || {},
-  };
+  return mergeMissingSeeded(
+    {
+      ...seeded,
+      ...workspace,
+      intakeProjects: workspace.intakeProjects || [],
+      study: workspace.study || seeded.study,
+      visibleGaps: workspace.visibleGaps?.length ? workspace.visibleGaps : seeded.visibleGaps,
+      screenshots: workspace.screenshots || [],
+      productionRelease: workspace.productionRelease || seeded.productionRelease,
+      latestBaselineBySite: workspace.latestBaselineBySite || {},
+    },
+    seeded
+  );
 }
 
 type LoadedWorkspace = {

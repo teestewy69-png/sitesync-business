@@ -19,6 +19,9 @@ export const SITE_HUB_LINKS = [
   { href: "/seo-ready-websites", label: "SEO-ready websites" },
   { href: "/website-monitoring", label: "Website monitoring" },
   { href: "/for-local-service-businesses", label: "Local service businesses" },
+  { href: "/inland-empire-small-business-website-design", label: "Inland Empire websites" },
+  { href: "/affordable-small-business-website-1995", label: "Affordable $1,995 websites" },
+  { href: "/rancho-cucamonga-small-business-web-design", label: "Rancho Cucamonga web design" },
 ] as const;
 
 /** Homepage sections, linked as real URLs so they work from every page. */

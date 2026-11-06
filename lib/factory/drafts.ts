@@ -1,4 +1,11 @@
 import type { FactoryPage } from "./types";
+import {
+  REPO_PUBLISHED_AT,
+  REPO_PUBLISHED_HUB_SLUGS,
+  SEO_HUB_DRAFTS,
+} from "./seo-hub-drafts";
+
+export { PAGE_FAQS, REPO_PUBLISHED_AT, REPO_PUBLISHED_HUB_SLUGS } from "./seo-hub-drafts";
 
 type Draft = Pick<FactoryPage, "title" | "metaDescription" | "headings" | "body">;
 
@@ -206,7 +213,32 @@ Sitesinc will not clone this page for “barber in [city]” fifty times. If we 
 
 The same factory that is rebuilding sitesinc.co — research, brief, human approval, staging, then publish — is the factory we run for a shop. We confirm the schedule in writing before work starts. The 90-day case study on this domain is about proving the marketing system, not delaying your build.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional monitored SEO: 1st month free, then $129/mo. Questions? Call (909) 323-1575 or email save@sitesinc.co.`,
   },
+  ...SEO_HUB_DRAFTS,
 };
+
+const REPO_PUBLISHED = new Set<string>(REPO_PUBLISHED_HUB_SLUGS);
+
+/** Fill Tony-approved SEO hubs so a production workspace that predates them still serves them as published. */
+export function applyRepoPublishedHubs(pages: FactoryPage[]): FactoryPage[] {
+  return pages.map((page) => {
+    if (!REPO_PUBLISHED.has(page.slug)) return page;
+    const draft = PAGE_DRAFTS[page.slug];
+    if (!draft) return page;
+    return {
+      ...page,
+      title: draft.title,
+      metaDescription: draft.metaDescription,
+      headings: draft.headings,
+      body: draft.body,
+      wordCount: wordCount(draft.body),
+      status: "published",
+      noindex: false,
+      approvedBy: "Tony Jones",
+      approvedAt: REPO_PUBLISHED_AT,
+      publishedAt: REPO_PUBLISHED_AT,
+    };
+  });
+}
 
 export function draftFromBrief(slug: string): Draft | null {
   return PAGE_DRAFTS[slug] || null;
