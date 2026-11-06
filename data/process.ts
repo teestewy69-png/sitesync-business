@@ -8,7 +8,7 @@ export const processSteps: ProcessStep[] = [
   {
     step: "01",
     title: "Pick your design & request a build",
-    text: "Browse our 8 ultra-modern layouts and choose the one that feels right for your business. Submit a request — that is not a purchase. If we accept the project, you pay $997.50 to start and $997.50 at launch.",
+    text: "Browse our 8 ultra-modern layouts and choose the one that feels right for your business. Pay $997.50 to start and $997.50 at launch, or pay $1,995 in one payment. The homepage form is a request, not a purchase, if you want to talk first.",
   },
   {
     step: "02",

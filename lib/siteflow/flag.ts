@@ -1,8 +1,10 @@
 /**
  * SiteFlow master switch. Path A (Tony, 2026-10-05): the public offer is ONLY the website build ($1,995,
- * 50% to start / 50% at launch) and optional $129/mo monitoring. SiteFlow (product checkout, Stripe webhook,
+ * 50% to start / 50% at launch) and optional $129/mo monitoring. SiteFlow (product cart, Stripe webhook,
  * digital delivery, partner referrals, affiliate links) is paused for phase 2. The code stays; this flag keeps
  * it off and invisible unless SITEFLOW_ENABLED is exactly "true" or "1".
+ *
+ * Public /checkout is NOT paused: it serves the $1,995 Payment Links while SiteFlow is off.
  *
  * No imports on purpose: middleware (edge), route handlers, server components and node tests all use it.
  */
@@ -18,14 +20,14 @@ export function siteflowEnabled(env: Env = process.env): boolean {
 
 /**
  * Routes that only exist for SiteFlow. While paused they answer 404 (middleware and each route check this).
- * /thank-you is NOT here: it stays for build requests, it only stops showing order/payment states.
+ * /thank-you is NOT here: it stays for build requests and Payment Link returns.
+ * /checkout is NOT here: the public page shows $1,995 Payment Links while SiteFlow is paused.
  */
 const SITEFLOW_PREFIXES = ["/go/", "/api/download/", "/api/siteflow/", "/api/factory/siteflow/"];
 const SITEFLOW_EXACT = new Set([
   "/go",
   "/tools",
   "/cart",
-  "/checkout",
   "/api/checkout",
   "/api/stripe/webhook",
   "/api/factory/siteflow",

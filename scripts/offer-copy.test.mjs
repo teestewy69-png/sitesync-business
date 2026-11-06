@@ -20,6 +20,7 @@ process.env.SITESINC_STORE = "local";
 
 const flag = await import("../lib/siteflow/flag.ts");
 const offer = await import("../lib/offer-copy.ts");
+const links = await import("../lib/payment-links.ts");
 const products = await import("../data/products.ts");
 const { quoteCart } = await import("../lib/catalog.ts");
 const { plainRegistrarUrl, REGISTRAR_SLUGS } = await import("../lib/affiliates.ts");
@@ -63,7 +64,7 @@ test("flag: SiteFlow is off unless SITEFLOW_ENABLED is true/1", () => {
 
 test("flag: SiteFlow-only paths", () => {
   for (const p of [
-    "/go", "/go/namecheap", "/tools", "/tools/", "/cart", "/checkout", "/api/checkout", "/api/download/abc.def",
+    "/go", "/go/namecheap", "/tools", "/tools/", "/cart", "/api/checkout", "/api/download/abc.def",
     "/api/stripe/webhook", "/api/siteflow/ref", "/api/factory/siteflow", "/api/factory/siteflow/payouts",
     "/api/factory/siteflow/upload",
   ]) {
@@ -72,6 +73,7 @@ test("flag: SiteFlow-only paths", () => {
   for (const p of [
     "/", "/shop", "/shop/product/anything", "/thank-you", "/api/subscribe",
     "/api/health", "/app", "/api/factory/domainiq", "/api/factory/city-launch", "/gopher", "/toolsets", "/packages",
+    "/checkout",
   ]) {
     assert.equal(flag.isSiteflowPath(p), false, p);
   }
@@ -86,10 +88,13 @@ async function hit(url, method = "GET") {
 
 test("middleware: paused SiteFlow routes 404 and ?ref= does nothing", async () => {
   await withEnvAsync(undefined, async () => {
-    for (const p of ["/go/namecheap?d=acme.com", "/tools", "/cart", "/checkout", "/api/download/x.y", "/api/siteflow/ref?code=jane"]) {
+    for (const p of ["/go/namecheap?d=acme.com", "/tools", "/cart", "/api/download/x.y", "/api/siteflow/ref?code=jane"]) {
       const res = await hit(`https://sitesinc.co${p}`);
       assert.equal(res.status, 404, p);
     }
+    const checkout = await hit("https://sitesinc.co/checkout");
+    assert.notEqual(checkout.status, 404);
+    assert.equal(checkout.headers.get("x-middleware-next"), "1");
     for (const p of ["/api/stripe/webhook", "/api/checkout", "/api/factory/siteflow"]) {
       assert.equal((await hit(`https://sitesinc.co${p}`, "POST")).status, 404, p);
     }
@@ -280,11 +285,12 @@ test("pricing: only the $1,995 build (50/50) and monitored SEO (1st month free, 
 
 test("published factory pages carrying retired copy are replaced by the current draft", () => {
   assert.ok(offer.findRetiredOfferClaim("lead capture, monetization placeholders, Stripe if you sell"));
-  assert.ok(offer.findRetiredOfferClaim("Pay in full through Stripe"));
+  assert.ok(offer.findRetiredOfferClaim("live Stripe checkout"));
   assert.ok(offer.findRetiredOfferClaim("Website builds start at $1,995. Pay 50% to start and 50% at launch."));
   assert.ok(offer.findRetiredOfferClaim("Request a quote for your website"));
   assert.ok(offer.findRetiredOfferClaim("a flat fee, no quotes, no negotiation"));
   assert.equal(offer.findRetiredOfferClaim("Website builds are $1,995. Pay 50% to start and 50% at launch."), null);
+  assert.equal(offer.findRetiredOfferClaim("Pay the $1,995 website build in one payment"), null);
 });
 
 test("public copy: $1,995 is a flat fee, not a starting price or quote", () => {
@@ -292,5 +298,52 @@ test("public copy: $1,995 is a flat fee, not a starting price or quote", () => {
   for (const rel of PUBLIC_SOURCES) {
     const text = readFileSync(path.join(ROOT, rel), "utf8");
     assert.doesNotMatch(text, BANNED, rel);
+  }
+});
+
+test("public payment links are the live $1,995 family only", () => {
+  const expected = {
+    startDeposit: "https://buy.stripe.com/4gM7sL7z74T7aX38o2a3u05",
+    launchBalance: "https://buy.stripe.com/eVqdR9cTr1GV9SZ5bQa3u06",
+    flatRate: "https://buy.stripe.com/14AcN56v385j7KR0VAa3u07",
+    monitoring: "https://buy.stripe.com/aFa28r8Db4T73uB0VAa3u08",
+  };
+  assert.deepEqual({ ...links.LIVE_PAYMENT_LINKS }, expected);
+  const resolved = links.paymentLinks();
+  for (const key of Object.keys(expected)) {
+    assert.equal(resolved[key].url, expected[key], key);
+  }
+  const pricing = readFileSync(path.join(ROOT, "components/Pricing.tsx"), "utf8");
+  const packages = readFileSync(path.join(ROOT, "app/packages/page.tsx"), "utf8");
+  const checkout = readFileSync(path.join(ROOT, "app/checkout/page.tsx"), "utf8");
+  const options = readFileSync(path.join(ROOT, "components/PaymentOptions.tsx"), "utf8");
+  const catalog = readFileSync(path.join(ROOT, "lib/payment-links.ts"), "utf8");
+  assert.match(pricing, /paymentLinks/);
+  assert.match(packages, /PaymentOptions/);
+  assert.match(checkout, /PublicBuildCheckout/);
+  assert.match(options, /paymentLinks/);
+  assert.match(catalog, /pay_start_deposit/);
+  assert.match(catalog, /pay_flat_rate/);
+  assert.match(catalog, /pay_launch_balance/);
+  assert.match(catalog, /pay_monitoring/);
+});
+
+test("retired Pilot Payment Links are not used as hrefs", () => {
+  const retired = [
+    "https://buy.stripe.com/fZu28r8DbfxL1mtdIma3u0c",
+    "https://buy.stripe.com/9B6fZh3iR85jd5b1ZEa3u0d",
+  ];
+  const roots = ["app", "components", "lib", "data", "content.json", ".env.local.example"];
+  const files = [];
+  for (const rel of roots) {
+    const full = path.join(ROOT, rel);
+    if (statSync(full).isDirectory()) walk(full, files);
+    else files.push(full);
+  }
+  for (const file of files) {
+    const text = readFileSync(file, "utf8");
+    for (const url of retired) {
+      assert.equal(text.includes(url), false, `${path.relative(ROOT, file)} still has ${url}`);
+    }
   }
 });
