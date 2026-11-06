@@ -3,6 +3,7 @@ import { SITE_HUB_LINKS } from "@/lib/site-nav";
 
 const BLURBS: Record<(typeof SITE_HUB_LINKS)[number]["href"], string> = {
   "/website-design": "Affordable website design, $1,995 flat, code you own.",
+  "/styles": "The eight layouts you pick from — live Sitesinc previews, not client demos.",
   "/packages": "The build, the 50/50 invoices, and optional monitoring.",
   "/website-redesign": "When a rebuild is worth it, and when it is not.",
   "/seo-ready-websites": "What SEO for small business means on a Sitesinc site.",

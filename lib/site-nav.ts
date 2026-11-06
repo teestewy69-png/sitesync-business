@@ -2,6 +2,7 @@
 export const SITE_NAV = [
   { href: "/services", label: "Services" },
   { href: "/website-design", label: "Website Design" },
+  { href: "/styles", label: "Layouts" },
   { href: "/packages", label: "Packages" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
@@ -12,6 +13,7 @@ export const SITE_NAV = [
 /** Factory hub pages that must be linked from nav, footer, and the homepage. */
 export const SITE_HUB_LINKS = [
   { href: "/website-design", label: "Website design" },
+  { href: "/styles", label: "Layouts" },
   { href: "/packages", label: "Packages" },
   { href: "/website-redesign", label: "Website redesign" },
   { href: "/seo-ready-websites", label: "SEO-ready websites" },
@@ -22,7 +24,6 @@ export const SITE_HUB_LINKS = [
 /** Homepage sections, linked as real URLs so they work from every page. */
 export const SITE_HASH_LINKS = [
   { href: "/#pricing", label: "Pricing" },
-  { href: "/#designs", label: "Designs" },
   { href: "/#faq", label: "FAQ" },
 ] as const;
 

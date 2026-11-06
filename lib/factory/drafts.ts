@@ -28,7 +28,7 @@ That also means we are not a “change this block yourself every Tuesday” tool
 
 ## What we actually build
 
-Website builds are $1,995 — a flat fee. No negotiation. Pay 50% to start and 50% at launch. Monitored SEO is optional: 1st month free, then $129/mo. The package includes a complete custom site, a choice of eight design directions, on-page SEO setup, a lead form, hosting setup, domain connection, one round of revisions, Those numbers must match the homepage. Timeline is confirmed in writing before work starts. We will not invent a different price here.
+Website builds are $1,995 — a flat fee. No negotiation. Pay 50% to start and 50% at launch. Monitored SEO is optional: 1st month free, then $129/mo. The package includes a complete custom site, a choice of eight design directions (see the Layouts page), on-page SEO setup, a lead form, hosting setup, domain connection, one round of revisions, Those numbers must match the homepage. Timeline is confirmed in writing before work starts. We will not invent a different price here.
 
 This is the same affordable website design we build for contractors, plumbers, and barbers: a working site, not a subscription.
 
@@ -58,7 +58,7 @@ See current pricing on the homepage or the packages page. No ranking promises �
 
 Website builds are $1,995 — a flat fee. No negotiation. Pay 50% to start (a $997.50 deposit) and 50% at launch (the remaining $997.50). There is no long-term contract.
 
-Included: custom Next.js + Tailwind site, eight design options, dark glossy UI, on-page SEO basics, lead capture, domain connection, code handoff, Netlify hosting setup, one revision round. Timeline confirmed in writing before work starts.
+Included: custom Next.js + Tailwind site, eight design options, dark glossy UI, on-page SEO basics, lead capture, domain connection, code handoff, Netlify hosting setup, one revision round. Timeline confirmed in writing before work starts. See the eight layouts on the Layouts page before you pick.
 
 ## Optional monitoring
 
