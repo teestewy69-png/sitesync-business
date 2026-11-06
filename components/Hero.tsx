@@ -1,6 +1,6 @@
+import Link from "next/link";
 import content from "@/content.json";
 import { SITESINC_SITE } from "@/lib/design-styles";
-import HeroScrollButton from "@/components/HeroScrollButton";
 import SiteHeader from "@/components/SiteHeader";
 
 export default function Hero() {
@@ -53,13 +53,14 @@ export default function Hero() {
                 →
               </span>
             </a>
-            <HeroScrollButton
-              target={hero.secondaryCta.target}
-              label={hero.secondaryCta.label}
-              analyticsCta="see_designs"
-              analyticsLocation="hero"
+            <Link
+              href="/styles"
+              data-analytics-cta="see_designs"
+              data-analytics-location="hero"
               className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/5 px-6 py-3 text-sm font-medium text-slate-100 transition hover:border-brand-400/60 hover:bg-brand-400/5"
-            />
+            >
+              {hero.secondaryCta.label}
+            </Link>
           </div>
 
           <div className="space-y-1 text-base text-slate-300">
@@ -115,11 +116,12 @@ export default function Hero() {
                     Same live offer, eight different layouts.
                   </p>
                 </div>
-                <HeroScrollButton
-                  target="designs"
-                  label="See 8 designs"
+                <Link
+                  href="/styles"
                   className="shrink-0 rounded-full bg-white/10 px-4 py-2 text-xs font-medium text-slate-50 transition hover:bg-brand-500 hover:text-zinc-950"
-                />
+                >
+                  See 8 designs
+                </Link>
               </div>
             </div>
             <div className="pointer-events-none absolute inset-0 rounded-3xl border border-white/5" />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import MiniSiteFrame from "@/components/MiniSiteFrame";
 import { DESIGN_STYLES, SITESINC_SITE } from "@/lib/design-styles";
 
@@ -36,6 +37,11 @@ export default function DesignShowcase() {
             Ultra-modern layouts with different structure and personality —
             watching Sitesinc rotate through each one. This is the live
             sitesinc.co offer, not a fake demo client.
+          </p>
+          <p className="text-sm text-slate-400">
+            <Link href="/styles" className="font-medium text-brand-300 hover:underline">
+              See all 8 layouts on one page
+            </Link>
           </p>
         </div>
 

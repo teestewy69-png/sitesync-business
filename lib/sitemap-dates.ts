@@ -16,6 +16,7 @@ const LASTMOD: Record<string, string> = {
   "/privacy": "2026-10-20",
   "/terms": "2026-10-27",
   "/free-website-audit": "2026-10-27",
+  "/styles": "2026-11-06",
   "/compare/hibu-alternative": "2026-10-27",
   "/compare/thryv-alternative": "2026-10-27",
   "/compare/web-com-alternative": "2026-10-27",
@@ -38,5 +39,6 @@ export const LOCATION_PAGES_LASTMOD = "2026-10-27";
 export function lastmodFor(path: string): string {
   if (LASTMOD[path]) return LASTMOD[path];
   if (path.startsWith("/locations/")) return LOCATION_PAGES_LASTMOD;
+  if (path.startsWith("/styles/")) return LASTMOD["/styles"] ?? SITE_FALLBACK_LASTMOD;
   return SITE_FALLBACK_LASTMOD;
 }

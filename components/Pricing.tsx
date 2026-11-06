@@ -1,4 +1,5 @@
 import { Check, ClipboardList } from "lucide-react";
+import Link from "next/link";
 import content from "@/content.json";
 
 export default function Pricing() {
@@ -79,6 +80,17 @@ export default function Pricing() {
             )}
           </div>
         </div>
+
+        <p className="mx-auto mt-8 max-w-4xl text-center text-sm text-slate-400">
+          The $1,995 build includes a choice of eight layouts.{" "}
+          <Link href="/styles" className="font-medium text-brand-300 hover:underline">
+            See all 8 layouts
+          </Link>
+          {" · "}
+          <Link href="/packages" className="font-medium text-brand-300 hover:underline">
+            Packages
+          </Link>
+        </p>
 
         <div className="mx-auto mt-14 max-w-4xl rounded-3xl bg-surface p-8 shadow-card ring-1 ring-white/10">
           <div className="flex items-center gap-3">

@@ -184,7 +184,7 @@ test("sitemap and public paths: no /cart, /checkout or /shop", async () => {
   const urls = (await withEnvAsync(undefined, () => sitemap())).map((e) => e.url);
   assert.ok(urls.includes("https://sitesinc.co"));
   for (const u of urls) assert.doesNotMatch(u, /\/(cart|checkout|shop|tools|go)(\/|$)/, u);
-  for (const pathName of ["/services", "/about", "/contact"]) {
+  for (const pathName of ["/services", "/about", "/contact", "/styles"]) {
     assert.ok(PUBLIC_PATHS.includes(pathName), pathName);
     assert.ok(urls.includes(`https://sitesinc.co${pathName}`), pathName);
   }
@@ -248,6 +248,8 @@ const PUBLIC_SOURCES = [
   "lib/compare.ts",
   "lib/site-audit.ts",
   "app/free-website-audit/page.tsx",
+  "app/styles/page.tsx",
+  "app/styles/[id]/page.tsx",
   "app/compare/hibu-alternative/page.tsx",
   "app/compare/thryv-alternative/page.tsx",
   "app/compare/web-com-alternative/page.tsx",

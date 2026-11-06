@@ -121,6 +121,8 @@ test("nav, footer, home, services, and city pages link the six hub URLs", () => 
   assert.match(city, /href="\/packages"/);
   assert.match(nav, /href: "\/website-design"/);
   assert.match(nav, /href: "\/packages"/);
+  assert.match(nav, /href: "\/styles"/);
+  assert.match(hubLinks, /"\/styles"/);
 });
 
 test("Service/Offer JSON-LD parses; FAQPage only when FAQs are passed", async () => {

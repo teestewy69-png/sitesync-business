@@ -19,6 +19,7 @@ export const PUBLIC_PATHS = [
   "/blog/real-small-business-website-needs",
   "/blog/diy-vs-done-for-you-websites",
   "/free-website-audit",
+  "/styles",
   "/compare/hibu-alternative",
   "/compare/thryv-alternative",
   "/compare/web-com-alternative",
