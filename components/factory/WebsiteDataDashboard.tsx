@@ -4,9 +4,11 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import content from "@/content.json";
 import {
+  formatRatePct,
   sparklinePath,
   type WebsiteDataMetric,
   type WebsiteDataPreset,
+  type WebsiteDataQueryRow,
   type WebsiteDataRanked,
   type WebsiteDataReport,
   type WebsiteDataSiteOption,
@@ -41,9 +43,13 @@ function changeText(metric: WebsiteDataMetric): { text: string; tone: "up" | "dn
   if (metric.changePct == null) return { text: "New vs prior", tone: "flat" };
   const rounded = Math.round(metric.changePct);
   const sign = rounded > 0 ? "+" : "";
+  // Position is the one lowerIsBetter metric: a negative changePct means the
+  // rank improved (8 → 5), so the good/bad coloring flips for it alone.
+  const improved = metric.lowerIsBetter ? rounded < 0 : rounded > 0;
+  const worsened = metric.lowerIsBetter ? rounded > 0 : rounded < 0;
   return {
     text: `${sign}${rounded}% vs prior`,
-    tone: rounded < 0 ? "dn" : rounded === 0 ? "flat" : "up",
+    tone: improved ? "up" : worsened ? "dn" : "flat",
   };
 }
 
@@ -51,22 +57,45 @@ function Kpi({
   label,
   metric,
   money,
+  percent,
+  decimals,
   tracked,
   wide,
+  sub,
+  foot,
 }: {
   label: string;
   metric: WebsiteDataMetric;
   money?: boolean;
+  /** Value is a rate stored as a fraction; display as a percentage (CTR). */
+  percent?: boolean;
+  /** Display the raw value with this many decimal places (average position). */
+  decimals?: number;
   tracked?: boolean;
   wide?: boolean;
+  sub?: string;
+  foot?: string;
 }) {
   const delta = changeText(metric);
-  const display = !metric.available && money && tracked === false ? "Not tracked" : money ? formatMoney(metric.value) : formatCount(metric.value);
+  const display =
+    !metric.available && tracked === false
+      ? "Not tracked"
+      : percent
+        ? formatRatePct(metric.value)
+        : decimals != null
+          ? metric.value == null
+            ? "—"
+            : metric.value.toFixed(decimals)
+          : money
+            ? formatMoney(metric.value)
+            : formatCount(metric.value);
   return (
     <div className={`${styles.kpi} ${wide ? styles.rev : ""}`}>
       <div className={styles.lbl}>{label}</div>
       <div className={styles.valueNum}>{display}</div>
       <div className={`${styles.delta} ${delta.tone === "dn" ? styles.dn : delta.tone === "flat" ? styles.flat : ""}`}>{delta.text}</div>
+      {sub ? <div className={styles.note}>{sub}</div> : null}
+      {foot ? <div className={styles.note}>{foot}</div> : null}
     </div>
   );
 }
@@ -92,6 +121,37 @@ function RankTable({ rows, empty }: { rows: WebsiteDataRanked[]; empty: string }
   );
 }
 
+function QueryTable({ rows, empty }: { rows: WebsiteDataQueryRow[]; empty: string }) {
+  if (!rows.length) return <p className={styles.empty}>{empty}</p>;
+  return (
+    <table className={styles.table}>
+      <tbody>
+        <tr>
+          <td className={styles.note}>Query</td>
+          <td className={styles.note}>Clicks</td>
+          <td className={styles.note}>Impr.</td>
+          <td className={styles.note}>CTR</td>
+          <td className={styles.note}>Pos.</td>
+        </tr>
+        {rows.map((row) => (
+          <tr key={row.label}>
+            <td>
+              {row.label}
+              <div className={styles.bar}>
+                <i style={{ width: `${Math.max(4, Math.round(row.share * 100))}%` }} />
+              </div>
+            </td>
+            <td>{formatCount(row.clicks)}</td>
+            <td>{formatCount(row.impressions)}</td>
+            <td>{formatRatePct(row.ctr)}</td>
+            <td>{row.position > 0 ? row.position.toFixed(1) : "—"}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
 export default function WebsiteDataDashboard({
   initial,
   sites,
@@ -103,7 +163,8 @@ export default function WebsiteDataDashboard({
   const [siteId, setSiteId] = useState(initial.site.id);
   const [from, setFrom] = useState(initial.period.start);
   const [to, setTo] = useState(initial.period.end);
-  const [tab, setTab] = useState<"pages" | "queries">("pages");
+  const [tab, setTab] = useState<"pages" | "queries" | "actions">("pages");
+  const [sourceTab, setSourceTab] = useState<"channels" | "cities">("channels");
   const [menu, setMenu] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -187,7 +248,7 @@ export default function WebsiteDataDashboard({
         <div className={styles.title}>
           <h1>Website data</h1>
         </div>
-        <p className={styles.sub}>Visitors, impressions, clicks and revenue for the period you pick.</p>
+        <p className={styles.sub}>Key actions, visitors, impressions, clicks and revenue for the period you pick.</p>
 
         {sites.length > 1 ? (
           <label className={styles.sitePick}>
@@ -240,17 +301,46 @@ export default function WebsiteDataDashboard({
               <button className={styles.apply} type="button" disabled={busy} onClick={() => void load({ site: siteId, from, to })}>
                 {busy ? "Loading…" : "Apply"}
               </button>
+              {report.live ? (
+                <a
+                  className={styles.apply}
+                  style={{ display: "block", textAlign: "center", textDecoration: "none" }}
+                  href={`/api/factory/website-data/report?site=${encodeURIComponent(siteId)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`}
+                  download
+                >
+                  Download client report
+                </a>
+              ) : null}
             </section>
 
             <section className={styles.card}>
               <div className={styles.lbl}>Overview</div>
               <div className={styles.per}>{report.period.label}</div>
               <div className={styles.kpis}>
+                <Kpi
+                  label="Key actions"
+                  metric={report.metrics.conversions}
+                  tracked={report.metrics.conversions.tracked}
+                  sub="Calls, forms & bookings marked as key events in GA4"
+                />
                 <Kpi label="Visitors" metric={report.metrics.visitors} />
                 <Kpi label="Page views" metric={report.metrics.pageViews} />
                 <Kpi label="Impressions" metric={report.metrics.impressions} />
                 <Kpi label="Clicks" metric={report.metrics.clicks} />
-                <Kpi label="Revenue" metric={report.metrics.revenue} money tracked={report.metrics.revenue.tracked} wide />
+                <Kpi label="CTR" metric={report.metrics.ctr} percent sub="Share of impressions that earned a click" />
+                <Kpi label="Avg. position" metric={report.metrics.position} decimals={1} sub="Average Google rank — lower is better" />
+                <Kpi
+                  label="Revenue"
+                  metric={report.metrics.revenue}
+                  money
+                  tracked={report.metrics.revenue.tracked}
+                  wide
+                  foot={
+                    report.site.kind === "sitesinc" && report.collectedRevenue
+                      ? `Collected via Stripe (SiteFlow), ${report.collectedRevenue.start} → ${report.collectedRevenue.end}: ${formatMoney(report.collectedRevenue.amount)} · prior period ${formatMoney(report.collectedRevenue.priorAmount)}`
+                      : undefined
+                  }
+                />
               </div>
               {spark.line ? (
                 <svg className={styles.spark} viewBox="0 0 300 90" preserveAspectRatio="none" aria-label="Daily visitors">
@@ -290,11 +380,37 @@ export default function WebsiteDataDashboard({
                 <button type="button" className={tab === "queries" ? styles.on : undefined} onClick={() => setTab("queries")}>
                   Search queries
                 </button>
+                <button type="button" className={tab === "actions" ? styles.on : undefined} onClick={() => setTab("actions")}>
+                  Key actions
+                </button>
               </div>
               {tab === "pages" ? (
                 <RankTable rows={report.topPages} empty="No page rows returned for this period." />
+              ) : tab === "queries" ? (
+                <QueryTable rows={report.queryRows} empty="No search queries returned for this period." />
               ) : (
-                <RankTable rows={report.topQueries} empty="No search queries returned for this period." />
+                <RankTable rows={report.topEvents} empty="No key events returned for this period." />
+              )}
+            </section>
+
+            <section className={styles.card}>
+              <div className={styles.lbl}>Sources</div>
+              <div className={styles.note}>Where visitors come from — and which towns they are in.</div>
+              <div className={styles.tabs}>
+                <button type="button" className={sourceTab === "channels" ? styles.on : undefined} onClick={() => setSourceTab("channels")}>
+                  Channels
+                </button>
+                <button type="button" className={sourceTab === "cities" ? styles.on : undefined} onClick={() => setSourceTab("cities")}>
+                  Top cities
+                </button>
+              </div>
+              {sourceTab === "channels" ? (
+                <RankTable rows={report.topChannels} empty="No channel rows returned for this period." />
+              ) : (
+                <>
+                  <div className={styles.note}>Towns your visitors are in</div>
+                  <RankTable rows={report.topCities} empty="No city rows returned for this period." />
+                </>
               )}
             </section>
           </div>

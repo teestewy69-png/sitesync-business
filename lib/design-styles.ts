@@ -12,67 +12,18 @@ export type DesignStyle = {
   id: DesignStyleId;
   name: string;
   accent: string;
-  blurb: string;
 };
 
 export const DESIGN_STYLES: DesignStyle[] = [
-  {
-    id: "neon-glass",
-    name: "Neon Glass",
-    accent: "#e0b954",
-    blurb: "Glassy panels and a glowing headline. A premium night-time look for shops that want to feel bigger than they are.",
-  },
-  {
-    id: "purple-gradient",
-    name: "Purple Gradient",
-    accent: "#a855f7",
-    blurb: "Split hero with a gradient visual panel. Color-forward for brands that want motion without clutter.",
-  },
-  {
-    id: "minimal-dark",
-    name: "Minimal Dark",
-    accent: "#f97316",
-    blurb: "Quiet dark canvas with four service cards up front. Fast to scan on a phone.",
-  },
-  {
-    id: "split-hero",
-    name: "Split Hero",
-    accent: "#22c55e",
-    blurb: "Visual panel on one side, offer and prices on the other. Classic call-first landing for local services.",
-  },
-  {
-    id: "card-grid",
-    name: "Card Grid",
-    accent: "#eab308",
-    blurb: "Big service tiles with visual blocks. Easy to browse what you sell at a glance.",
-  },
-  {
-    id: "bold-type",
-    name: "Bold Type",
-    accent: "#3b82f6",
-    blurb: "Oversized name, short copy, two featured offers. For businesses whose name should own the fold.",
-  },
-  {
-    id: "photo-focus",
-    name: "Photo Focus",
-    accent: "#ec4899",
-    blurb: "Full-width visual first, then the offer and a featured review. Built for shops with real photos.",
-  },
-  {
-    id: "funnel-ready",
-    name: "Funnel Ready",
-    accent: "#f43f5e",
-    blurb: "Three numbered steps from inquiry to booked. Built to turn visits into calls.",
-  },
+  { id: "neon-glass", name: "Neon Glass", accent: "#e0b954" },
+  { id: "purple-gradient", name: "Purple Gradient", accent: "#a855f7" },
+  { id: "minimal-dark", name: "Minimal Dark", accent: "#f97316" },
+  { id: "split-hero", name: "Split Hero", accent: "#22c55e" },
+  { id: "card-grid", name: "Card Grid", accent: "#eab308" },
+  { id: "bold-type", name: "Bold Type", accent: "#3b82f6" },
+  { id: "photo-focus", name: "Photo Focus", accent: "#ec4899" },
+  { id: "funnel-ready", name: "Funnel Ready", accent: "#f43f5e" },
 ];
-
-export function isDesignStyleId(value: string): value is DesignStyleId {
-  return DESIGN_STYLES.some((style) => style.id === value);
-}
-
-export function getDesignStyle(id: string): DesignStyle | undefined {
-  return DESIGN_STYLES.find((style) => style.id === id);
-}
 
 export type MiniSiteService = {
   name: string;

@@ -104,11 +104,11 @@ export default function TermsPage() {
               4. Payments
             </h2>
             <p className="mt-2">
-              Submitting a request on this website is not a purchase. Website
-              builds are $1,995. You can pay 50% ($997.50) to start and 50%
-              ($997.50) at launch, or pay $1,995 in one payment, through the
-              payment buttons on this site. Work begins after the start amount
-              is paid and we receive the onboarding information we request.
+              Submitting a request on this website is not a purchase. If we
+              accept your project, website builds are paid in two parts: 50% to
+              start and 50% at launch. We email an invoice for the first 50%;
+              work begins after it is paid and we receive the onboarding
+              information we request. The remaining 50% is invoiced at launch.
               Optional monitoring is billed monthly and can be canceled anytime.
             </p>
             <p className="mt-2">
@@ -134,7 +134,8 @@ export default function TermsPage() {
             <p className="mt-2">
               You represent that you own or have rights to use all content you
               provide, and that it does not infringe others’ rights or violate
-              law. Delays in providing content or feedback may delay delivery.
+              law. Delays in providing content or feedback may delay delivery
+              beyond the stated turnaround.
             </p>
           </section>
 
@@ -143,12 +144,11 @@ export default function TermsPage() {
               6. Turnaround and Revisions
             </h2>
             <p className="mt-2">
-              We begin the build after we receive required content and the start
-              payment. The schedule is confirmed in writing before work starts
-              and is an estimate, not a guarantee. Standard builds include one
-              round of revisions after the first draft. Additional revision
-              rounds or scope changes may require extra fees, which we will
-              confirm before doing the work.
+              Typical turnaround is about 5–7 business days after we receive
+              required content and the start payment. Timelines are estimates, not
+              guarantees. Standard builds include one round of revisions after
+              the first draft. Additional revision rounds or scope changes may
+              require extra fees, which we will confirm before doing the work.
             </p>
           </section>
 

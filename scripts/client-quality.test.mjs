@@ -91,23 +91,7 @@ test("Sitesinc hub pages (6) match the offer facts: $1,995 50/50, monitoring 1st
   }
 });
 
-test("Tony-approved SEO hubs keep the $1,995 / $997.50 / $129 / 2-day / phone facts without quote CTAs", async () => {
-  const { PAGE_DRAFTS, REPO_PUBLISHED_HUB_SLUGS } = await import("../lib/factory/drafts.ts");
-  assert.equal(REPO_PUBLISHED_HUB_SLUGS.length, 3);
-  for (const slug of REPO_PUBLISHED_HUB_SLUGS) {
-    const d = PAGE_DRAFTS[slug];
-    assert.ok(d, slug);
-    const text = `${d.title}\n${d.metaDescription}\n${d.body}`;
-    assert.match(text, /\(909\) 323-1575/);
-    assert.match(text, /\$1,995/);
-    assert.match(text, /\$997\.50/);
-    assert.match(text, /\$129/);
-    assert.match(d.body, /2 days/);
-    assert.doesNotMatch(text, /request a quote|CONFIRM|status:\s*DRAFT|application\/ld\+json|G-0XHXXSSB1N/i);
-  }
-});
-
-test("store: only priced monitoring is public, 1st month free trial; DomainIQ and unpriced items hidden", async () => {
+test("store: only priced monitoring is public, 1st month free trial; DomainIQ (priced draft, unlisted) and unpriced items hidden", async () => {
   const P = await import("../data/products.ts");
   const pub = P.getPublicProducts().map((p) => p.slug);
   assert.deepEqual(pub, ["website-monitoring"]);

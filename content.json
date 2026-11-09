@@ -23,7 +23,7 @@
     }
   },
   "hero": {
-    "overline": "Websites for Southern California local businesses",
+    "overline": "Done-for-you small business websites",
     "headline": "We build real, working websites, not subscriptions like the rest.",
     "subheadline": "Affordable website design for the “little guy” who never got the site quite right — contractors, plumbers, barbers, and other local shops. One-time $1,995 build, SEO for small business from day one, built to turn visitors into calls, and fully yours.",
     "offer": {
@@ -31,7 +31,7 @@
       "subtitle": "50% to start, 50% at launch. Monitored SEO is not included in the $1,995 build: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days."
     },
     "primaryCta": {
-      "label": "See if it’s a fit",
+      "label": "Start a website build",
       "target": "checklist"
     },
     "secondaryCta": {
@@ -40,7 +40,7 @@
     },
     "pricingLine": "$1,995 flat · 50% to start, 50% at launch · Monitored SEO: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days",
     "stackLine": "Timeline confirmed in writing before work starts • Next.js + Tailwind • Netlify hosting included • You own the full code.",
-    "trustLine": "Built for plumbers, roofers, HVAC contractors, electricians, landscapers, auto repair shops and other local service businesses."
+    "trustLine": "Website design for contractors, plumbers, barbers, cleaners, food trucks, coaches, and solo pros."
   },
   "techStack": {
     "title": "Built with modern tech that big brands use",
@@ -87,10 +87,10 @@
       "startDue": "$997.50",
       "launchDue": "$997.50",
       "launchNote": "50% to start · 50% at launch",
-      "detail": "The website build is $1,995 — a flat fee. No negotiation. Pay $997.50 to start and $997.50 at launch, or pay $1,995 in one payment. No long-term contract.",
+      "detail": "The website build is $1,995 — a flat fee. No negotiation. $997.50 to start, $997.50 at launch. Submitting this form is a request, not a purchase. If we accept the project, you receive a $997.50 start invoice manually. The remaining $997.50 is due at launch. No long-term contract.",
       "cta": {
-        "label": "Pay $997.50 to start",
-        "href": "/#pricing"
+        "label": "Request a website build",
+        "href": "/#checklist"
       }
     },
     "maintenance": {
@@ -103,8 +103,8 @@
         "2-3 small text/image updates per month"
       ],
       "cta": {
-        "label": "Start monitored SEO ($129/mo)",
-        "href": "/#pricing"
+        "label": "Ask about monitored SEO",
+        "href": "/#checklist"
       }
     }
   },
@@ -159,7 +159,7 @@
       "Any photos you want used",
       "Your main offer or goal (calls, bookings, sales, leads)"
     ],
-    "note": "Pay $997.50 to start and $997.50 at launch, or pay $1,995 in one payment. The homepage form is a request, not a purchase, if you want to talk first. Monitored SEO is not included in the $1,995 build: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days."
+    "note": "Submitting the form is a request, not a purchase. If we accept the project, Sitesinc emails a $997.50 start invoice. The remaining $997.50 is due at launch. Monitored SEO is not included in the $1,995 build: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days."
   },
   "about": {
     "title": "Built for the “little guy” who's tired of feeling left behind online.",

@@ -125,6 +125,7 @@ export const catalog: CatalogEntry[] = [
     category: "Reports",
     kind: "digital",
     listed: false,
+    priceCents: 40000,
     stripeLookupKey: "sitesinc_domainiq_report",
     deliverable: { type: "generator", generator: "domainiq-report", filename: "domainiq-domain-report.html" },
     fulfillmentInputs: [
@@ -149,7 +150,7 @@ export const catalog: CatalogEntry[] = [
       { key: "siteUrl", label: "Website to audit", placeholder: "https://example.com", required: true, kind: "url", maxLength: 200 },
     ],
     description:
-      "An on-page crawl of up to 15 pages of your site: titles, descriptions, headings, canonicals, image alt text, and contact paths, with plain-language fixes.",
+      "An on-page crawl of up to 100 pages of your site: titles, descriptions, headings, canonicals, image alt text, and contact paths, with plain-language fixes.",
     image: "/logo.png",
   },
   {

@@ -1,11 +1,4 @@
 import type { FactoryPage } from "./types";
-import {
-  REPO_PUBLISHED_AT,
-  REPO_PUBLISHED_HUB_SLUGS,
-  SEO_HUB_DRAFTS,
-} from "./seo-hub-drafts";
-
-export { PAGE_FAQS, REPO_PUBLISHED_AT, REPO_PUBLISHED_HUB_SLUGS } from "./seo-hub-drafts";
 
 type Draft = Pick<FactoryPage, "title" | "metaDescription" | "headings" | "body">;
 
@@ -35,7 +28,7 @@ That also means we are not a “change this block yourself every Tuesday” tool
 
 ## What we actually build
 
-Website builds are $1,995 — a flat fee. No negotiation. Pay 50% to start and 50% at launch. Monitored SEO is optional: 1st month free, then $129/mo. The package includes a complete custom site, a choice of eight design directions (see the Layouts page), on-page SEO setup, a lead form, hosting setup, domain connection, one round of revisions, Those numbers must match the homepage. Timeline is confirmed in writing before work starts. We will not invent a different price here.
+Website builds are $1,995 — a flat fee. No negotiation. Pay 50% to start and 50% at launch. Monitored SEO is optional: 1st month free, then $129/mo. The package includes a complete custom site, a choice of eight design directions, on-page SEO setup, a lead form, hosting setup, domain connection, one round of revisions, and a 5–7 business day turnaround after we have your content. Those numbers must match the homepage. We will not invent a different price here.
 
 This is the same affordable website design we build for contractors, plumbers, and barbers: a working site, not a subscription.
 
@@ -65,7 +58,7 @@ See current pricing on the homepage or the packages page. No ranking promises �
 
 Website builds are $1,995 — a flat fee. No negotiation. Pay 50% to start (a $997.50 deposit) and 50% at launch (the remaining $997.50). There is no long-term contract.
 
-Included: custom Next.js + Tailwind site, eight design options, dark glossy UI, on-page SEO basics, lead capture, domain connection, code handoff, Netlify hosting setup, one revision round. Timeline confirmed in writing before work starts. See the eight layouts on the Layouts page before you pick.
+Included: custom Next.js + Tailwind site, eight design options, dark glossy UI, on-page SEO basics, lead capture, domain connection, code handoff, Netlify hosting setup, one revision round, 5–7 business days after content.
 
 ## Optional monitoring
 
@@ -77,7 +70,7 @@ We do not sell 20 “city + service” landing pages. We do not sell guaranteed 
 
 ## How payment works
 
-Pay on this page: $997.50 to start (the start deposit), $997.50 at launch (the remaining balance), or $1,995 in one payment. We start once the start amount is paid and your onboarding details are in. If you have questions first, send a request or email save@sitesinc.co — that form is not a purchase. Prices on this page must match the homepage — if they ever drift, trust the homepage and tell us.
+Submitting the build form is a request, not a purchase. If we accept the project, Sitesinc emails a $997.50 start invoice; we start once it is paid and your onboarding details are in. The remaining $997.50 is invoiced at launch. If you have questions first, email save@sitesinc.co. Prices on this page must match the homepage — if they ever drift, trust the homepage and tell us.
 
 Twelve-month math, stated plainly: the $1,995 build plus optional monitored SEO (1st month free, then $129/mo) adds $1,419 (11 paid months × $129) if you keep it for the first year. A typical DIY builder plan in the $30–$50/mo range is cheaper up front and more expensive if you stay for years — and you still do not own the code. Pick the model that matches how you want to operate.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional monitored SEO: 1st month free, then $129/mo. Questions? Call (909) 323-1575 or email save@sitesinc.co.`,
   },
@@ -211,34 +204,9 @@ One offer, one next step, proof that you have done the work. A 12-page “about 
 
 Sitesinc will not clone this page for “barber in [city]” fifty times. If we ever add a second industry page, it will have new examples, not a find-and-replace. That is a quality rule, not a slogan.
 
-The same factory that is rebuilding sitesinc.co — research, brief, human approval, staging, then publish — is the factory we run for a shop. We confirm the schedule in writing before work starts. The 90-day case study on this domain is about proving the marketing system, not delaying your build.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional monitored SEO: 1st month free, then $129/mo. Questions? Call (909) 323-1575 or email save@sitesinc.co.`,
+The same factory that is rebuilding sitesinc.co — research, brief, human approval, staging, then publish — is the factory we run for a shop. Timeline is 5–7 business days after content, not 90 days of mystery. The 90-day case study on this domain is about proving the marketing system, not delaying your build.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional monitored SEO: 1st month free, then $129/mo. Questions? Call (909) 323-1575 or email save@sitesinc.co.`,
   },
-  ...SEO_HUB_DRAFTS,
 };
-
-const REPO_PUBLISHED = new Set<string>(REPO_PUBLISHED_HUB_SLUGS);
-
-/** Fill Tony-approved SEO hubs so a production workspace that predates them still serves them as published. */
-export function applyRepoPublishedHubs(pages: FactoryPage[]): FactoryPage[] {
-  return pages.map((page) => {
-    if (!REPO_PUBLISHED.has(page.slug)) return page;
-    const draft = PAGE_DRAFTS[page.slug];
-    if (!draft) return page;
-    return {
-      ...page,
-      title: draft.title,
-      metaDescription: draft.metaDescription,
-      headings: draft.headings,
-      body: draft.body,
-      wordCount: wordCount(draft.body),
-      status: "published",
-      noindex: false,
-      approvedBy: "Tony Jones",
-      approvedAt: REPO_PUBLISHED_AT,
-      publishedAt: REPO_PUBLISHED_AT,
-    };
-  });
-}
 
 export function draftFromBrief(slug: string): Draft | null {
   return PAGE_DRAFTS[slug] || null;

@@ -202,7 +202,7 @@ test("catalog: no fake bundles, retired bundle hidden, drafts unlisted, old shop
     assert.ok(!slugs.includes(gone), gone);
     assert.equal(catalog.getCatalogEntry(gone), undefined, gone);
   }
-  assert.deepEqual(slugs, ["website-monitoring"], "only priced monitoring is public");
+  assert.deepEqual(slugs, ["website-monitoring"], "only priced monitoring is public (DomainIQ taken out of the store by Tony 2026-11-08; priced draft kept)");
   for (const p of catalog.getPublicProducts()) assert.ok(p.contactOnly || p.price, `${p.slug} listed without a price`);
 });
 

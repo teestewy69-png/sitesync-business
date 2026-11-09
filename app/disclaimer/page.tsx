@@ -48,7 +48,7 @@ export default function DisclaimerPage() {
               1. No Guarantee of Specific Search Rankings or Revenue
             </h2>
             <p className="mt-2">
-              Sitesinc builds custom, search-engine-optimized websites with clean technical architecture, mobile-first performance, structured schema markup, and local SEO foundations for a flat $99 build fee. While our sites are engineered to follow search engine best practices, search engine algorithms (Google, Bing), local competition, domain age, and customer review velocity are outside our control. Accordingly, we do not guarantee specific keyword rankings, organic traffic volumes, lead counts, or revenue outcomes.
+              Sitesinc builds custom, search-engine-optimized websites with clean technical architecture, mobile-first performance, structured schema markup, and local SEO foundations for a flat $1,995 build fee. While our sites are engineered to follow search engine best practices, search engine algorithms (Google, Bing), local competition, domain age, and customer review velocity are outside our control. Accordingly, we do not guarantee specific keyword rankings, organic traffic volumes, lead counts, or revenue outcomes.
             </p>
           </section>
 

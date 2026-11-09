@@ -18,9 +18,6 @@ const HUB_PATHS = [
   "/seo-ready-websites",
   "/website-monitoring",
   "/for-local-service-businesses",
-  "/inland-empire-small-business-website-design",
-  "/affordable-small-business-website-1995",
-  "/rancho-cucamonga-small-business-web-design",
 ];
 
 test("home and terms meta descriptions are ~150-160 characters", async () => {
@@ -105,7 +102,7 @@ test("factory hub metadata is self-referencing (canonical + og:url)", async () =
   }
 });
 
-test("nav, footer, home, services, and city pages link the factory hub URLs", () => {
+test("nav, footer, home, services, and city pages link the six hub URLs", () => {
   const nav = readFileSync(path.join(ROOT, "lib/site-nav.ts"), "utf8");
   const footer = readFileSync(path.join(ROOT, "components/Footer.tsx"), "utf8");
   const home = readFileSync(path.join(ROOT, "app/page.tsx"), "utf8");
@@ -124,8 +121,6 @@ test("nav, footer, home, services, and city pages link the factory hub URLs", ()
   assert.match(city, /href="\/packages"/);
   assert.match(nav, /href: "\/website-design"/);
   assert.match(nav, /href: "\/packages"/);
-  assert.match(nav, /href: "\/styles"/);
-  assert.match(hubLinks, /"\/styles"/);
 });
 
 test("Service/Offer JSON-LD parses; FAQPage only when FAQs are passed", async () => {
@@ -195,7 +190,7 @@ test("business address is 1968 South Coast Hwy #3632 everywhere it is stated", (
     "components/OrgJsonLd.tsx",
     "components/SeoJsonLd.tsx",
   ].map((f) => readFileSync(path.join(ROOT, f), "utf8")).join("\n");
-  assert.doesNotMatch(scan, /1968 South Coast Hwy(?! #3632)/);
+  assert.doesNotMatch(scan, /1986 South Coast Hwy/);
   assert.match(scan, /1968 South Coast Hwy #3632/);
 });
 

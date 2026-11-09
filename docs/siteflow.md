@@ -1,4 +1,12 @@
-# SiteFlow (paused phase 2 code)
+# SiteFlow
+
+> **UPDATE 2026-11-08 — Tony reversed the Path A pause.** SiteFlow is being launched: the store
+> lives at /store (app/store), the DomainIQ report generator and the Local SEO audit generator were
+> upgraded in three tiers (recommendation/pricing/risk upgrades; crawler rebuild + health score;
+> Core Web Vitals, schema validation, fix plan, deltas; local/NAP/GBP checks), and the catalog in
+> data/products.ts is the live source of truth for what is listed and priced. The "PAUSED" status
+> below is the historical 2026-10-05 record and no longer describes production.
+>
 
 > **Status: PAUSED (phase 2). Decision: Path A, 2026-10-05.** The public offer is ONLY website builds at
 > $1,995 (50% to start, 50% at launch, invoiced by hand) and optional $129/month monitoring. SiteFlow (product

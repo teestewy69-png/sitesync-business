@@ -32,15 +32,46 @@ export type WebsiteDataMetric = {
   changePct: number | null;
   available: boolean;
   source: "ga4" | "gsc";
+  /**
+   * Direction semantics for the change indicator: for most metrics a negative
+   * changePct is bad, but for GSC average position a LOWER value is a better
+   * rank (8 → 5 is an improvement). The dashboard flips its good/bad coloring
+   * when this is set. Only position carries it.
+   */
+  lowerIsBetter?: boolean;
 };
 
 export type WebsiteDataRanked = { label: string; value: number; share: number };
+
+/** One top search query with its full GSC depth: clicks rank it, share is its share of the listed clicks. */
+export type WebsiteDataQueryRow = {
+  label: string;
+  clicks: number;
+  impressions: number;
+  /** Click-through rate as a fraction (0.044 = 4.4%), as returned by Search Console. */
+  ctr: number;
+  /** Average position (impression-weighted, as returned by Search Console). 0 when the API reports none. */
+  position: number;
+  share: number;
+};
 
 export type WebsiteDataDaily = { date: string; users: number };
 
 export type WebsiteDataEstimatedValue =
   | { status: "ok"; amount: number; formula: string; note: string }
   | { status: "placeholder"; amount: null; formula: string; note: string };
+
+/**
+ * Money SiteFlow actually collected through Stripe for the sitesinc.co site only:
+ * live-mode revenue-ledger entries (payments minus refunds, USD) inside the period.
+ * Deliberately separate from the GA4 Revenue metric — the two are never merged.
+ */
+export type WebsiteDataCollectedRevenue = {
+  amount: number;
+  priorAmount: number;
+  start: string;
+  end: string;
+};
 
 export type WebsiteDataReport = {
   site: WebsiteDataSiteOption;
@@ -61,15 +92,34 @@ export type WebsiteDataReport = {
     missing: string[];
   };
   metrics: {
+    /** GA4 keyEvents: events the property owner marked as key events (typically calls, form submissions, bookings). */
+    conversions: WebsiteDataMetric & { tracked: boolean };
     visitors: WebsiteDataMetric;
     pageViews: WebsiteDataMetric;
     impressions: WebsiteDataMetric;
     clicks: WebsiteDataMetric;
+    /**
+     * Site-wide GSC click-through rate, stored as a fraction (0.044 = 4.4%).
+     * Its changePct is the percent change of the rate itself (not percentage
+     * points), so the delta reads consistently with the other KPI cards.
+     */
+    ctr: WebsiteDataMetric;
+    /** Site-wide GSC average position (lower is better — see lowerIsBetter). */
+    position: WebsiteDataMetric;
     revenue: WebsiteDataMetric & { tracked: boolean };
   };
   dailyVisitors: WebsiteDataDaily[];
   topPages: WebsiteDataRanked[];
   topQueries: WebsiteDataRanked[];
+  /** Top queries with full depth (clicks/impressions/ctr/position); topQueries stays the ranked clicks view. */
+  queryRows: WebsiteDataQueryRow[];
+  topEvents: WebsiteDataRanked[];
+  /** Where visitors come from: GA4 session default channel groups by totalUsers (Rec #3). */
+  topChannels: WebsiteDataRanked[];
+  /** Which towns visitors are in: GA4 city by totalUsers, "(not set)" rows removed (Rec #3). */
+  topCities: WebsiteDataRanked[];
+  /** Sitesinc only: Stripe money collected via SiteFlow in this period. Null for clients and when the ledger cannot be read. */
+  collectedRevenue: WebsiteDataCollectedRevenue | null;
   estimatedValue: WebsiteDataEstimatedValue;
   fetchedAt: string;
   live: boolean;
@@ -193,6 +243,12 @@ export function rankedShares(rows: Array<{ label: string; value: number }>): Web
     value: row.value,
     share: total > 0 ? row.value / total : 0,
   }));
+}
+
+/** Format a rate stored as a fraction for display: 0.044 → "4.4%". */
+export function formatRatePct(value: number | null): string {
+  if (value == null || !Number.isFinite(value)) return "—";
+  return `${(value * 100).toFixed(1)}%`;
 }
 
 export function formatGaDate(raw: string | undefined): string {
