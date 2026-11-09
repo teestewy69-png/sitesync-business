@@ -70,3 +70,9 @@ tailwindcss-*.log
 
 # local operator secrets — never commit
 /Attachments/
+
+# local Factory sync (Windows install writes this; never commit machine paths)
+/scripts/factory-sync/windows/local-config.json
+
+# production-only public snapshot written at Netlify build; local must not publish one
+/public/release.json
