@@ -4,8 +4,23 @@ import { notFound } from "next/navigation";
 import content from "@/content.json";
 import SitePage from "@/components/SitePage";
 import OrgJsonLd from "@/components/OrgJsonLd";
+import TwoAudiencePitch from "@/components/TwoAudiencePitch";
 import { OG_IMAGE } from "@/lib/og-image";
-import { getLocationCities, getLocationCity, locationRobots, locationUrl, relatedCities } from "@/lib/locations";
+import {
+  locationPageDescription,
+  locationPageH1,
+  locationPageTitle,
+  nearestHubForCity,
+  neighboringKeepListCities,
+} from "@/lib/indexed-location-copy";
+import {
+  getLocationCities,
+  getLocationCity,
+  isIndexableLocation,
+  locationRobots,
+  locationUrl,
+  relatedCities,
+} from "@/lib/locations";
 
 type Params = { slug: string };
 
@@ -22,8 +37,8 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const { slug } = await params;
   const city = getLocationCity(slug);
   if (!city) return {};
-  const title = `Small Business Websites in ${city.name}, ${city.state}`;
-  const description = `Sitesinc builds real, working websites for small businesses in ${city.name}, ${city.state}. $1,995 flat, one time. No long-term contract. You own your website.`;
+  const title = locationPageTitle(city);
+  const description = locationPageDescription(city);
   const url = locationUrl(city.slug);
   return {
     title,
@@ -39,6 +54,9 @@ export default async function LocationPage({ params }: { params: Promise<Params>
   const city = getLocationCity(slug);
   if (!city) notFound();
   const related = relatedCities(city);
+  const indexed = isIndexableLocation(city.slug);
+  const neighbors = indexed ? neighboringKeepListCities(city) : [];
+  const hub = indexed ? nearestHubForCity(city) : null;
   const place = `${city.name}, ${city.state}`;
   const pop = new Intl.NumberFormat("en-US").format(city.population);
   const url = locationUrl(city.slug);
@@ -94,7 +112,7 @@ export default async function LocationPage({ params }: { params: Promise<Params>
         </nav>
         <p className="mt-6 text-xs font-semibold uppercase tracking-wider text-brand-300">{place}</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-          Small business websites in {place}
+          {locationPageH1(city)}
         </h1>
         <p className="mt-4 text-base text-slate-300">
           We build real, working websites, not subscriptions like the rest. For $1,995 flat, a {city.name}{" "}
@@ -106,6 +124,42 @@ export default async function LocationPage({ params }: { params: Promise<Params>
           estimate). Sitesinc is based in {content.footer.address.city}, {content.footer.address.region} and builds
           websites online, so we work with small businesses in {city.name} without an in-person visit.
         </p>
+        {indexed && city.county ? (
+          <section className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-6">
+            <h2 className="text-xl font-semibold">{city.name} in {city.county}</h2>
+            <p className="mt-3 text-base text-slate-300">
+              {city.name} is in {city.county}
+              {neighbors.length > 0 ? (
+                <>
+                  . Nearby cities:{" "}
+                  {neighbors.map((n, i) => (
+                    <span key={n.slug}>
+                      {i > 0 ? (i === neighbors.length - 1 ? ", and " : ", ") : null}
+                      <Link href={`/locations/${n.slug}`} className="text-brand-300 hover:underline">
+                        {n.name}, {n.state}
+                      </Link>
+                    </span>
+                  ))}
+                </>
+              ) : null}
+              .
+            </p>
+            {hub ? (
+              <p className="mt-3 text-base text-slate-300">
+                See also{" "}
+                <Link href={hub.href} className="text-brand-300 hover:underline">
+                  {hub.label}
+                </Link>
+                .
+              </p>
+            ) : null}
+          </section>
+        ) : null}
+        {indexed ? (
+          <div className="mt-8">
+            <TwoAudiencePitch compact location={`city_${city.slug}`} />
+          </div>
+        ) : null}
 
         <section className="mt-10 rounded-2xl border border-white/10 bg-white/5 p-6">
           <h2 className="text-xl font-semibold">Our guarantee, in plain terms</h2>

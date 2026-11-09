@@ -45,9 +45,9 @@ export const TRADES: Trade[] = [
     slug: "plumbers",
     name: "Plumbers",
     short: "Plumbing",
-    metaTitle: "Websites for Plumbers in Southern California | $1,995 Flat | Sitesinc",
+    metaTitle: "Plumber Websites in SoCal | $1,995 Flat | Sitesinc",
     metaDescription:
-      "Plumber websites built for phone calls: tap-to-call, service pages and a quote form that emails you every lead. $1,995 flat, 50% to start. LA, OC, Riverside, San Bernardino.",
+      "Plumber websites built for phone calls: tap-to-call, service pages and a quote form that emails you. $1,995 flat, 50% to start. SoCal.",
     overline: "Websites for plumbers",
     headline: "Somebody near you has water on the floor right now. Can they call you in one tap?",
     subheadline:
@@ -82,9 +82,9 @@ export const TRADES: Trade[] = [
     slug: "roofers",
     name: "Roofers",
     short: "Roofing",
-    metaTitle: "Websites for Roofers in Southern California | $1,995 Flat | Sitesinc",
+    metaTitle: "Roofer Websites in SoCal | $1,995 Flat | Sitesinc",
     metaDescription:
-      "Roofing websites that turn searches into estimate requests: tap-to-call, project photos, service-area pages and an estimate form. $1,995 flat. LA, OC, Riverside, San Bernardino.",
+      "Roofing websites that turn searches into estimate requests: tap-to-call, photos, service-area pages and an estimate form. $1,995 flat. SoCal.",
     overline: "Websites for roofers",
     headline: "The first rain of the season is your busiest week online. Is your website ready for it?",
     subheadline:
@@ -119,9 +119,9 @@ export const TRADES: Trade[] = [
     slug: "hvac",
     name: "HVAC Contractors",
     short: "HVAC",
-    metaTitle: "Websites for HVAC Contractors in Southern California | $1,995 Flat | Sitesinc",
+    metaTitle: "HVAC Websites in SoCal | $1,995 Flat | Sitesinc",
     metaDescription:
-      "HVAC websites built for calls on the hottest days: tap-to-call, AC and heating service pages, service-area pages and a service request form. $1,995 flat. Southern California.",
+      "HVAC websites built for calls on the hottest days: tap-to-call, AC and heating pages, and a service request form. $1,995 flat. SoCal.",
     overline: "Websites for HVAC contractors",
     headline: "Their AC just quit on a 100° afternoon. They want a number to tap, not a website to dig through.",
     subheadline:
@@ -156,9 +156,9 @@ export const TRADES: Trade[] = [
     slug: "electricians",
     name: "Electricians",
     short: "Electrical",
-    metaTitle: "Websites for Electricians in Southern California | $1,995 Flat | Sitesinc",
+    metaTitle: "Electrician Websites in SoCal | $1,995 Flat | Sitesinc",
     metaDescription:
-      "Electrician websites that make you look as solid as your work: tap-to-call, service pages for panels, EV chargers and repairs, and a quote form. $1,995 flat. Southern California.",
+      "Electrician websites that make you look as solid as your work: tap-to-call, service pages, and a quote form. $1,995 flat. SoCal.",
     overline: "Websites for electricians",
     headline: "Your work passes inspection. Would your website?",
     subheadline:
@@ -193,9 +193,9 @@ export const TRADES: Trade[] = [
     slug: "landscapers",
     name: "Landscapers",
     short: "Landscaping",
-    metaTitle: "Websites for Landscapers in Southern California | $1,995 Flat | Sitesinc",
+    metaTitle: "Landscaper Websites in SoCal | $1,995 Flat | Sitesinc",
     metaDescription:
-      "Landscaping websites that show off your yards and bring in quote requests: photo galleries, service pages, service-area pages and a quote form. $1,995 flat. Southern California.",
+      "Landscaping websites that show your yards and bring in quote requests: galleries, service pages, and a quote form. $1,995 flat. SoCal.",
     overline: "Websites for landscapers",
     headline: "Your best yards are stuck in your camera roll. Put them where customers are looking.",
     subheadline:
@@ -230,9 +230,9 @@ export const TRADES: Trade[] = [
     slug: "auto-repair",
     name: "Auto Repair Shops",
     short: "Auto repair",
-    metaTitle: "Websites for Auto Repair Shops in Southern California | $1,995 Flat | Sitesinc",
+    metaTitle: "Auto Repair Websites in SoCal | $1,995 Flat | Sitesinc",
     metaDescription:
-      "Auto repair shop websites built for drivers searching from their phone: tap-to-call, directions, services, hours and an appointment request form. $1,995 flat. Southern California.",
+      "Auto repair shop websites for drivers on a phone: tap-to-call, directions, hours, and an appointment form. $1,995 flat. SoCal.",
     overline: "Websites for auto repair shops",
     headline: "Check-engine light on. They're searching from the parking lot. Your site gets one screen to win them.",
     subheadline:

@@ -10,7 +10,7 @@ import { COMPARE } from "@/lib/compare";
 
 const title = "Free Website Audit for Small Businesses | Sitesinc";
 const description =
-  "Enter your website address and get seven plain checks: HTTPS, mobile setup, quick load check, page title, search description, contact info and your Google Business Profile link. Free, no email needed.";
+  "Free website diagnostic for small businesses: 7 plain checks — HTTPS, mobile, speed, title, description, contact info, Google profile. No email needed.";
 
 export const metadata: Metadata = {
   title,
@@ -64,9 +64,9 @@ export default function FreeWebsiteAudit() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <section className="mx-auto max-w-3xl px-6 py-16">
         <p className="text-xs font-semibold uppercase tracking-wider text-brand-300">Free tool</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Free website audit for your small business</h1>
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Free website diagnostic for your small business</h1>
         <p className="mt-3 text-base text-slate-300">
-          Type in your website address and see seven plain checks in seconds. No email, no sales call. If your site needs more
+          Type in your website address and get a free diagnostic: seven plain checks in seconds. No email, no sales call. If your site needs more
           than a few fixes, we build real, working websites, not subscriptions like the rest, for $1,995 flat.
         </p>
         <div className="mt-8">

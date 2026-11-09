@@ -11,9 +11,9 @@ type Draft = Pick<FactoryPage, "title" | "metaDescription" | "headings" | "body"
 
 export const PAGE_DRAFTS: Record<string, Draft> = {
   "website-design": {
-    title: "Affordable Website Design, $1,995 Flat | Sitesinc",
+    title: "Affordable Website Design for Small Business | Sitesinc",
     metaDescription:
-      "Affordable website design for small shops that need calls, not a template. $1,995 flat Next.js build. You own the code.",
+      "Custom small business website design for $1,995 flat: mobile-fast, Google-ready, lead forms that email you. 50% to start. You own the code.",
     headings: [
       "What a small-business site has to do in the first 5 seconds",
       "Custom Next.js vs drag-and-drop",

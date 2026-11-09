@@ -6,9 +6,9 @@ import OrgJsonLd from "@/components/OrgJsonLd";
 import PilotOffer from "@/components/PilotOffer";
 import { SERVICE_AREA, SITESINC_PHONE, SITESINC_PHONE_HREF, TRADES } from "@/data/trades";
 
-const title = "Websites for Southern California Trades | $1,995 Flat | Sitesinc";
+const title = "Trade Websites in SoCal | $1,995 Flat | Sitesinc";
 const description =
-  "Websites for plumbers, roofers, HVAC contractors, electricians, landscapers and auto repair shops in LA, Orange, Riverside and San Bernardino counties. $1,995 flat, 50% to start.";
+  "Websites for plumbers, roofers, HVAC, electricians, landscapers and auto shops in LA, OC, Riverside and San Bernardino. $1,995 flat, 50% to start.";
 
 export const metadata: Metadata = {
   title,
