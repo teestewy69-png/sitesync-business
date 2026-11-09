@@ -187,6 +187,84 @@ export function classifyUpdate(head, productionSha, { headIsAncestorOfProd, prod
   return "blocked_diverged";
 }
 
+export const LOCKFILE_NAMES = ["package-lock.json", "npm-shrinkwrap.json"];
+export const PACKAGE_DEP_KEYS = [
+  "dependencies",
+  "devDependencies",
+  "optionalDependencies",
+  "peerDependencies",
+  "bundleDependencies",
+  "bundledDependencies",
+  "overrides",
+  "workspaces",
+  "packageManager",
+];
+
+function tryJsonObject(text) {
+  try {
+    const data = JSON.parse(String(text || ""));
+    return data && typeof data === "object" && !Array.isArray(data) ? data : null;
+  } catch {
+    return null;
+  }
+}
+
+/** True when install-affecting package.json fields differ. Scripts-only edits do not count. */
+export function packageDependencyFieldsChanged(oldText, newText) {
+  const oldPkg = tryJsonObject(oldText);
+  const newPkg = tryJsonObject(newText);
+  if (!oldPkg || !newPkg) return true;
+  for (const key of PACKAGE_DEP_KEYS) {
+    if (JSON.stringify(oldPkg[key] ?? null) !== JSON.stringify(newPkg[key] ?? null)) return true;
+  }
+  return false;
+}
+
+/**
+ * npm ci is needed only when the lockfile changed, or package.json dependency fields changed.
+ * A scripts-only package.json edit (the 79f4363→8d2afc9 case) is not an install change.
+ */
+export function depsInstallNeeded(changedFiles, oldPackageJson = "", newPackageJson = "") {
+  const files = (changedFiles || []).map((f) => String(f).replace(/\\/g, "/"));
+  if (files.some((f) => LOCKFILE_NAMES.includes(f))) {
+    return { needed: true, reason: "package-lock.json" };
+  }
+  if (files.includes("package.json") && packageDependencyFieldsChanged(oldPackageJson, newPackageJson)) {
+    return { needed: true, reason: "package.json dependencies" };
+  }
+  return { needed: false, reason: "unchanged" };
+}
+
+export function npmOutputTail(stdout, stderr, { maxLines = 30, maxChars = 4000 } = {}) {
+  const text = [stderr, stdout]
+    .filter((s) => s && String(s).trim())
+    .map((s) => String(s).replace(/\r\n/g, "\n"))
+    .join("\n")
+    .trim();
+  if (!text) return "npm ci failed with no output";
+  const lines = text.split("\n");
+  const sliced = lines.length > maxLines ? lines.slice(-maxLines) : lines;
+  let out = sliced.join("\n");
+  if (out.length > maxChars) out = out.slice(-maxChars);
+  return out;
+}
+
+export function depsFailureMessage({ productionSha, factoryRunning }) {
+  const short = shortSha(productionSha);
+  const server = factoryRunning
+    ? "Factory still appears to be listening on 127.0.0.1:3000. Stop it first — Windows often locks node_modules while next dev is running — then run Sync Factory Now or `npm ci` in the repo."
+    : "If next dev was running, stop Factory first (Windows often locks node_modules while the server holds files), then run `npm ci` in the repo or Sync Factory Now. Sync is supposed to defer the git update while 127.0.0.1:3000 is listening; if git already moved, check that the server was actually stopped before this run.";
+  return `Code fast-forwarded to production ${short} (git is current; codeInSync is true). npm ci failed, so node_modules may be stale. ${server} npm error tail is in factory-backups\\logs\\factory-sync.log. Do not reset. No push or deploy was attempted.`;
+}
+
+function gitFileAt(repo, sha, file, opts) {
+  if (!PRODUCTION_COMMIT_RE.test(sha)) return "";
+  if (!/^[A-Za-z0-9._/-]+$/.test(file) || file.includes("..")) return "";
+  const out = git(repo, ["show", `${sha}:${file}`], opts);
+  if (out.status !== 0) return "";
+  return out.stdout || "";
+}
+
 export function selectCodeBackupsToPrune(entries, keep = CODE_RETENTION) {
   const eligible = (entries || []).filter(
     (e) => e && e.isDirectory && e.hasVerifiedOk && CODE_BACKUP_NAME_RE.test(e.name)
@@ -609,6 +687,9 @@ export async function runSync(opts = {}) {
     const full = statusBase({ now, reason, head: status.localHead, productionCommit: status.productionCommit, codeSync: status.codeSync, message: status.message, extra: status });
     writeStatus(backupDir, full);
     appendLog(backupDir, logLine(now, full.codeSync, full.message));
+    if (status.npmErrorTail) {
+      appendLog(backupDir, `${new Date(now).toISOString()} npm_ci_output\n${status.npmErrorTail}`);
+    }
     return { ...full, exitCode, backupDir };
   };
 
@@ -822,25 +903,37 @@ export async function runSync(opts = {}) {
       );
     }
 
-    const depsChanged = incoming.some((f) => f === "package.json" || f === "package-lock.json");
-    let deps = "unchanged";
-    if (depsChanged) {
+    const oldPackageJson = incoming.includes("package.json") ? gitFileAt(repo, head, "package.json", gitOpts) : "";
+    const newPackageJson = incoming.includes("package.json") ? gitFileAt(repo, productionSha, "package.json", gitOpts) : "";
+    const install = depsInstallNeeded(incoming, oldPackageJson, newPackageJson);
+    let deps = install.needed ? install.reason : "unchanged";
+    if (install.needed) {
       try {
         if (opts.installDeps) await opts.installDeps();
         else {
           const npm = spawnSync("npm", ["ci"], { cwd: repo, encoding: "utf8", windowsHide: true, timeout: 10 * 60 * 1000 });
-          if (npm.status !== 0) throw new Error((npm.stderr || npm.stdout || "npm ci failed").trim().split(/\r?\n/).pop());
+          if (npm.status !== 0) {
+            const tail = npmOutputTail(npm.stdout, npm.stderr);
+            const err = new Error(tail.split("\n").filter(Boolean).slice(-1)[0] || "npm ci failed");
+            err.npmErrorTail = tail;
+            throw err;
+          }
         }
         deps = "npm_ci_ok";
       } catch (err) {
+        const factoryRunning = await probe().catch(() => false);
+        const npmErrorTail = err && err.npmErrorTail ? err.npmErrorTail : npmOutputTail("", err instanceof Error ? err.message : "npm ci failed");
         return finish(
           {
             codeSync: "updated_deps_failed",
-            message: `Code fast-forwarded to production ${shortSha(productionSha)} but npm ci failed (${err.message}). Restore from ${backup.codeDir} if needed. No push or deploy was attempted.`,
+            message: depsFailureMessage({ productionSha, factoryRunning }),
             localHead: newHead,
             productionCommit: productionSha,
             lastCodeBackup: backup.codeDir,
-            deps,
+            deps: "npm_ci_failed",
+            depsReason: install.reason,
+            factoryRunning: Boolean(factoryRunning),
+            npmErrorTail,
           },
           EXIT.ERROR
         );
