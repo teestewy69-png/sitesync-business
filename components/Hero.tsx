@@ -53,6 +53,14 @@ export default function Hero() {
                 →
               </span>
             </a>
+            <a
+              href="tel:+19093231575"
+              data-analytics-cta="call"
+              data-analytics-location="hero"
+              className="inline-flex items-center justify-center rounded-full border border-brand-400/50 bg-brand-500/10 px-6 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-500/20"
+            >
+              Call (909) 323-1575
+            </a>
             <Link
               href="/styles"
               data-analytics-cta="see_designs"
@@ -71,7 +79,12 @@ export default function Hero() {
             </p>
           </div>
 
-          <p className="pt-1 text-base text-slate-400">{hero.trustLine}</p>
+          <p className="pt-1 text-base text-slate-400">
+            {hero.trustLine}{" "}
+            <a href="#trades" className="text-brand-300 hover:underline">
+              Find your trade
+            </a>
+          </p>
         </div>
 
         <div className="flex-1">

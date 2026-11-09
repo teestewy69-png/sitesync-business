@@ -11,6 +11,8 @@ import HubLinks from "@/components/HubLinks";
 import EmailCapture from "@/components/EmailCapture";
 import Footer from "@/components/Footer";
 import SeoJsonLd from "@/components/SeoJsonLd";
+import TradePicker from "@/components/TradePicker";
+import PilotOffer from "@/components/PilotOffer";
 
 const DesignShowcase = dynamic(() => import("@/components/DesignShowcase"), {
   loading: () => (
@@ -44,6 +46,8 @@ export default function Home() {
     <>
       <SeoJsonLd />
       <Hero />
+      <TradePicker />
+      <PilotOffer />
       <DesignShowcase />
       <PickYourDesign />
       <Pricing />

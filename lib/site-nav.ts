@@ -1,6 +1,7 @@
 /** Public template routes future client sites also get (home is `/`). */
 export const SITE_NAV = [
   { href: "/services", label: "Services" },
+  { href: "/trades", label: "Trades" },
   { href: "/website-design", label: "Website Design" },
   { href: "/styles", label: "Layouts" },
   { href: "/packages", label: "Packages" },

@@ -23,7 +23,7 @@
     }
   },
   "hero": {
-    "overline": "Done-for-you small business websites",
+    "overline": "Websites for Southern California local businesses",
     "headline": "We build real, working websites, not subscriptions like the rest.",
     "subheadline": "Affordable website design for the “little guy” who never got the site quite right — contractors, plumbers, barbers, and other local shops. One-time $1,995 build, SEO for small business from day one, built to turn visitors into calls, and fully yours.",
     "offer": {
@@ -31,7 +31,7 @@
       "subtitle": "50% to start, 50% at launch. Monitored SEO is not included in the $1,995 build: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days."
     },
     "primaryCta": {
-      "label": "Start a website build",
+      "label": "See if it’s a fit",
       "target": "checklist"
     },
     "secondaryCta": {
@@ -40,7 +40,7 @@
     },
     "pricingLine": "$1,995 flat · 50% to start, 50% at launch · Monitored SEO: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days",
     "stackLine": "Timeline confirmed in writing before work starts • Next.js + Tailwind • Netlify hosting included • You own the full code.",
-    "trustLine": "Website design for contractors, plumbers, barbers, cleaners, food trucks, coaches, and solo pros."
+    "trustLine": "Built for plumbers, roofers, HVAC contractors, electricians, landscapers, auto repair shops and other local service businesses."
   },
   "techStack": {
     "title": "Built with modern tech that big brands use",
