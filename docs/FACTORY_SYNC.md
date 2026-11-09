@@ -14,6 +14,7 @@ Does:
 - Backup verified code (`git bundle`) plus local `.env.local` and `data/factory` + `data/store` **before** any update.
 - `git merge --ff-only <productionSha>` when the tree is clean.
 - Defer while Factory is already bound to `127.0.0.1:3000` (no process killing).
+- Run `npm ci` only when `package-lock.json` changed, or `package.json` **dependency fields** changed. A scripts-only `package.json` edit is not an install change; status is `updated` with `deps: unchanged`.
 - Run before `Start Sitesinc Factory.bat` so tests are not against stale published code.
 
 Does **not**:
@@ -113,7 +114,9 @@ Uninstall removes the scheduled task only. Backups, secrets, repo, `.env.local`,
 | `C:\Users\Vero2\factory-backups\PENDING-SYNC.txt` | present only while a production FF is deferred because Factory is running |
 | `C:\Users\Vero2\factory-backups\logs\factory-sync.log` | append-only log (rotated at ~2MB) |
 
-`codeSync` values: `in_sync`, `updated`, `deferred_factory_running`, `blocked_dirty`, `blocked_untracked_collision`, `blocked_ahead`, `blocked_diverged`, `blocked_origin`, `manifest_missing`, `manifest_invalid`, `network_failure`, `backup_failed`, `lock_held`.
+`codeSync` values: `in_sync`, `updated`, `updated_deps_failed`, `deferred_factory_running`, `blocked_dirty`, `blocked_untracked_collision`, `blocked_ahead`, `blocked_diverged`, `blocked_origin`, `manifest_missing`, `manifest_invalid`, `network_failure`, `backup_failed`, `lock_held`.
+
+`updated` means git HEAD matches production. `deps` is `unchanged` unless an install was needed. `updated_deps_failed` means git already moved and `npm ci` then failed (`deps: npm_ci_failed`); the log has the npm error tail. Stop Factory on `127.0.0.1:3000` before retrying `npm ci` — Windows often locks `node_modules` while `next dev` is running. Sync is supposed to defer the git update while that port is listening.
 
 ## Backups and retention
 

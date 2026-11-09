@@ -18,6 +18,10 @@ import {
   assertKnownOrigin,
   classifyUpdate,
   collidingUntracked,
+  depsFailureMessage,
+  depsInstallNeeded,
+  npmOutputTail,
+  packageDependencyFieldsChanged,
   parseGitRemote,
   parsePorcelain,
   parseProductionManifest,
@@ -54,6 +58,15 @@ function commitFile(dir, rel, content, msg) {
   sh(dir, ["add", "--", rel]);
   sh(dir, ["commit", "-m", msg]);
   return sh(dir, ["rev-parse", "HEAD"]).toLowerCase();
+}
+
+function pkgJson({ testScript = "node --test", dep = "1.0.0" } = {}) {
+  return `${JSON.stringify({
+    name: "factory-sync-fixture",
+    version: "1.0.0",
+    scripts: { test: testScript },
+    dependencies: { leftpad: dep },
+  }, null, 2)}\n`;
 }
 
 function tmp() {
@@ -138,7 +151,11 @@ async function sync(local, backupDir, fetchImpl, extra = {}) {
     gitRunner: extra.gitRunner || recordingGit(calls),
     factoryProbe: extra.factoryProbe || (async () => false),
     createBundle: extra.createBundle,
-    installDeps: extra.installDeps || (async () => {}),
+    installDeps: Object.prototype.hasOwnProperty.call(extra, "installDeps")
+      ? extra.installDeps
+      : async () => {
+          throw new Error("npm ci should not run unless this test opts into installDeps");
+        },
     now: extra.now || Date.now(),
     retainCodeVersions: extra.retainCodeVersions,
     factoryPort: extra.factoryPort,
@@ -182,6 +199,30 @@ test("known origin parser accepts github https/ssh and refuses others", () => {
   assert.deepEqual(parseGitRemote("git@github.com:teestewy69-png/sitesync-business.git"), { host: "github.com", path: EXPECTED_REMOTE_PATH });
   assert.throws(() => assertKnownOrigin("https://evil.example/teestewy69-png/sitesync-business.git"), /not the known/);
   assert.throws(() => assertKnownOrigin("https://github.com/evil/sitesync-business.git"), /not the known/);
+});
+
+test("depsInstallNeeded: lockfile or dependency fields only; scripts-only package.json is unchanged", () => {
+  const pkgA = pkgJson({ testScript: "a", dep: "1.0.0" });
+  const pkgScripts = pkgJson({ testScript: "b", dep: "1.0.0" });
+  const pkgDep = pkgJson({ testScript: "a", dep: "2.0.0" });
+  assert.equal(packageDependencyFieldsChanged(pkgA, pkgScripts), false);
+  assert.equal(packageDependencyFieldsChanged(pkgA, pkgDep), true);
+  assert.deepEqual(depsInstallNeeded(["app.txt"], pkgA, pkgScripts), { needed: false, reason: "unchanged" });
+  assert.deepEqual(depsInstallNeeded(["package.json"], pkgA, pkgScripts), { needed: false, reason: "unchanged" });
+  assert.deepEqual(depsInstallNeeded(["package.json"], pkgA, pkgDep), { needed: true, reason: "package.json dependencies" });
+  assert.deepEqual(depsInstallNeeded(["package-lock.json"], pkgA, pkgA), { needed: true, reason: "package-lock.json" });
+  assert.deepEqual(depsInstallNeeded(["package-lock.json".split("/").join("\\")], pkgA, pkgA), { needed: true, reason: "package-lock.json" });
+});
+
+test("npmOutputTail keeps the error end and depsFailureMessage is actionable", () => {
+  const tail = npmOutputTail("ignore stdout\n", "npm ERR! code EPERM\nnpm ERR! syscall unlink\nnpm ERR! path node_modules\\next\n");
+  assert.match(tail, /EPERM/);
+  assert.match(tail, /node_modules/);
+  const msg = depsFailureMessage({ productionSha: GOOD_SHA, factoryRunning: false });
+  assert.match(msg, /git is current/);
+  assert.match(msg, /127\.0\.0\.1:3000/);
+  assert.match(msg, /npm ci/);
+  assert.equal(msg.includes("deps: unchanged"), false);
 });
 
 test("classifyUpdate: ff vs no change vs ahead vs diverged", () => {
@@ -272,6 +313,69 @@ test("normal fast-forward: backup verified, HEAD matches production, env/data/un
   forbiddenGit(calls);
   assert.equal(sh(local, ["remote", "get-url", "origin"]), origin);
   assert.equal(PRODUCTION_MANIFEST_URL, "https://sitesinc.co/release.json");
+});
+
+test("scripts-only package.json change skips npm ci when lockfile is unchanged", async () => {
+  const { origin, local, backupDir } = await pairRepos();
+  commitFile(origin, "package.json", pkgJson({ testScript: "a" }), "pkg a");
+  sh(local, ["fetch", "origin"]);
+  sh(local, ["merge", "--ff-only", "origin/master"]);
+  const b = commitFile(origin, "package.json", pkgJson({ testScript: "b" }), "scripts only");
+  let npmRuns = 0;
+  const result = await sync(local, backupDir, fetchOk(b), {
+    installDeps: async () => { npmRuns += 1; },
+  });
+  assert.equal(result.codeSync, "updated");
+  assert.equal(result.deps, "unchanged");
+  assert.equal(result.codeInSync, true);
+  assert.equal(npmRuns, 0);
+  assert.equal(sh(local, ["rev-parse", "HEAD"]).toLowerCase(), b);
+});
+
+test("package-lock.json change runs npm ci", async () => {
+  const { origin, local, backupDir } = await pairRepos();
+  commitFile(origin, "package.json", pkgJson(), "pkg");
+  commitFile(origin, "package-lock.json", "{ \"lockfileVersion\": 3, \"a\": 1 }\n", "lock a");
+  sh(local, ["fetch", "origin"]);
+  sh(local, ["merge", "--ff-only", "origin/master"]);
+  const b = commitFile(origin, "package-lock.json", "{ \"lockfileVersion\": 3, \"a\": 2 }\n", "lock b");
+  let npmRuns = 0;
+  const result = await sync(local, backupDir, fetchOk(b), {
+    installDeps: async () => { npmRuns += 1; },
+  });
+  assert.equal(result.codeSync, "updated");
+  assert.equal(result.deps, "npm_ci_ok");
+  assert.equal(npmRuns, 1);
+  assert.equal(sh(local, ["rev-parse", "HEAD"]).toLowerCase(), b);
+});
+
+test("npm ci failure after lockfile change reports npm_ci_failed and logs the error tail", async () => {
+  const { origin, local, backupDir } = await pairRepos();
+  commitFile(origin, "package.json", pkgJson(), "pkg");
+  commitFile(origin, "package-lock.json", "{ \"lockfileVersion\": 3, \"a\": 1 }\n", "lock a");
+  sh(local, ["fetch", "origin"]);
+  sh(local, ["merge", "--ff-only", "origin/master"]);
+  const b = commitFile(origin, "package-lock.json", "{ \"lockfileVersion\": 3, \"a\": 2 }\n", "lock b");
+  const err = new Error("EPERM: operation not permitted, unlink 'node_modules\\\\next'");
+  err.npmErrorTail = "npm ERR! code EPERM\nnpm ERR! syscall unlink\nnpm ERR! path node_modules\\next\nnpm ERR! errno -4048";
+  const result = await sync(local, backupDir, fetchOk(b), {
+    installDeps: async () => { throw err; },
+  });
+  assert.equal(result.codeSync, "updated_deps_failed");
+  assert.equal(result.deps, "npm_ci_failed");
+  assert.notEqual(result.deps, "unchanged");
+  assert.equal(result.codeInSync, true);
+  assert.equal(result.exitCode, EXIT.ERROR);
+  assert.equal(sh(local, ["rev-parse", "HEAD"]).toLowerCase(), b);
+  assert.match(result.message, /git is current/);
+  assert.match(result.message, /127\.0\.0\.1:3000/);
+  assert.match(result.npmErrorTail, /EPERM/);
+  const log = fs.readFileSync(path.join(backupDir, "logs", "factory-sync.log"), "utf8");
+  assert.match(log, /npm_ci_output/);
+  assert.match(log, /EPERM/);
+  const status = JSON.parse(fs.readFileSync(path.join(backupDir, "status.json"), "utf8"));
+  assert.equal(status.deps, "npm_ci_failed");
+  assert.equal(status.codeSync, "updated_deps_failed");
 });
 
 test("no change when local HEAD already is production", async () => {
