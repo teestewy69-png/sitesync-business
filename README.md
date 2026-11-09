@@ -14,6 +14,8 @@ On Netlify (`NETLIFY=true`), the CRM adapter uses Netlify Blobs (`sitesinc-crm`)
 
 Force a backend with `SITESINC_STORE=local` or `SITESINC_STORE=blobs`.
 
+Local Windows Factory backup/sync (exact published production commit, not `origin/master`) is documented in `docs/FACTORY_SYNC.md`. It is a user-requested install on Tony’s PC, not a cloud-agent routine.
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
