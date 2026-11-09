@@ -42,7 +42,7 @@ export const faqItems: FaqItem[] = [
   {
     question: "How does the 50% to start / 50% at launch payment work?",
     answer:
-      "The website build is $1,995. Pay $997.50 to start and $997.50 at launch, or pay $1,995 in one payment, using the buttons on Packages or Checkout. The homepage form is a request, not a purchase, if you want to talk first. Monitored SEO is not included: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days, cancel anytime. It is never required to keep the site.",
+      "The website build is $1,995. Pay $997.50 to start and $997.50 at launch, or pay $1,995 in one payment, using the buttons on the Packages page (sitesinc.co/packages). The homepage form is a request, not a purchase, if you want to talk first. Monitored SEO is not included: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days, cancel anytime. It is never required to keep the site.",
   },
   {
     question: "What\u2019s included in the $1,995 website build?",
@@ -52,6 +52,6 @@ export const faqItems: FaqItem[] = [
   {
     question: "What do you need from me to start?",
     answer:
-      "Pay the $997.50 start deposit (or the $1,995 flat amount) on Packages or Checkout, and send your business name, services, main offers, logo, brand colors, photos, and domain info. The remaining $997.50 is due at launch if you paid the start deposit. We start the build after we have your content and the start payment. Questions first? The contact form is a request, not a purchase.",
+      "Pay the $997.50 start deposit (or the $1,995 flat amount) on the Packages page (sitesinc.co/packages), and send your business name, services, main offers, logo, brand colors, photos, and domain info. The remaining $997.50 is due at launch if you paid the start deposit. We start the build after we have your content and the start payment. Questions first? The contact form is a request, not a purchase.",
   },
 ];

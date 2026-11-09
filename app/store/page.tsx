@@ -13,7 +13,7 @@ export function generateMetadata(): Metadata {
   return {
     title: "Store | Sitesinc",
     description:
-      "Order a DomainIQ domain report or add website monitoring to your Sitesinc site.",
+      "Sitesinc website monitoring: 1st month free, then $129/mo. Uptime checks, basic technical updates, and small monthly edits. Cancel anytime.",
     // Deliberately unlisted like /tools: no sitemap or navigation entry.
     robots: { index: false, follow: false },
   };
@@ -37,9 +37,9 @@ export default function StorePage() {
     <main className="mx-auto min-h-screen max-w-3xl bg-black px-6 py-16 text-white">
       <h1 className="text-3xl font-semibold tracking-tight">Store</h1>
       <p className="mt-3 text-base text-slate-300">
-        Order a report for your business, or add monitoring to a site we built for you.
-        Reports are one-time purchases. Monitoring is a monthly subscription you can
-        cancel anytime.
+        Add Sitesinc website monitoring to a site we built for you. The 1st month is
+        free, then it is $129/mo. Monitoring is a monthly subscription you can cancel
+        anytime.
       </p>
 
       {products.length === 0 ? (

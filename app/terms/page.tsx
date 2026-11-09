@@ -144,9 +144,8 @@ export default function TermsPage() {
               6. Turnaround and Revisions
             </h2>
             <p className="mt-2">
-              Typical turnaround is about 5–7 business days after we receive
-              required content and the start payment. Timelines are estimates, not
-              guarantees. Standard builds include one round of revisions after
+              Timeline is confirmed in writing before work starts. Timelines are
+              estimates, not guarantees. Standard builds include one round of revisions after
               the first draft. Additional revision rounds or scope changes may
               require extra fees, which we will confirm before doing the work.
             </p>
