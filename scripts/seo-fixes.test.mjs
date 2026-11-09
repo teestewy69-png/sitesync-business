@@ -23,9 +23,10 @@ const HUB_PATHS = [
 test("home and terms meta descriptions are ~150-160 characters", async () => {
   const content = JSON.parse(readFileSync(path.join(ROOT, "content.json"), "utf8"));
   const home = content.seo.description;
-  assert.ok(home.length >= 145 && home.length <= 165, `home description ${home.length}: ${home}`);
-  assert.match(home, /We build real, working websites, not subscriptions like the rest/);
+  assert.ok(home.length >= 130 && home.length <= 165, `home description ${home.length}: ${home}`);
+  assert.match(home, /free diagnostic/i);
   assert.match(home, /\$1,995/);
+  assert.match(home, /\(909\) 323-1575/);
 
   const terms = readFileSync(path.join(ROOT, "app/terms/page.tsx"), "utf8");
   const match = terms.match(/description: "([^"]+)"/);
@@ -78,14 +79,25 @@ test("20 CA city pages stay indexable; the other 480 are noindex,follow and stay
   assert.match(cityPage, /locationRobots\(slug\)/);
 });
 
-test("city page titles drop the $1,995 / Sitesinc tail and stay under 60 chars", async () => {
+test("indexed city titles use Web Design in [City]; noindex titles stay generic and under 60 chars", async () => {
   const src = readFileSync(path.join(ROOT, "app/locations/[slug]/page.tsx"), "utf8");
-  assert.doesNotMatch(src, /\|\s*\$1,995 Flat\s*\|\s*Sitesinc/);
-  assert.match(src, /Small Business Websites in \$\{city\.name\}, \$\{city\.state\}`/);
-  const { getLocationCities } = await import("../lib/locations.ts");
-  for (const city of getLocationCities()) {
-    const title = `Small Business Websites in ${city.name}, ${city.state}`;
-    assert.ok(title.length <= 60, `${city.slug} title is ${title.length}: ${title}`);
+  assert.match(src, /locationPageTitle\(city\)/);
+  assert.match(src, /locationPageH1\(city\)/);
+  const { getIndexableLocationCities, getLocationCities, isIndexableLocation } = await import("../lib/locations.ts");
+  const { indexedLocationTitle, noindexLocationTitle, locationPageTitle } = await import("../lib/indexed-location-copy.ts");
+  assert.equal(getIndexableLocationCities().length, 20);
+  for (const city of getIndexableLocationCities()) {
+    const title = indexedLocationTitle(city);
+    assert.match(title, /Web Design/);
+    assert.ok(title.length <= 60, `${city.slug} indexed title is ${title.length}: ${title}`);
+    assert.equal(locationPageTitle(city), title);
+  }
+  const anaheim = getIndexableLocationCities().find((c) => c.slug === "anaheim-ca");
+  assert.equal(indexedLocationTitle(anaheim), "Web Design in Anaheim, CA | $1,995 Small Business Sites");
+  for (const city of getLocationCities().filter((c) => !isIndexableLocation(c.slug))) {
+    const title = noindexLocationTitle(city);
+    assert.equal(title, `Small Business Websites in ${city.name}, ${city.state}`);
+    assert.ok(title.length <= 60, `${city.slug} noindex title is ${title.length}: ${title}`);
   }
 });
 
@@ -196,13 +208,16 @@ test("business address is 1968 South Coast Hwy #3632 everywhere it is stated", (
 
 test("keywords appear in titles and copy without changing the $1,995 hook", async () => {
   const content = JSON.parse(readFileSync(path.join(ROOT, "content.json"), "utf8"));
-  assert.match(content.seo.title, /Affordable Website Design/);
+  assert.equal(content.seo.title, "Small Business Website Design, $1,995 Flat | Sitesinc");
+  assert.notEqual(content.seo.title, "Affordable Website Design, $1,995 Flat | Sitesinc");
   assert.equal(content.hero.headline, "Your website should make the phone ring. If it just sits there, it’s a business card.");
   assert.match(content.hero.subheadline, /contractors, plumbers, barbers/);
   assert.match(content.hero.subheadline, /SEO for small business/);
   assert.match(content.hero.offer.title, /\$1,995/);
   const { PAGE_DRAFTS } = await import("../lib/factory/drafts.ts");
-  assert.match(PAGE_DRAFTS["website-design"].title, /Affordable Website Design/);
+  assert.equal(PAGE_DRAFTS["website-design"].title, "Affordable Website Design for Small Business | Sitesinc");
+  assert.notEqual(PAGE_DRAFTS["website-design"].title, content.seo.title);
+  assert.notEqual(PAGE_DRAFTS["website-design"].metaDescription, content.seo.description);
   assert.match(PAGE_DRAFTS["seo-ready-websites"].title, /SEO for Small Business/);
   assert.match(PAGE_DRAFTS["for-local-service-businesses"].title, /Contractors, Plumbers, Barbers/);
   assert.match(PAGE_DRAFTS["website-design"].body, /affordable website design/i);

@@ -12,6 +12,8 @@ import type { FactoryPage } from "@/lib/factory/types";
 import { findRetiredOfferClaim } from "@/lib/offer-copy";
 import { metadataForFactoryPage } from "@/lib/factory/page-metadata";
 import { SITE_HUB_LINKS } from "@/lib/site-nav";
+import TwoAudiencePitch from "@/components/TwoAudiencePitch";
+import { showsTwoAudiencePitch } from "@/lib/two-audience-pitch";
 
 function InlineText({ text }: { text: string }) {
   const parts = text.split(/(\*\*[^*]+?\*\*)/g);
@@ -108,6 +110,11 @@ export function FactoryArticle({
         <p className="mt-3 text-base text-slate-300">{page.metaDescription}</p>
       ) : null}
       {lead}
+      {showsTwoAudiencePitch(page.slug) ? (
+        <div className="mt-8">
+          <TwoAudiencePitch compact location={page.slug} />
+        </div>
+      ) : null}
       <div className="mt-8 space-y-4 text-base leading-7 text-slate-200">
         {blocks.map((block, index) => {
           if (block.type === "heading") {

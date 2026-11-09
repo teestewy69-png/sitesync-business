@@ -13,6 +13,7 @@ import Footer from "@/components/Footer";
 import SeoJsonLd from "@/components/SeoJsonLd";
 import TradePicker from "@/components/TradePicker";
 import PilotOffer from "@/components/PilotOffer";
+import TwoAudiencePitch from "@/components/TwoAudiencePitch";
 
 const DesignShowcase = dynamic(() => import("@/components/DesignShowcase"), {
   loading: () => (
@@ -46,6 +47,7 @@ export default function Home() {
     <>
       <SeoJsonLd />
       <Hero />
+      <TwoAudiencePitch location="home" />
       <TradePicker />
       <PilotOffer />
       <DesignShowcase />

@@ -37,7 +37,7 @@ export const COMPARE: CompareEntry[] = [
     slug: "hibu-alternative",
     name: "Hibu",
     heading: "A Hibu alternative for small businesses",
-    title: "Hibu Alternative: Flat-Fee Website Instead of a Contract | Sitesinc",
+    title: "Hibu Alternative: Flat-Fee Website | Sitesinc",
     description:
       "Comparing Hibu with Sitesinc using published terms and sources. Hibu plans are custom with typical 6 to 12 month terms. Sitesinc builds your website for $1,995 flat, one time.",
     intro:
@@ -78,7 +78,7 @@ export const COMPARE: CompareEntry[] = [
     slug: "thryv-alternative",
     name: "Thryv",
     heading: "A Thryv alternative for small businesses",
-    title: "Thryv Alternative: Flat-Fee Website, Not a Monthly Plan | Sitesinc",
+    title: "Thryv Alternative: Flat-Fee Website | Sitesinc",
     description:
       "Comparing Thryv with Sitesinc using published pricing. Thryv's pricing page lists plans at $99 and $399 per month. Sitesinc builds your website for $1,995 flat, one time.",
     intro:
@@ -119,7 +119,7 @@ export const COMPARE: CompareEntry[] = [
     slug: "web-com-alternative",
     name: "Web.com",
     heading: "A Web.com alternative for small businesses",
-    title: "Web.com Alternative: Done-For-You Website, Flat Fee | Sitesinc",
+    title: "Web.com Alternative: Flat-Fee Website | Sitesinc",
     description:
       "Comparing Web.com website plans with Sitesinc. Web.com advertises first-year offer pricing that renews at a higher monthly rate. Sitesinc builds your website for $1,995 flat, one time.",
     intro:

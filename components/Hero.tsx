@@ -24,6 +24,9 @@ export default function Hero() {
           <h1 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
             {hero.headline}
           </h1>
+          <h2 className="text-balance text-lg font-medium tracking-tight text-brand-200 sm:text-xl">
+            Small business website design — $1,995 flat, you own it.
+          </h2>
 
           <p className="text-balance text-base text-slate-300">
             {hero.subheadline}
