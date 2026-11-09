@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { FACTORY_COOKIE, isValidSession } from "@/lib/factory/auth";
+import { isAuthorizedFactoryRequest } from "@/lib/factory/auth";
 import { isLeadStage, LEAD_STAGES } from "@/lib/lead-stage";
 import { ensureBlobsFromRequest, updateRecordStage } from "@/lib/store";
 
@@ -10,10 +10,11 @@ const ID_PATTERN = /^[a-z]+_[a-z0-9]{4,64}$/i;
 
 /**
  * Operator-only: set the pipeline stage of a lead, a past product inquiry (the shop was removed 2026-10-05), or project.
- * Auth is enforced by middleware.ts (matcher /api/factory/*) and re-checked here.
+ * Auth is enforced by middleware.ts (matcher /api/factory/*) and re-checked here
+ * (session cookie, or the local loopback-dev bypass).
  */
 export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
-  if (!(await isValidSession(req.cookies.get(FACTORY_COOKIE)?.value))) {
+  if (!(await isAuthorizedFactoryRequest(req))) {
     return NextResponse.json({ ok: false, error: "Factory authentication required." }, { status: 401 });
   }
   const { id } = await ctx.params;

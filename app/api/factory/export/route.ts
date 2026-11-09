@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { FACTORY_COOKIE, isValidSession } from "@/lib/factory/auth";
+import { isAuthorizedFactoryRequest } from "@/lib/factory/auth";
 import { factoryErrorResponse } from "@/lib/factory/api-errors";
 import { listStoredChecklists } from "@/lib/factory/checklist";
 import { listBaselinesDetailed, readWorkspaceState } from "@/lib/factory/workspace";
@@ -14,7 +14,8 @@ export const maxDuration = 60;
 
 /**
  * Operator-only JSON backup of leads + CRM records + factory/SEO state.
- * Auth is enforced by middleware.ts (matcher /api/factory/*) and re-checked here.
+ * Auth is enforced by middleware.ts (matcher /api/factory/*) and re-checked here
+ * (session cookie, or the local loopback-dev bypass).
  * Contains customer names/emails (it is a backup): treat the download as private.
  * Never includes env vars, tokens, SMTP/Stripe config, or Stripe checkout URLs.
  *
@@ -23,7 +24,7 @@ export const maxDuration = 60;
  * skipped, a workspace that is only the code-default seed, ...). An empty array means nothing was skipped.
  */
 export async function GET(req: NextRequest) {
-  if (!(await isValidSession(req.cookies.get(FACTORY_COOKIE)?.value))) {
+  if (!(await isAuthorizedFactoryRequest(req))) {
     return NextResponse.json({ ok: false, error: "Factory authentication required." }, { status: 401 });
   }
   const flipId = req.nextUrl.searchParams.get("flip");
