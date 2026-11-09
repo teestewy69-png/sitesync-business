@@ -8,7 +8,7 @@ export default function TradePicker() {
       <div className="mx-auto max-w-6xl px-6">
         <p className="text-xs font-semibold uppercase tracking-wider text-brand-300">Pick your trade</p>
         <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
-          Your website should make the phone ring. If it just sits there, it&apos;s a business card.
+          Websites built for your trade.
         </h2>
         <p className="mt-3 max-w-2xl text-base text-slate-300">
           Pick your trade to see what we build for it. Same $1,995 flat build, written around how your customers actually look for you.

@@ -197,7 +197,7 @@ test("business address is 1968 South Coast Hwy #3632 everywhere it is stated", (
 test("keywords appear in titles and copy without changing the $1,995 hook", async () => {
   const content = JSON.parse(readFileSync(path.join(ROOT, "content.json"), "utf8"));
   assert.match(content.seo.title, /Affordable Website Design/);
-  assert.equal(content.hero.headline, "We build real, working websites, not subscriptions like the rest.");
+  assert.equal(content.hero.headline, "Your website should make the phone ring. If it just sits there, it’s a business card.");
   assert.match(content.hero.subheadline, /contractors, plumbers, barbers/);
   assert.match(content.hero.subheadline, /SEO for small business/);
   assert.match(content.hero.offer.title, /\$1,995/);
