@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import content from "@/content.json";
 import Analytics from "@/components/Analytics";
+import ExitIntentCapture from "@/components/ExitIntentCapture";
 import SitesincTicker from "@/components/SitesincTicker";
 import StagingBanner from "@/components/StagingBanner";
 import {
@@ -70,6 +71,7 @@ export default function RootLayout({
         {children}
         <StagingBanner />
         <Analytics measurementId={GA_MEASUREMENT_ID} allowedHosts={GA_HOSTS} />
+        <ExitIntentCapture />
       </body>
     </html>
   );
