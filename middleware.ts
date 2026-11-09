@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { FACTORY_COOKIE, isPublicFactoryPath, isValidSession } from "@/lib/factory/auth";
+import { allowLocalDevFactoryBypass, FACTORY_COOKIE, isPublicFactoryPath, isValidSession } from "@/lib/factory/auth";
 import { CLIENT_DOMAIN_PREFIX, clientDomainRoute, isLocalDevHost, isSitesincHost } from "@/lib/client-domain/host";
 import { isSiteflowPath, siteflowEnabled } from "@/lib/siteflow/flag";
 import { shouldCaptureRef, stripRefParam } from "@/lib/siteflow/ref";
@@ -14,6 +14,16 @@ function notFound() {
 
 async function factoryAuth(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  // Local `next dev` on loopback only. Production / Netlify / non-loopback Host stay gated.
+  if (allowLocalDevFactoryBypass(req.headers, req.nextUrl.hostname)) {
+    if (pathname === "/app/login") {
+      const app = req.nextUrl.clone();
+      app.pathname = "/app";
+      app.search = "";
+      return NextResponse.redirect(app);
+    }
+    return NextResponse.next();
+  }
   if (isPublicFactoryPath(pathname)) return NextResponse.next();
 
   const cookie = req.cookies.get(FACTORY_COOKIE)?.value;

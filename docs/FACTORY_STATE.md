@@ -9,6 +9,18 @@ durable layer as leads: `lib/persistence.ts`.
 | Netlify staging (`NEXT_PUBLIC_SITE_ENV=staging`) | Netlify Blobs store `sitesinc-crm-staging` | keys `factory/...` |
 | Local / dev | files under `data/` (git-ignored) | unchanged from before |
 
+## Local `/app` (no token)
+
+On Tony's PC, `npm run dev -- -H 127.0.0.1 -p 3000` opens `/app` and `/api/factory/*` without an access
+token. That bypass is only when **all** of these hold: `NODE_ENV` is not `production`, Netlify env
+(`NETLIFY` / `CONTEXT`) is unset, and the request `Host` is loopback (`127.0.0.1`, `localhost`, or
+`::1`). `/app/login` redirects to `/app`.
+
+Production (`sitesinc.co`, `NODE_ENV=production`) and any non-loopback Host keep the existing
+`FACTORY_ACCESS_TOKEN` cookie gate. Loopback is taken from `Host` (then `nextUrl.hostname` if Host is
+missing), never from `x-forwarded-host` / `x-forwarded-for`. Bind `next dev` to 127.0.0.1 so a spoofed
+Host from the LAN cannot reach the process. See `lib/factory/auth.ts`.
+
 ## Keys
 
 | Key | Local file | Content |
