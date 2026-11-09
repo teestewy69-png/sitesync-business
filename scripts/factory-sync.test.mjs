@@ -259,7 +259,7 @@ test("code backup retention selects only verified dated folders", () => {
 
 test("write-production-release-manifest: stub unless sitesyncllc production + valid SHA", () => {
   const dir = tmp();
-  const file = path.join(dir, "production-release.json");
+  const file = path.join(dir, "release.json");
   assert.equal(isNetlifyProductionPublish({}), false);
   assert.deepEqual(productionReleaseFromEnv({}), STUB_RELEASE);
   const prodEnv = {
@@ -272,6 +272,10 @@ test("write-production-release-manifest: stub unless sitesyncllc production + va
   assert.equal(written.body.present, true);
   assert.equal(written.body.commit, GOOD_SHA);
   assert.equal(written.body.site, "sitesinc.co");
+  assert.equal(written.body.schema, "sitesinc-production-release/v1");
+  assert.deepEqual(Object.keys(written.body).sort(), ["commit", "context", "present", "publishedAt", "schema", "site"]);
+  const onDisk = JSON.parse(fs.readFileSync(file, "utf8"));
+  assert.equal(onDisk.commit, GOOD_SHA);
   assert.ok(!JSON.stringify(written.body).includes("TOKEN"));
   assert.equal(isNetlifyProductionPublish({ ...prodEnv, CONTEXT: "deploy-preview" }), false);
   assert.equal(isNetlifyProductionPublish({ ...prodEnv, NEXT_PUBLIC_SITE_ENV: "staging" }), false);
@@ -576,6 +580,10 @@ test("CLI parse + Windows artifacts never force-push or require Netlify tokens",
 
 test("package.json test list includes factory-sync tests", () => {
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8"));
-  assert.match(pkg.scripts.test, /factory-sync\.test\.mjs/);
+  for (const name of ["factory-sync", "factory-auth", "design-styles", "seo-hubs"]) {
+    assert.match(pkg.scripts.test, new RegExp(`${name}\\.test\\.mjs`));
+  }
+  assert.equal(pkg.scripts["factory-sync"], "node scripts/factory-sync/sync.mjs");
   assert.match(pkg.scripts.build, /write-production-release-manifest/);
+  assert.match(pkg.scripts.build, /^node scripts\/factory-sync\/write-production-release-manifest\.mjs && next build$/);
 });
