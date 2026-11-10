@@ -45,7 +45,7 @@ const STATIONS: Array<{
   {
     tone: "blue",
     label: "Domain",
-    items: [{ href: "/app#domainiq-bay", label: "DomainIQ" }],
+    items: [{ href: "/app/domainiq", label: "DomainIQ" }],
   },
   {
     tone: "green",

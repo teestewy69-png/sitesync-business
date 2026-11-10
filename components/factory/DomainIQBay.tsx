@@ -94,7 +94,15 @@ export default function DomainIQBay({
             {summary.mode} · no server, no API key · availability {summary.availabilityEnabled ? "on (keyless)" : "off"}.
           </p>
         </div>
-        <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-200">live</span>
+        <span className="flex items-center gap-2">
+          <Link
+            href="/app/domainiq"
+            className="rounded-full bg-sky-500/20 px-2.5 py-0.5 text-xs font-semibold text-sky-100 hover:bg-sky-500/30"
+          >
+            Open the standalone generator →
+          </Link>
+          <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-200">live</span>
+        </span>
       </div>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-5">

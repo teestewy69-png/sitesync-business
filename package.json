@@ -4,12 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "node scripts/factory-sync/write-production-release-manifest.mjs && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "city-launch": "node --env-file=.env.local scripts/city-launch/run-standalone.mjs",
-    "factory-sync": "node scripts/factory-sync/sync.mjs",
-    "test": "node --test --test-reporter=spec scripts/backlink-actions.test.mjs scripts/baseline-pick.test.mjs scripts/city-launch-background.test.mjs scripts/city-launch.test.mjs scripts/client-automation.test.mjs scripts/client-baseline.test.mjs scripts/client-content.test.mjs scripts/client-domain.test.mjs scripts/client-intake.test.mjs scripts/client-quality.test.mjs scripts/design-styles.test.mjs scripts/domainiq.test.mjs scripts/factory-auth.test.mjs scripts/factory-fixes.test.mjs scripts/factory-sync.test.mjs scripts/flip-competitors.test.mjs scripts/flip-mode.test.mjs scripts/google-monitoring.test.mjs scripts/website-data.test.mjs scripts/migrate-factory-state.test.mjs scripts/offer-copy.test.mjs scripts/revisioned-docs.test.mjs scripts/seo-fixes.test.mjs scripts/seo-hubs.test.mjs scripts/seo-title-pitch.test.mjs scripts/site-audit.test.mjs scripts/run-kurtis-factory.test.mjs scripts/siteflow.test.mjs scripts/workshop-bays.test.mjs scripts/domainiq-report.test.mjs scripts/seo-audit-upgrade.test.mjs scripts/seo-audit-tier2.test.mjs scripts/seo-audit-tier3.test.mjs scripts/website-data-upgrade.test.mjs scripts/website-data-search.test.mjs scripts/website-data-sources.test.mjs scripts/website-data-report.test.mjs scripts/exit-intent.test.mjs"
+    "test": "node --test --test-reporter=spec scripts/backlink-actions.test.mjs scripts/baseline-pick.test.mjs scripts/city-launch-background.test.mjs scripts/city-launch.test.mjs scripts/client-automation.test.mjs scripts/client-baseline.test.mjs scripts/client-content.test.mjs scripts/client-domain.test.mjs scripts/client-intake.test.mjs scripts/client-quality.test.mjs scripts/domainiq.test.mjs scripts/factory-fixes.test.mjs scripts/flip-competitors.test.mjs scripts/flip-mode.test.mjs scripts/google-monitoring.test.mjs scripts/website-data.test.mjs scripts/migrate-factory-state.test.mjs scripts/offer-copy.test.mjs scripts/revisioned-docs.test.mjs scripts/seo-fixes.test.mjs scripts/site-audit.test.mjs scripts/run-kurtis-factory.test.mjs scripts/siteflow.test.mjs scripts/workshop-bays.test.mjs scripts/domainiq-report.test.mjs scripts/seo-audit-upgrade.test.mjs scripts/seo-audit-tier2.test.mjs scripts/seo-audit-tier3.test.mjs scripts/website-data-upgrade.test.mjs scripts/website-data-search.test.mjs scripts/website-data-sources.test.mjs scripts/website-data-report.test.mjs scripts/exit-intent.test.mjs scripts/domainiq-standalone.test.mjs"
   },
   "dependencies": {
     "@netlify/blobs": "^11.1.0",
