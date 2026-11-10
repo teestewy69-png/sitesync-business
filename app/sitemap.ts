@@ -28,6 +28,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   );
   for (const extra of EXTRA_LEGAL) paths.add(extra);
   paths.add("/locations");
+  paths.add("/free-guide");
   paths.add("/trades");
   for (const trade of TRADES) paths.add(`/trades/${trade.slug}`);
   for (const style of DESIGN_STYLES) paths.add(`/styles/${style.id}`);

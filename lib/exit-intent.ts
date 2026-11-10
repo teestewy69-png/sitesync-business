@@ -3,7 +3,7 @@
  *
  * No DOM access in this module — every input arrives as an argument so the
  * rules are unit-testable (scripts/exit-intent.test.mjs). The offer behind the
- * popup is the free website audit; submissions post to /api/subscribe with the
+ * popup is the free guide (lib/lead-guide.ts) plus an optional free audit; submissions post to /api/subscribe with the
  * same contract as components/EmailCapture.tsx.
  */
 
@@ -35,6 +35,7 @@ const EXCLUDED_PATHS = [
   "/checkout",
   "/app",
   "/free-website-audit",
+  "/free-guide",
   "/api",
 ] as const;
 
@@ -43,7 +44,7 @@ function normalizePathname(pathname: string): string {
   return path.length > 1 && path.endsWith("/") ? path.slice(0, -1) : path;
 }
 
-/** True for commerce, factory, API, and the audit page itself — never interrupt those. */
+/** True for commerce, factory, API, and the audit / guide pages themselves — never interrupt those. */
 export function isExcludedPath(pathname: string): boolean {
   const path = normalizePathname(pathname);
   return EXCLUDED_PATHS.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
