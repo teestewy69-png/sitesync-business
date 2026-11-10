@@ -64,6 +64,8 @@ export type CityPromptBusiness = {
   baseState?: string;
   primaryGoal?: string;
   notes?: string;
+  /** Owner first-hand intake answers as one line (years, jobs, towns, difference, story, license). */
+  ownerFacts?: string;
 };
 
 export type CityPromptSettings = {
@@ -244,6 +246,7 @@ export function defaultWebsiteContent(business: CityPromptBusiness): string {
       business.baseCity ? `Based in ${[business.baseCity, business.baseState].filter(Boolean).join(", ")}.` : "",
       business.phone ? `Phone: ${business.phone}.` : "",
       business.primaryGoal ? `Primary goal of the website: ${business.primaryGoal}.` : "",
+      business.ownerFacts ? `Owner-supplied facts (use as written, do not embellish): ${business.ownerFacts}` : "",
       business.notes ? `Notes from intake: ${business.notes}` : "",
     ]
       .filter(Boolean)
@@ -254,6 +257,7 @@ export function defaultWebsiteContent(business: CityPromptBusiness): string {
     business.baseCity ? `Based in ${[business.baseCity, business.baseState].filter(Boolean).join(", ")}.` : "",
     business.phone ? `Phone: ${business.phone}.` : "",
     business.primaryGoal ? `Primary goal of the website: ${business.primaryGoal}.` : "",
+    business.ownerFacts ? `Owner-supplied facts (use as written, do not embellish): ${business.ownerFacts}` : "",
     business.notes ? `Notes from intake: ${business.notes}` : "",
   ]
     .filter(Boolean)

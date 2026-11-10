@@ -44,6 +44,8 @@ type Defaults = {
   baseInDataset: boolean;
   websiteContent: string;
   selectedDomain?: string;
+  /** "[service] in [city]" rows built from the owner's common jobs + service towns (CSV paste format). */
+  serviceCityCsv?: string;
 };
 
 async function api(body: Record<string, unknown>) {
@@ -376,6 +378,19 @@ export default function CityLaunchPanel({
               {label}
             </button>
           ))}
+          {defaults.serviceCityCsv ? (
+            <button
+              type="button"
+              onClick={() => {
+                setMode("csv");
+                setCsv(defaults.serviceCityCsv || "");
+              }}
+              className={ghost}
+              title="Load one [service] in [city] row per service town from the owner intake"
+            >
+              Use intake towns ([service] in [city])
+            </button>
+          ) : null}
         </div>
         <div className="mt-3 flex flex-wrap items-end gap-3 text-xs text-slate-400">
           {mode === "radius" ? (

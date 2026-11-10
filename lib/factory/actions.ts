@@ -20,6 +20,7 @@ import {
   queueAutoClientBaseline,
 } from "./client-automation";
 import { recordIntakeProject } from "./record-intake";
+import { OWNER_INTAKE_KEYS } from "./owner-intake";
 import {
   approveDomainPurchase,
   backfillDomainCandidates,
@@ -563,6 +564,9 @@ export async function applyFactoryAction(
     if ("niche" in fields) assign("niche", fields.niche);
     if ("mode" in fields) assign("mode", fields.mode === "flip" ? "flip" : "client");
     if ("designStyleId" in fields) assign("designStyleId", fields.designStyleId);
+    for (const key of OWNER_INTAKE_KEYS) {
+      if (key in fields) assign(key, fields[key] || undefined);
+    }
     const whatChanged =
       ("businessType" in fields && fields.businessType !== project.businessType) ||
       ("offer" in fields && fields.offer !== project.offer);
@@ -595,6 +599,13 @@ export async function applyFactoryAction(
       designStyleId: patched.designStyleId,
       templateId: patched.templateId,
       seededPages: patched.seededPages,
+      yearsInBusiness: patched.yearsInBusiness,
+      commonJobs: patched.commonJobs,
+      serviceTowns: patched.serviceTowns,
+      differentiator: patched.differentiator,
+      customerStory: patched.customerStory,
+      licenseInfo: patched.licenseInfo,
+      ownerVideoUrl: patched.ownerVideoUrl,
       factoryWorkspaceId: project.factoryWorkspaceId || project.id,
     });
     if ("domain" in fields) {
@@ -1070,6 +1081,14 @@ const CLIENT_TEXT_FIELDS = [
   "pricingNote",
   "templateId",
   "designStyleId",
+  // Owner first-hand intake (lib/factory/owner-intake.ts).
+  "yearsInBusiness",
+  "commonJobs",
+  "serviceTowns",
+  "differentiator",
+  "customerStory",
+  "licenseInfo",
+  "ownerVideoUrl",
 ] as const;
 
 /** Client detail fields present on an action body (trimmed). Absent keys stay absent; "" means clear. */

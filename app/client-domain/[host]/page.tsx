@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import ClientSiteShell, { telHref } from "@/components/client-site/ClientSiteShell";
 import Prose from "@/components/client-site/Prose";
+import OwnerVideo from "@/components/client-site/OwnerVideo";
+import { configFromProject } from "@/lib/factory/client-config";
 import s from "@/components/city-launch/city-landing.module.css";
 import { requireClientSite } from "@/lib/factory/client-domain";
 import { clientPageMetadata, loadClientSiteView } from "@/lib/factory/client-site-view";
@@ -78,6 +80,12 @@ export default async function ClientDomainHome({ params }: { params: Promise<Par
             <Prose body={home.body} />
           </section>
         ) : null}
+        <OwnerVideo
+          url={configFromProject(view.site.project).owner.ownerVideoUrl}
+          businessName={ctx.business.businessName}
+          className={s.section}
+          headingClassName={s.h2}
+        />
         {cities.length ? (
           <section className={s.section} aria-labelledby="areas">
             <p className={s.kicker}>Service areas</p>

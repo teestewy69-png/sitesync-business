@@ -9,6 +9,7 @@ import {
   seedPagesForTemplate,
 } from "./client-templates";
 import { FLIP_GOAL, normalizeSiteMode, type SiteMode } from "./flip/presets";
+import { ownerFactsFrom, ownerFactsToStored, type OwnerFacts } from "./owner-intake";
 
 export type ClientBuildConfig = {
   /** "client" = paid client build (default); "flip" = build-to-sell site Sitesinc owns. */
@@ -33,6 +34,8 @@ export type ClientBuildConfig = {
   designStyleId: DesignStyleId;
   templateId: ClientTemplateId;
   seededPages: SeededClientPage[];
+  /** Owner first-hand answers (years, jobs, towns, difference, story, license, video). All optional. */
+  owner: OwnerFacts;
 };
 
 export type IntakeConfigInput = {
@@ -62,6 +65,14 @@ export type IntakeConfigInput = {
   designStyleId?: string;
   preferredDesign?: string;
   templateId?: string;
+  /** Owner first-hand intake (see lib/factory/owner-intake.ts). */
+  yearsInBusiness?: string;
+  commonJobs?: string;
+  serviceTowns?: string;
+  differentiator?: string;
+  customerStory?: string;
+  licenseInfo?: string;
+  ownerVideoUrl?: string;
 };
 
 const US_STATES =
@@ -260,6 +271,7 @@ export function buildClientConfig(input: IntakeConfigInput): ClientBuildConfig {
     designStyleId,
     templateId,
     seededPages,
+    owner: ownerFactsFrom(input),
   };
 }
 
@@ -289,6 +301,9 @@ export function applyConfigToProject(
     designStyleId: config.designStyleId,
     templateId: config.templateId,
     seededPages: config.seededPages,
+    ...Object.fromEntries(
+      Object.entries(ownerFactsToStored(config.owner)).map(([key, value]) => [key, value || undefined])
+    ),
     factoryWorkspaceId: project.factoryWorkspaceId || project.id,
   };
 }
@@ -314,5 +329,12 @@ export function configFromProject(project: ClientProject): ClientBuildConfig {
     designStyleId: project.designStyleId,
     templateId: project.templateId,
     label: project.label,
+    yearsInBusiness: project.yearsInBusiness,
+    commonJobs: project.commonJobs,
+    serviceTowns: project.serviceTowns,
+    differentiator: project.differentiator,
+    customerStory: project.customerStory,
+    licenseInfo: project.licenseInfo,
+    ownerVideoUrl: project.ownerVideoUrl,
   });
 }

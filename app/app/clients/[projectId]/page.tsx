@@ -6,6 +6,8 @@ import CaptureButton from "@/components/factory/CaptureButton";
 import CityLaunchPanel from "@/components/factory/CityLaunchPanel";
 import ClientConfigForm from "@/components/factory/ClientConfigForm";
 import ClientContentPanel from "@/components/factory/ClientContentPanel";
+import ClientTrafficPanel from "@/components/factory/ClientTrafficPanel";
+import { serviceCityCsv, serviceCityPlan } from "@/lib/factory/owner-intake";
 import { pricingAllowsListedPrices } from "@/lib/factory/client-content";
 import DomainIQPanel from "@/components/factory/DomainIQPanel";
 import FactoryShell, { Pill } from "@/components/factory/Shell";
@@ -209,6 +211,15 @@ export default async function ClientProjectDetailPage({
         seedPreview={clientDomainSeedFromProject(project)}
       />
 
+      <ClientTrafficPanel
+        config={config}
+        website={
+          project.ownedDomain || (project.domainStatus === "purchase_approved" && project.selectedDomain)
+            ? `https://${project.ownedDomain || project.selectedDomain}`
+            : undefined
+        }
+      />
+
       <CityLaunchPanel
         projectId={projectId}
         initial={citySummary}
@@ -220,6 +231,9 @@ export default async function ClientProjectDetailPage({
           baseInDataset: Boolean(cityCtx.baseCity),
           websiteContent: defaultWebsiteContent(cityCtx.business),
           selectedDomain: project.selectedDomain,
+          serviceCityCsv: serviceCityCsv(
+            serviceCityPlan({ niche: config.niche, state: config.state, city: config.city, facts: config.owner })
+          ),
         }}
       />
 
@@ -335,6 +349,13 @@ export default async function ClientProjectDetailPage({
           pricingNote: config.pricingNote,
           domain: project.ownedDomain || "",
           notes: config.notes,
+          yearsInBusiness: project.yearsInBusiness || "",
+          commonJobs: project.commonJobs || "",
+          serviceTowns: project.serviceTowns || "",
+          differentiator: project.differentiator || "",
+          customerStory: project.customerStory || "",
+          licenseInfo: project.licenseInfo || "",
+          ownerVideoUrl: project.ownerVideoUrl || "",
         }}
       />
 

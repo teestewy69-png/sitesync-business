@@ -69,6 +69,7 @@ import {
 import { FACTORY_COOKIE, factoryToken, sessionValue } from "./auth";
 import { backgroundEnabled, backgroundLooksStuck, backgroundPending, triggerBackground } from "./city-launch-background";
 import { configFromProject } from "./client-config";
+import { ownerFactsContext } from "./owner-intake";
 import { scheduleAfterResponse } from "./client-automation";
 
 const SAFE_ID = /^[a-z0-9_-]{1,80}$/i;
@@ -184,6 +185,7 @@ export function cityLaunchContext(project: ClientProject): CityLaunchClientConte
       baseState: baseCity?.state || state,
       primaryGoal: project.primaryGoal || config.primaryGoal || "",
       notes: project.notes || config.notes || "",
+      ownerFacts: ownerFactsContext(config.owner),
     },
     baseCity,
     contactPath: contact ? `/demo/client/${project.id}/contact` : `/demo/client/${project.id}`,

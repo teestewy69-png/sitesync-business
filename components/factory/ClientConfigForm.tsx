@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { OWNER_INTAKE_QUESTIONS } from "@/lib/factory/owner-intake";
 
 export type ClientConfigFormValues = {
   businessName: string;
@@ -16,6 +17,14 @@ export type ClientConfigFormValues = {
   pricingNote: string;
   domain: string;
   notes: string;
+  /** Owner first-hand intake (all optional; drafts use them when present). */
+  yearsInBusiness: string;
+  commonJobs: string;
+  serviceTowns: string;
+  differentiator: string;
+  customerStory: string;
+  licenseInfo: string;
+  ownerVideoUrl: string;
 };
 
 const FIELDS: Array<{ key: keyof ClientConfigFormValues; label: string; wide?: boolean; area?: boolean }> = [
@@ -33,6 +42,10 @@ const FIELDS: Array<{ key: keyof ClientConfigFormValues; label: string; wide?: b
   { key: "notes", label: "Notes", wide: true, area: true },
 ];
 
+/** Owner first-hand questions: asked of every client, used by drafts, City Launch and the owner video slot. */
+const OWNER_FIELDS: Array<{ key: keyof ClientConfigFormValues; label: string; question: string; wide?: boolean; area?: boolean }> =
+  OWNER_INTAKE_QUESTIONS.map((q) => ({ key: q.key, label: q.label, question: q.question, wide: q.area, area: q.area }));
+
 /** Operator edit form for an existing client project. Saving rebuilds unapproved drafts from the new details. */
 export const EMPTY_CLIENT_CONFIG: ClientConfigFormValues = {
   businessName: "",
@@ -47,6 +60,13 @@ export const EMPTY_CLIENT_CONFIG: ClientConfigFormValues = {
   pricingNote: "",
   domain: "",
   notes: "",
+  yearsInBusiness: "",
+  commonJobs: "",
+  serviceTowns: "",
+  differentiator: "",
+  customerStory: "",
+  licenseInfo: "",
+  ownerVideoUrl: "",
 };
 
 export default function ClientConfigForm({
@@ -71,8 +91,8 @@ export default function ClientConfigForm({
     try {
       const changed = Object.fromEntries(
         (Object.keys(values) as Array<keyof ClientConfigFormValues>)
-          .filter((key) => values[key].trim() !== initial[key].trim())
-          .map((key) => [key, values[key].trim()])
+          .filter((key) => (values[key] || "").trim() !== (initial[key] || "").trim())
+          .map((key) => [key, (values[key] || "").trim()])
       );
       if (!Object.keys(changed).length) {
         setMessage("Nothing changed.");
@@ -134,6 +154,33 @@ export default function ClientConfigForm({
             ) : (
               <input
                 value={values[field.key]}
+                onChange={(e) => setValues({ ...values, [field.key]: e.target.value })}
+                className="mt-1 block w-full rounded-lg bg-black/40 px-3 py-2 text-sm text-white ring-1 ring-white/10"
+              />
+            )}
+          </label>
+        ))}
+      </div>
+      <h4 className="mt-6 text-sm font-semibold">Owner questions (first-hand)</h4>
+      <p className="mt-1 text-xs text-slate-400">
+        Ask the owner these. Answers go straight into the drafts, the City Launch &quot;[service] in [city]&quot; pages and
+        the owner video slot. Leave blank what they didn&apos;t answer: drafts keep a bracketed note instead of inventing it.
+      </p>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        {OWNER_FIELDS.map((field) => (
+          <label key={field.key} className={`text-xs text-slate-400 ${field.wide ? "sm:col-span-2" : ""}`}>
+            {field.label}
+            <span className="block text-[11px] text-slate-500">{field.question}</span>
+            {field.area ? (
+              <textarea
+                value={values[field.key] || ""}
+                rows={3}
+                onChange={(e) => setValues({ ...values, [field.key]: e.target.value })}
+                className="mt-1 block w-full rounded-lg bg-black/40 px-3 py-2 text-sm text-white ring-1 ring-white/10"
+              />
+            ) : (
+              <input
+                value={values[field.key] || ""}
                 onChange={(e) => setValues({ ...values, [field.key]: e.target.value })}
                 className="mt-1 block w-full rounded-lg bg-black/40 px-3 py-2 text-sm text-white ring-1 ring-white/10"
               />

@@ -3,6 +3,7 @@ import type { ClientBuildConfig } from "./client-config";
 import { artworkCaption, orderedArtworks, type SuppliedContent } from "./client-content";
 import type { ClientArtwork } from "./types";
 import { clientFacingEmail } from "./client-real-site";
+import { ownerFactsFrom, yearsPhrase, type OwnerFacts } from "./owner-intake";
 
 type Draft = Pick<FactoryPage, "title" | "metaDescription" | "headings" | "body">;
 
@@ -166,10 +167,11 @@ export function draftFromClientBrief(
     : "[Contact details not provided yet - add an email or phone before review.]";
   const pricingLine = config.pricingNote ? `Pricing: ${config.pricingNote}.` : "";
   const needsLocation = config.templateId === "local-service";
+  const towns = (config.owner?.serviceTowns || []).filter((t) => t.toLowerCase() !== (config.city || "").toLowerCase());
   const locationLine = loc
     ? portfolio
       ? `Based in ${loc}.`
-      : `Serving ${loc}. Other cities only through City Launch (unique local copy per city; near-duplicates are blocked by the quality gate).`
+      : `Serving ${loc}${towns.length ? ` and nearby: ${towns.join(", ")}` : ""}. Other cities only through City Launch (unique local copy per city; near-duplicates are blocked by the quality gate).`
     : needsLocation
       ? MISSING_LOCATION
       : "";
@@ -224,6 +226,19 @@ type SectionCtx = { config: ClientBuildConfig; offer: string; niche: string; loc
 export function fullClientSections(slug: string, headings: string[], c: SectionCtx): [string, string[]][] {
   const { config, offer, niche, loc, contactLine, pricingLine, locationLine } = c;
   const name = config.businessName;
+  const owner: OwnerFacts = config.owner || ownerFactsFrom({});
+  const years = yearsPhrase(owner.yearsInBusiness);
+  const yearsSentence = years
+    ? years.startsWith("since")
+      ? `${name} has been in business ${years}.`
+      : `${name} has been in business for ${years}.`
+    : "";
+  const ownerWords = owner.differentiator ? `In the owner's words: "${owner.differentiator}"` : "";
+  const licenseLine = owner.licenseInfo ? `License / insurance: ${owner.licenseInfo}.` : "";
+  const jobLines = owner.commonJobs.map((job) => `- ${job.charAt(0).toUpperCase()}${job.slice(1)}`);
+  const story: [string, string[]] | null = owner.customerStory
+    ? ["A recent job", [owner.customerStory, "[Operator: confirm the customer is OK with this story being shared; use no customer name unless they agreed.]"]]
+    : null;
   const where = loc ? ` in ${loc}` : "";
   const goal = lowerFirst(config.primaryGoal || "get more calls and leads");
   const price = pricingLine || "[Pricing: client to confirm what to publish (exact price, from-price, or 'quote on request').]";
@@ -235,7 +250,9 @@ export function fullClientSections(slug: string, headings: string[], c: SectionC
     `5. Follow-up. After the job, ${name} checks that everything works the way you expected and answers any questions.`,
   ]];
   const faq: [string, string[]] = ["Frequently asked questions", [
-    `**What does ${name} do?** ${name} provides ${lowerFirst(offer)}${where}. The focus is doing the core work well rather than upselling extras you do not need.`,
+    `**What does ${name} do?** ${name} provides ${lowerFirst(offer)}${where}.${owner.commonJobs.length ? ` The most common jobs are ${owner.commonJobs.slice(0, 5).map(lowerFirst).join(", ")}.` : ""} The focus is doing the core work well rather than upselling extras you do not need.`,
+    yearsSentence ? `**How long have you been in business?** ${yearsSentence}` : "",
+    licenseLine ? `**Are you licensed and insured?** ${licenseLine}` : "",
     `**How much does it cost?** ${pricingLine || "[Client to confirm the pricing answer before review.]"}`,
     `**Where do you work?** ${locationLine || "[Client to list the cities / service area.]"}`,
     `**How do I get started?** ${contactLine}`,
@@ -243,8 +260,11 @@ export function fullClientSections(slug: string, headings: string[], c: SectionC
     `**What do I need to have ready?** A short description of what you need, any examples you like, and the best way to reach you. ${name} will ask for anything else.`,
   ]];
   const why: [string, string[]] = [`Why people choose ${name}`, [
-    `People looking for ${niche}${where} usually want three things: a straight answer on price, someone who shows up and communicates, and work that holds up. ${name} is built around those three.`,
-    `Every claim on this page comes from ${name}'s own intake details. Reviews, awards, licenses and photos are added only when the client provides real ones. [Client: add real reviews / photos / credentials here.]`,
+    ownerWords
+      ? `${yearsSentence ? `${yearsSentence} ` : ""}${ownerWords}`
+      : `People looking for ${niche}${where} usually want three things: a straight answer on price, someone who shows up and communicates, and work that holds up. ${name} is built around those three.${yearsSentence ? ` ${yearsSentence}` : ""}`,
+    licenseLine,
+    `Every claim on this page comes from ${name}'s own intake details. Reviews, awards, licenses and photos are added only when the client provides real ones. [Client: add real reviews / photos${licenseLine ? "" : " / credentials"} here.]`,
     `The goal of this site is simple: ${goal}. Each page points to one next step so visitors are never left guessing what to do.`,
   ]];
   const cta: [string, string[]] = [headings[2] || "Ready to get started?", [
@@ -265,21 +285,37 @@ export function fullClientSections(slug: string, headings: string[], c: SectionC
   }
   if (slug === "about") {
     return [
-      [headings[0] || `About ${name}`, [`${name} provides ${lowerFirst(offer)}${where}. [Client to add the owner's story: who runs it, how long, and why.]`, `The way ${name} works is straightforward: clear pricing, plain-language communication, and doing the job right the first time.`]],
+      [headings[0] || `About ${name}`, [
+        `${name} provides ${lowerFirst(offer)}${where}.${yearsSentence ? ` ${yearsSentence}` : ""}`,
+        ownerWords || "[Client to add the owner's story: who runs it, how long, and why.]",
+        `The way ${name} works is straightforward: clear pricing, plain-language communication, and doing the job right the first time.`,
+      ]],
+      ...(story ? [story] : []),
       why, process, area, cta,
     ];
   }
   if (slug === "services") {
     return [
-      [headings[0] || `What ${name} offers`, [`${name} offers ${lowerFirst(offer)}${where}.`, `[Client to list each service with one or two sentences on what is included.]`, price]],
+      [headings[0] || `What ${name} offers`, [
+        `${name} offers ${lowerFirst(offer)}${where}.`,
+        ...(jobLines.length
+          ? [`The jobs ${name} does most often:`, ...jobLines, "[Client to add one or two sentences on what each job includes.]"]
+          : ["[Client to list each service with one or two sentences on what is included.]"]),
+        price,
+      ]],
       ["What is included", [`Every ${niche} job from ${name} includes a clear written scope, a single point of contact, and a check at the end to make sure the result matches what was agreed. [Client to confirm inclusions.]`]],
+      ...(story ? [story] : []),
       process, why, area, faq, cta,
     ];
   }
   return [
-    [headings[0] || `What ${name} offers`, [`${name} focuses on ${lowerFirst(offer)}${where}. Goal for this site: ${goal}.`, price]],
+    [headings[0] || `What ${name} offers`, [
+      `${name} focuses on ${lowerFirst(offer)}${where}.${yearsSentence ? ` ${yearsSentence}` : ""} Goal for this site: ${goal}.`,
+      ...(jobLines.length ? ["Most common jobs:", ...jobLines] : []),
+      price,
+    ]],
     [headings[1] || "Who this is for", [locationLine || "[Client to describe who uses this and why, in their own words.]", `It is for people${where} who want ${niche} done properly, explained clearly, and priced upfront.`]],
-    why, process, area, faq, cta,
+    why, ...(story ? [story] : []), process, area, faq, cta,
   ];
 }
 

@@ -4,6 +4,7 @@ import { plannedPagePurpose } from "@/lib/factory/client-templates";
 import { notFound } from "next/navigation";
 import { DESIGN_STYLES, type DesignStyleId } from "@/lib/design-styles";
 import ClientWorksGrid from "@/components/factory/ClientWorksGrid";
+import OwnerVideo from "@/components/client-site/OwnerVideo";
 import { buildClientPreviewModel } from "@/lib/factory/client-preview";
 import { configFromProject } from "@/lib/factory/client-config";
 import { readClientWorkspace } from "@/lib/factory/client-workspace";
@@ -155,6 +156,12 @@ export default async function ClientDeliverableHome({
             {` · Template ${config.templateId} · Design ${style.name}`}
           </footer>
         </section>
+        <OwnerVideo
+          url={config.owner.ownerVideoUrl}
+          businessName={config.businessName}
+          className="rounded-2xl border border-white/10 bg-white/[0.03] p-5"
+          headingClassName="text-base font-semibold text-white"
+        />
         {cityPages.length ? (
           <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm text-zinc-300">
             <h2 className="text-base font-semibold text-white">
