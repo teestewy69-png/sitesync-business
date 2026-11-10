@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import content from "@/content.json";
 import { runAfterResponse } from "@/lib/siteflow/after";
@@ -8,7 +9,13 @@ import { isStripeConfigured, retrieveCheckoutSession } from "@/lib/stripe-checko
 import { findOrderById, type Order } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Thank you | Sitesinc", robots: { index: false, follow: false } };
+export const metadata: Metadata = {
+  title: "Thank you | Sitesinc",
+  description:
+    "This page confirms your Sitesinc payment or website request. We will follow up by email. It is not listed in search results.",
+  alternates: { canonical: "/thank-you" },
+  robots: { index: false, follow: false },
+};
 
 type RequestKey = "paid" | "launch" | "full" | "maintenance";
 

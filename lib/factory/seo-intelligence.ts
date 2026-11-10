@@ -12,6 +12,7 @@ import { listClientSeoCatalogSites } from "./client-baseline";
 import { findCatalogSite, originKey, SEO_SITE_CATALOG } from "./seo-sites";
 import { readClientWorkspace } from "./client-workspace";
 import { listBaselines, readWorkspace } from "./workspace";
+import { isPublicNoindexPath } from "@/lib/public-noindex";
 
 export type SeoSite = {
   id: string;
@@ -190,7 +191,7 @@ function pageWarnings(page: PageAudit, duplicateTitles: Set<string>, duplicateMe
   if (page.statusCode === 200 && page.headings.h1.length === 0) warnings.push("Missing H1");
   if (page.headings.h1.length > 1) warnings.push("Multiple H1");
   if (page.statusCode === 200 && !page.canonical) warnings.push("Missing canonical");
-  if (page.robots.toLowerCase().includes("noindex")) warnings.push("noindex");
+  if (page.robots.toLowerCase().includes("noindex") && !isPublicNoindexPath(page.path)) warnings.push("noindex");
   return warnings;
 }
 
@@ -292,7 +293,7 @@ function buildIssues(baseline: BaselineSnapshot | null, pages: PageAudit[]): Seo
         });
       }
     }
-    if (page.robots.toLowerCase().includes("noindex") && !page.path.startsWith("/app")) {
+    if (page.robots.toLowerCase().includes("noindex") && !isPublicNoindexPath(page.path)) {
       issues.push({
         id: `noindex:${page.path}`,
         severity: "warn",

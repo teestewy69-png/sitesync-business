@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { isPreviewEnv } from "@/lib/factory/preview";
+import { PUBLIC_NOINDEX_DISALLOWS } from "@/lib/public-noindex";
 import { isStagingEnv } from "@/lib/site-env";
 
 export default function robots(): MetadataRoute.Robots {
@@ -13,7 +14,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/app/", "/api/", "/cart", "/checkout", "/case-study", "/demo/", "/go/", "/tools", "/thank-you"],
+        disallow: [...PUBLIC_NOINDEX_DISALLOWS],
       },
     ],
     sitemap: "https://sitesinc.co/sitemap.xml",

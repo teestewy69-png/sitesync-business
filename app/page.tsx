@@ -1,4 +1,6 @@
+import type { Metadata } from "next";
 import dynamic from "next/dynamic";
+import content from "@/content.json";
 import Hero from "@/components/Hero";
 import Pricing from "@/components/Pricing";
 import Outcomes from "@/components/Outcomes";
@@ -14,6 +16,10 @@ import SeoJsonLd from "@/components/SeoJsonLd";
 import TradePicker from "@/components/TradePicker";
 import PilotOffer from "@/components/PilotOffer";
 import TwoAudiencePitch from "@/components/TwoAudiencePitch";
+
+export const metadata: Metadata = {
+  alternates: { canonical: content.seo.url },
+};
 
 const DesignShowcase = dynamic(() => import("@/components/DesignShowcase"), {
   loading: () => (
