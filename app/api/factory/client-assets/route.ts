@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * Upload one client image (factory auth via middleware). multipart/form-data:
- *   projectId, file (JPEG/PNG/WebP, max 4 MB), alt (required), role (work | artist-photo | logo | other).
+ *   projectId, file (JPEG/PNG/WebP, max 4 MB), alt (required), role (work | artist-photo | logo | icon | share | other).
  * Stored in the factory store (Netlify Blobs on Netlify, ./data locally). Same bytes twice = same asset.
  */
 export async function POST(req: NextRequest) {

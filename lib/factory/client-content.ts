@@ -25,7 +25,7 @@ export const CLIENT_ASSET_TYPES: Record<string, { ext: string; contentType: stri
   webp: { ext: ".webp", contentType: "image/webp" },
 };
 
-export const CLIENT_ASSET_ROLES: ClientAssetRole[] = ["work", "artist-photo", "logo", "other"];
+export const CLIENT_ASSET_ROLES: ClientAssetRole[] = ["work", "artist-photo", "logo", "icon", "share", "other"];
 
 /** Detect the real image type from the file's first bytes (the name and declared type are not trusted). */
 export function sniffImageType(bytes: Uint8Array): (typeof CLIENT_ASSET_TYPES)[string] | null {

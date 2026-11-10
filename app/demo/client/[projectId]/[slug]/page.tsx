@@ -9,6 +9,8 @@ import { draftFromClientBrief } from "@/lib/factory/client-drafts";
 import { plannedPagePurpose } from "@/lib/factory/client-templates";
 import { readClientWorkspace } from "@/lib/factory/client-workspace";
 import { findProjectById } from "@/lib/store";
+import { headers } from "next/headers";
+import { clientPreviewBrand, clientPreviewBrandMetadata } from "@/lib/factory/client-preview-meta";
 
 export const dynamic = "force-dynamic";
 
@@ -20,15 +22,26 @@ export async function generateMetadata({
   const { projectId, slug } = await params;
   const workspace = await readClientWorkspace(projectId).catch(() => null);
   const page = workspace?.pages.find((row) => row.slug === slug);
-  // Client previews must never inherit Sitesinc's title, description or canonical from the root layout.
+  const project = await findProjectById(projectId).catch(() => null);
+  const brand = clientPreviewBrand(projectId, workspace?.clientContent, await previewHostOrigin());
+  const title = page?.title || "Client page preview";
+  const description = page?.metaDescription || "Client page preview. Internal noindex.";
+  // Client previews must never inherit Sitesinc's title, description, canonical, icons or share image.
   return {
-    title: { absolute: page?.title || "Client page preview" },
-    description: page?.metaDescription || "Client page preview. Internal noindex.",
+    title: { absolute: title },
+    description,
     robots: { index: false, follow: false },
     alternates: { canonical: null },
-    openGraph: null,
-    twitter: null,
+    ...clientPreviewBrandMetadata(brand, { title, description, siteName: project?.businessName || project?.label || "Client preview" }),
   };
+}
+
+async function previewHostOrigin(): Promise<string | null> {
+  const h = await headers();
+  const host = h.get("x-forwarded-host") || h.get("host");
+  if (!host) return null;
+  const proto = h.get("x-forwarded-proto") || (/^(localhost|127\.0\.0\.1)(:|$)/.test(host) ? "http" : "https");
+  return `${proto.split(",")[0].trim()}://${host}`;
 }
 
 export default async function ClientDeliverablePage({
@@ -79,6 +92,7 @@ export default async function ClientDeliverablePage({
   const portfolioTemplate = config.templateId === "portfolio";
   // Supplied content first: the full artwork list on /portfolio, the artist photo on /about.
   const works = portfolioTemplate && slug === "portfolio" ? previewWorks(projectId, workspace?.clientContent, config.pricingNote) : [];
+  const logoAsset = assetByRole(workspace?.clientContent, "logo");
   const photoAsset = portfolioTemplate && slug === "about" ? assetByRole(workspace?.clientContent, "artist-photo") : null;
   const operatorCopy = isOperatorCopy(page);
 
@@ -88,8 +102,14 @@ export default async function ClientDeliverablePage({
         Client page preview · {projectId}/{slug} · noindex{operatorCopy ? " · client copy (needs approval)" : ""}
       </p>
       <header className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-6 py-5">
-        <Link href={`/demo/client/${projectId}`} className="text-sm text-emerald-300 hover:underline">
-          ← {config.businessName}
+        <Link href={`/demo/client/${projectId}`} className="flex items-center gap-3 text-sm text-emerald-300 hover:underline">
+          <span aria-hidden="true">←</span>
+          {logoAsset ? (
+            // eslint-disable-next-line @next/next/no-img-element -- client upload served from the factory store
+            <img src={clientAssetUrl(projectId, logoAsset.filename)} alt={logoAsset.alt} className="h-8 w-auto" />
+          ) : (
+            config.businessName
+          )}
         </Link>
         <span className="text-xs text-zinc-500">{page?.status || "planned"}</span>
       </header>

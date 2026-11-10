@@ -48,8 +48,9 @@ export const metadata: Metadata = {
     description: seo.twitter.description,
     images: [seo.image],
   },
+  // Declared here (favicon lives in public/, not app/) so client previews can replace both icons.
   icons: {
-    icon: "/logo.png",
+    icon: [{ url: "/favicon.ico", sizes: "any" }, { url: "/logo.png", type: "image/png" }],
   },
   ...(isStagingEnv()
     ? { robots: { index: false, follow: false, nocache: true } }

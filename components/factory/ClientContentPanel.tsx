@@ -157,7 +157,7 @@ export default function ClientContentPanel(props: Props) {
       <h3 className="mt-8 text-base font-semibold">Images ({props.assets.length})</h3>
       <p className="mt-1 text-xs text-slate-400">
         JPEG, PNG or WebP, up to {MAX_CLIENT_ASSET_BYTES / 1_000_000} MB each. Alt text is required. Roles: work, artist-photo
-        (About), logo (header), other.
+        (About), logo (header), icon (browser tab), share (link preview image), other.
       </p>
       <div className="mt-2 flex flex-wrap items-end gap-2">
         <label className="text-xs text-slate-400">

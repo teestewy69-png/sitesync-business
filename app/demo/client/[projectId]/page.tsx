@@ -11,6 +11,8 @@ import { readClientWorkspace } from "@/lib/factory/client-workspace";
 import { readCityIndex } from "@/lib/factory/city-launch";
 import { approvedEntries } from "@/lib/factory/city-launch-public";
 import { findProjectById } from "@/lib/store";
+import { headers } from "next/headers";
+import { clientPreviewBrand, clientPreviewBrandMetadata } from "@/lib/factory/client-preview-meta";
 
 export const dynamic = "force-dynamic";
 
@@ -22,15 +24,26 @@ export async function generateMetadata({
   const { projectId } = await params;
   const project = await findProjectById(projectId);
   const name = project?.businessName || project?.label || "Client preview";
+  const workspace = project ? await readClientWorkspace(projectId).catch(() => null) : null;
+  const brand = clientPreviewBrand(projectId, workspace?.clientContent, await previewHostOrigin());
+  const title = `${name} · client deliverable preview`;
+  const description = "Per-client factory preview. Internal noindex. Not auto-published.";
   return {
-    title: { absolute: `${name} · client deliverable preview` },
-    description: "Per-client factory preview. Internal noindex. Not auto-published.",
+    title: { absolute: title },
+    description,
     robots: { index: false, follow: false },
-    // Never inherit Sitesinc's canonical / Open Graph from the root layout.
+    // Never inherit Sitesinc's canonical, icons or Open Graph from the root layout: client uploads only.
     alternates: { canonical: null },
-    openGraph: null,
-    twitter: null,
+    ...clientPreviewBrandMetadata(brand, { title, description, siteName: name }),
   };
+}
+
+async function previewHostOrigin(): Promise<string | null> {
+  const h = await headers();
+  const host = h.get("x-forwarded-host") || h.get("host");
+  if (!host) return null;
+  const proto = h.get("x-forwarded-proto") || (/^(localhost|127\.0\.0\.1)(:|$)/.test(host) ? "http" : "https");
+  return `${proto.split(",")[0].trim()}://${host}`;
 }
 
 export default async function ClientDeliverableHome({

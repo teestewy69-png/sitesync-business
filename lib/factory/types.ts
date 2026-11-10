@@ -472,7 +472,7 @@ export type FactoryWorkspace = {
   clientContent?: ClientContent;
 };
 
-export type ClientAssetRole = "work" | "artist-photo" | "logo" | "other";
+export type ClientAssetRole = "work" | "artist-photo" | "logo" | "icon" | "share" | "other";
 
 /** Metadata of an uploaded client image. Bytes live in the store at `key` (Blobs on Netlify, ./data locally). */
 export type ClientAsset = {
