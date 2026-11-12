@@ -174,7 +174,7 @@ export const catalog: CatalogEntry[] = [
     name: "The Midlife Weight Reset",
     category: "Digital Products",
     kind: "digital",
-    listed: false,
+    listed: true,
     priceCents: 2400,
     stripeLookupKey: "sitesinc_midlife_weight_reset",
     deliverable: {
@@ -191,7 +191,7 @@ export const catalog: CatalogEntry[] = [
     name: "First Cruise After 60",
     category: "Digital Products",
     kind: "digital",
-    listed: false,
+    listed: true,
     priceCents: 1900,
     stripeLookupKey: "sitesinc_first_cruise_after_60",
     deliverable: {
