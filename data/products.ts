@@ -168,6 +168,58 @@ export const catalog: CatalogEntry[] = [
     description: "Small-business website page templates from the Sitesinc factory.",
     image: "/logo.png",
   },
+  // --- Test Lane guides (produced 2026-11-10): priced, parked unlisted until Tony lists them -----
+  {
+    slug: "midlife-weight-reset",
+    name: "The Midlife Weight Reset",
+    category: "Digital Products",
+    kind: "digital",
+    listed: false,
+    priceCents: 2400,
+    stripeLookupKey: "sitesinc_midlife_weight_reset",
+    deliverable: {
+      type: "file",
+      fileKey: "ebooks/midlife-weight-reset.pdf",
+      filename: "midlife-weight-reset.pdf",
+    },
+    description:
+      "A menopause weight and muscle guide for women 50+: protein-first eating, beginner strength training at home, daily movement and sleep basics, with weekly trackers. Educational only — no promised results.",
+    image: "/logo.png",
+  },
+  {
+    slug: "first-cruise-after-60",
+    name: "First Cruise After 60",
+    category: "Digital Products",
+    kind: "digital",
+    listed: false,
+    priceCents: 1900,
+    stripeLookupKey: "sitesinc_first_cruise_after_60",
+    deliverable: {
+      type: "file",
+      fileKey: "ebooks/first-cruise-after-60.pdf",
+      filename: "first-cruise-after-60.pdf",
+    },
+    description:
+      "A first-time cruiser planning guide for travelers 60+: choosing a ship and cabin, the real budget with a fill-in worksheet, travel insurance, health prep, packing and countdown checklists. Prices in the guide are illustrative ranges.",
+    image: "/logo.png",
+  },
+  {
+    slug: "strong-bones-after-50",
+    name: "Strong Bones After 50",
+    category: "Digital Products",
+    kind: "digital",
+    listed: false,
+    priceCents: 2900,
+    stripeLookupKey: "sitesinc_strong_bones_after_50",
+    deliverable: {
+      type: "file",
+      fileKey: "ebooks/strong-bones-after-50.pdf",
+      filename: "strong-bones-after-50.pdf",
+    },
+    description:
+      "A 12-week progressive strength program for women over 50, built around bone-health principles, with safety guidance, nutrition basics and tracking sheets. Educational only; clinician review pending before sale.",
+    image: "/logo.png",
+  },
 ];
 
 export function formatCents(cents: number): string {
