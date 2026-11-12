@@ -220,6 +220,91 @@ export const catalog: CatalogEntry[] = [
       "A 12-week progressive strength program for women over 50, built around bone-health principles, with safety guidance, nutrition basics and tracking sheets. Educational only; clinician review pending before sale.",
     image: "/logo.png",
   },
+  {
+    slug: "hearing-aids-honestly",
+    name: "Hearing Aids, Honestly",
+    category: "Digital Products",
+    kind: "digital",
+    listed: true,
+    priceCents: 1900,
+    stripeLookupKey: "sitesinc_hearing_aids_honestly",
+    deliverable: {
+      type: "file",
+      fileKey: "ebooks/hearing-aids-honestly.pdf",
+      filename: "hearing-aids-honestly.pdf",
+    },
+    description:
+      "An OTC hearing aid buyer's guide for 60+: get an exam first, understand the specs in plain English, follow a step-by-step shopping framework, and use the scam filter before you spend. Educational only — no device picks, no medical advice.",
+    image: "/logo.png",
+  },
+  {
+    slug: "sleep-after-60",
+    name: "Sleep After 60",
+    category: "Digital Products",
+    kind: "digital",
+    listed: true,
+    priceCents: 1900,
+    stripeLookupKey: "sitesinc_sleep_after_60",
+    deliverable: {
+      type: "file",
+      fileKey: "ebooks/sleep-after-60.pdf",
+      filename: "sleep-after-60.pdf",
+    },
+    description:
+      "A drug-free sleep restoration guide for 50+: how sleep changes with age, the warning signs that need a doctor, CBT-I principles explained plainly, and a gentle 4-week reset plan with sleep-diary worksheets. Educational only — not a treatment or cure.",
+    image: "/logo.png",
+  },
+  {
+    slug: "padel-after-50",
+    name: "Padel After 50",
+    category: "Digital Products",
+    kind: "digital",
+    listed: false,
+    priceCents: 2400,
+    stripeLookupKey: "sitesinc_padel_after_50",
+    deliverable: {
+      type: "file",
+      fileKey: "ebooks/padel-after-50.pdf",
+      filename: "padel-after-50.pdf",
+    },
+    description:
+      "A beginner's starter guide to padel for adults 50+: rules and wall play, gear, finding a court and clinic, your first session step by step, and a gentle 6-week starter plan. Educational only; expert review pending before sale.",
+    image: "/logo.png",
+  },
+  {
+    slug: "empty-nest-kitchen",
+    name: "The Empty-Nest Kitchen",
+    category: "Digital Products",
+    kind: "digital",
+    listed: true,
+    priceCents: 1900,
+    stripeLookupKey: "sitesinc_empty_nest_kitchen",
+    deliverable: {
+      type: "file",
+      fileKey: "ebooks/empty-nest-kitchen.pdf",
+      filename: "empty-nest-kitchen.pdf",
+    },
+    description:
+      "Cooking for one or two after 50: the right-sized pantry, scaling any recipe down, cook-once-eat-twice without a week of leftovers, and 19 complete recipes written for 1–2 servings, with planning worksheets.",
+    image: "/logo.png",
+  },
+  {
+    slug: "digital-afterlife",
+    name: "Your Digital Afterlife",
+    category: "Digital Products",
+    kind: "digital",
+    listed: true,
+    priceCents: 1900,
+    stripeLookupKey: "sitesinc_digital_afterlife",
+    deliverable: {
+      type: "file",
+      fileKey: "ebooks/digital-afterlife.pdf",
+      filename: "digital-afterlife.pdf",
+    },
+    description:
+      "A digital legacy and passwords organizer for 50+: inventory your accounts, set up a password manager as the single key, use Apple/Google/Facebook legacy tools, and leave your family a first-48-hours map. General information only — not legal advice.",
+    image: "/logo.png",
+  },
 ];
 
 export function formatCents(cents: number): string {
