@@ -62,7 +62,9 @@ export default function StorePage() {
                     {product.category}
                   </p>
                   <h2 className="mt-1 text-lg font-semibold text-white">
-                    {product.name}
+                    <Link href={`/store/${product.slug}`} className="hover:underline">
+                      {product.name}
+                    </Link>
                   </h2>
                   <p className="mt-1 text-sm text-slate-400">{product.description}</p>
                   <p className="mt-2 text-lg font-semibold text-slate-50">

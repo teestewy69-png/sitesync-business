@@ -69,6 +69,15 @@ export type CatalogEntry = {
   /** affiliate_out only: registry slug in lib/affiliates.ts (sent through /go/[slug]). */
   affiliateSlug?: string;
   badge?: string;
+  /** Landing-page facts for /store/[slug]. Only the guides carry these; the fields stay
+   *  optional so drafts, reports and the monitoring subscription need none of them. */
+  gumroadUrl?: string;
+  /** Who the product is for, one line. Shown on the landing page. */
+  audience?: string;
+  /** What's inside: short factual bullets for the landing page. */
+  includes?: string[];
+  /** Lane slug (lib/siteflow/lanes.ts) grouping this product on /store/lane/[lane]. */
+  lane?: string;
   image: string;
 };
 
@@ -184,6 +193,16 @@ export const catalog: CatalogEntry[] = [
     },
     description:
       "A menopause weight and muscle guide for women 50+: protein-first eating, beginner strength training at home, daily movement and sleep basics, with weekly trackers. Educational only — no promised results.",
+    gumroadUrl: "https://40sinc.gumroad.com/l/nfasjc",
+    audience: "Women 50+ navigating menopause weight and muscle changes",
+    includes: [
+      "Protein-first eating guidance for the menopause years",
+      "Beginner strength training you can do at home",
+      "Daily movement and sleep basics",
+      "Weekly trackers to keep the plan on course",
+      "21-page PDF — educational only, no promised results",
+    ],
+    lane: "women-50",
     image: "/logo.png",
   },
   {
@@ -201,6 +220,16 @@ export const catalog: CatalogEntry[] = [
     },
     description:
       "A first-time cruiser planning guide for travelers 60+: choosing a ship and cabin, the real budget with a fill-in worksheet, travel insurance, health prep, packing and countdown checklists. Prices in the guide are illustrative ranges.",
+    gumroadUrl: "https://40sinc.gumroad.com/l/nekast",
+    audience: "First-time cruisers age 60+",
+    includes: [
+      "How to choose a ship and cabin",
+      "The real budget, with a fill-in worksheet — prices shown as illustrative ranges",
+      "Travel insurance and health prep",
+      "Packing and countdown checklists",
+      "26-page PDF",
+    ],
+    lane: "travel-60",
     image: "/logo.png",
   },
   {
@@ -235,6 +264,17 @@ export const catalog: CatalogEntry[] = [
     },
     description:
       "An OTC hearing aid buyer's guide for 60+: get an exam first, understand the specs in plain English, follow a step-by-step shopping framework, and use the scam filter before you spend. Educational only — no device picks, no medical advice.",
+    gumroadUrl: "https://40sinc.gumroad.com/l/bfrqmv",
+    audience: "Adults 60+ shopping for over-the-counter hearing aids",
+    includes: [
+      "Why to get a hearing exam first",
+      "Hearing aid specs translated into plain English",
+      "A step-by-step shopping framework",
+      "A scam filter to use before you spend",
+      "No brand picks and no medical advice",
+      "24-page PDF",
+    ],
+    lane: "home-daily",
     image: "/logo.png",
   },
   {
@@ -252,6 +292,17 @@ export const catalog: CatalogEntry[] = [
     },
     description:
       "A drug-free sleep restoration guide for 50+: how sleep changes with age, the warning signs that need a doctor, CBT-I principles explained plainly, and a gentle 4-week reset plan with sleep-diary worksheets. Educational only — not a treatment or cure.",
+    gumroadUrl: "https://40sinc.gumroad.com/l/topqx",
+    audience: "Adults dealing with sleep changes after 60",
+    includes: [
+      "How sleep changes with age",
+      "Warning signs that need a doctor",
+      "CBT-I principles explained in plain language",
+      "A gentle 4-week reset plan with sleep-diary worksheets",
+      "Clinician note up front — educational only, not a treatment or cure",
+      "21-page PDF",
+    ],
+    lane: "home-daily",
     image: "/logo.png",
   },
   {
@@ -286,6 +337,17 @@ export const catalog: CatalogEntry[] = [
     },
     description:
       "Cooking for one or two after 50: the right-sized pantry, scaling any recipe down, cook-once-eat-twice without a week of leftovers, and 19 complete recipes written for 1–2 servings, with planning worksheets.",
+    gumroadUrl: "https://40sinc.gumroad.com/l/htjil",
+    audience: "Adults cooking for one or two after the kids leave",
+    includes: [
+      "The right-sized pantry for a smaller household",
+      "How to scale any recipe down",
+      "Cook-once-eat-twice without a week of leftovers",
+      "19 complete recipes written for 1–2 servings",
+      "Planning worksheets",
+      "23-page PDF",
+    ],
+    lane: "home-daily",
     image: "/logo.png",
   },
   {
@@ -303,6 +365,17 @@ export const catalog: CatalogEntry[] = [
     },
     description:
       "A digital legacy and passwords organizer for 50+: inventory your accounts, set up a password manager as the single key, use Apple/Google/Facebook legacy tools, and leave your family a first-48-hours map. General information only — not legal advice.",
+    gumroadUrl: "https://40sinc.gumroad.com/l/otdje",
+    audience: "Adults 50+ organizing their accounts and digital legacy",
+    includes: [
+      "An inventory of your online accounts",
+      "Setting up a password manager as the single key — no password lists",
+      "Apple, Google, and Facebook legacy tools, step by step",
+      "A first-48-hours map for your family",
+      "General information only — not legal advice",
+      "22-page PDF",
+    ],
+    lane: "family-sandwich",
     image: "/logo.png",
   },
   {
@@ -320,6 +393,17 @@ export const catalog: CatalogEntry[] = [
     },
     description:
       "The first 90 days caring for an aging parent, as a system: stabilize week one, the paperwork and money maps, the family meeting with scripts, and five fill-in worksheets including a cost tracker. General information only — not legal, medical, or financial advice.",
+    gumroadUrl: "https://40sinc.gumroad.com/l/ptlhy",
+    audience: "Adults in their first 90 days of caring for an aging parent",
+    includes: [
+      "A week-one plan to stabilize the situation",
+      "The paperwork map: what to find and organize",
+      "The money map of caregiving costs",
+      "A family meeting agenda with word-for-word scripts",
+      "Five fill-in worksheets, including a cost tracker",
+      "26-page PDF — general information only, not legal, medical, or financial advice",
+    ],
+    lane: "family-sandwich",
     image: "/logo.png",
   },
   {
@@ -337,6 +421,17 @@ export const catalog: CatalogEntry[] = [
     },
     description:
       "A grandparent-and-grandchild trip planning guide: trips by age band, the consent-letter template and paperwork, a three-budget splitter, pace rules for two body clocks, and planner worksheets. Prices are illustrative ranges; check current rules before you book.",
+    gumroadUrl: "https://40sinc.gumroad.com/l/psgbhw",
+    audience: "Grandparents planning a trip with their grandchildren",
+    includes: [
+      "Trip ideas and pacing by age band",
+      "A parental consent-letter template and paperwork checklist",
+      "A three-budget splitter worksheet",
+      "Pace rules for two different body clocks",
+      "Planner worksheets",
+      "27-page PDF — prices in the guide are illustrative ranges",
+    ],
+    lane: "family-sandwich",
     image: "/logo.png",
   },
 ];
