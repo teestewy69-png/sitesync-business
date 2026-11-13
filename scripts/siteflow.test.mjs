@@ -202,7 +202,7 @@ test("catalog: no fake bundles, retired bundle hidden, drafts unlisted, old shop
     assert.ok(!slugs.includes(gone), gone);
     assert.equal(catalog.getCatalogEntry(gone), undefined, gone);
   }
-  assert.deepEqual(slugs, ["website-monitoring", "midlife-weight-reset", "first-cruise-after-60", "hearing-aids-honestly", "sleep-after-60", "empty-nest-kitchen", "digital-afterlife"], "public = monitoring + the two Test Lane guides Tony listed for sitesinc sale 2026-11-11 + the four sellable guides from the 2026-11-12 Test Lane batch Tony ordered ('Run all') (DomainIQ taken out of the store by Tony 2026-11-08; priced draft kept; Strong Bones and Padel After 50 stay unlisted pending expert review)");
+  assert.deepEqual(slugs, ["website-monitoring", "midlife-weight-reset", "first-cruise-after-60", "hearing-aids-honestly", "sleep-after-60", "empty-nest-kitchen", "digital-afterlife", "caregivers-playbook", "skip-gen-adventures"], "public = monitoring + the two Test Lane guides Tony listed for sitesinc sale 2026-11-11 + the four sellable guides from the 2026-11-12 Test Lane batch Tony ordered ('Run all') + the two above-bar guides Tony ordered into production 2026-11-12 as the founding products of the Family & Sandwich Generation lane (DomainIQ taken out of the store by Tony 2026-11-08; priced draft kept; Strong Bones and Padel After 50 stay unlisted pending expert review)");
   for (const p of catalog.getPublicProducts()) assert.ok(p.contactOnly || p.price, `${p.slug} listed without a price`);
 });
 

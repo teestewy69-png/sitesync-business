@@ -305,6 +305,40 @@ export const catalog: CatalogEntry[] = [
       "A digital legacy and passwords organizer for 50+: inventory your accounts, set up a password manager as the single key, use Apple/Google/Facebook legacy tools, and leave your family a first-48-hours map. General information only — not legal advice.",
     image: "/logo.png",
   },
+  {
+    slug: "caregivers-playbook",
+    name: "The Caregiver's Playbook",
+    category: "Digital Products",
+    kind: "digital",
+    listed: true,
+    priceCents: 2900,
+    stripeLookupKey: "sitesinc_caregivers_playbook",
+    deliverable: {
+      type: "file",
+      fileKey: "ebooks/caregivers-playbook.pdf",
+      filename: "caregivers-playbook.pdf",
+    },
+    description:
+      "The first 90 days caring for an aging parent, as a system: stabilize week one, the paperwork and money maps, the family meeting with scripts, and five fill-in worksheets including a cost tracker. General information only — not legal, medical, or financial advice.",
+    image: "/logo.png",
+  },
+  {
+    slug: "skip-gen-adventures",
+    name: "Skip-Gen Adventures",
+    category: "Digital Products",
+    kind: "digital",
+    listed: true,
+    priceCents: 2400,
+    stripeLookupKey: "sitesinc_skip_gen_adventures",
+    deliverable: {
+      type: "file",
+      fileKey: "ebooks/skip-gen-adventures.pdf",
+      filename: "skip-gen-adventures.pdf",
+    },
+    description:
+      "A grandparent-and-grandchild trip planning guide: trips by age band, the consent-letter template and paperwork, a three-budget splitter, pace rules for two body clocks, and planner worksheets. Prices are illustrative ranges; check current rules before you book.",
+    image: "/logo.png",
+  },
 ];
 
 export function formatCents(cents: number): string {
