@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAuthorizedFactoryRequest } from "@/lib/factory/auth";
 import { factoryErrorResponse } from "@/lib/factory/api-errors";
+import { LEAD_MAGNET_SOURCE, leadsToCsv } from "@/lib/lead-magnet";
 import { listStoredChecklists } from "@/lib/factory/checklist";
 import { listBaselinesDetailed, readWorkspaceState } from "@/lib/factory/workspace";
 import { ensureBlobsFromRequest, readRecords } from "@/lib/persistence";
@@ -34,6 +35,27 @@ export async function GET(req: NextRequest) {
       return await flipExport(flipId, req.nextUrl.searchParams.get("format") || "handoff");
     } catch (err) {
       return factoryErrorResponse(err, "Flip export failed.");
+    }
+  }
+  if (req.nextUrl.searchParams.get("format") === "leads-csv") {
+    // Plain CSV of CRM leads for email campaigns. Default: the lead-magnet list
+    // (source "lead-magnet-start"); pass ?source=checklist or ?source=all for other sets.
+    try {
+      ensureBlobsFromRequest(req);
+      const sourceParam = req.nextUrl.searchParams.get("source") || LEAD_MAGNET_SOURCE;
+      const all = await listLeads();
+      const leads = sourceParam === "all" ? all : all.filter((lead) => lead.source === sourceParam);
+      const date = new Date().toISOString().slice(0, 10);
+      const name = sourceParam === "all" ? "all-leads" : `${sourceParam}-leads`;
+      return new NextResponse(leadsToCsv(leads), {
+        headers: {
+          "content-type": "text/csv; charset=utf-8",
+          "content-disposition": `attachment; filename="sitesinc-${name}-${date}.csv"`,
+          "cache-control": "no-store",
+        },
+      });
+    } catch (err) {
+      return factoryErrorResponse(err, "Lead CSV export failed.");
     }
   }
   try {

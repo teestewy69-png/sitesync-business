@@ -1,5 +1,6 @@
 import FactoryShell from "@/components/factory/Shell";
 import LeadStageSelect from "@/components/factory/LeadStageSelect";
+import { LEAD_MAGNET_SOURCE } from "@/lib/lead-magnet";
 import { stageOf } from "@/lib/lead-stage";
 import { ensureBlobsFromRequest, listInquiries, listLeads, listProjects, storeInfo } from "@/lib/store";
 import { readWorkspace } from "@/lib/factory/workspace";
@@ -25,6 +26,7 @@ export default async function InboxPage() {
     );
   }
   const store = storeInfo();
+  const magnetLeads = leads.filter((lead) => lead.source === LEAD_MAGNET_SOURCE);
 
   return (
     <FactoryShell title="Private intake inbox">
@@ -34,6 +36,43 @@ export default async function InboxPage() {
         {store.durable ? " (durable)" : " (local development only — not safe on Netlify)"}
         {store.storeName === "sitesinc-crm-staging" ? " · staging blob store" : ""}.
       </p>
+
+      <h2 className="mt-8 text-lg font-semibold">
+        Lead magnet signups — New Business Website Starter Checklist ({magnetLeads.length})
+      </h2>
+      <p className="mt-1 text-sm text-slate-400">
+        People who asked for the free checklist on /start — the email list for future campaigns.{" "}
+        <a
+          className="text-brand-300 hover:underline"
+          href="/api/factory/export?format=leads-csv"
+        >
+          Download this list as CSV
+        </a>{" "}
+        ·{" "}
+        <a
+          className="text-brand-300 hover:underline"
+          href="/api/factory/export?format=leads-csv&source=all"
+        >
+          Download all leads as CSV
+        </a>
+      </p>
+      <ul className="mt-3 space-y-2 text-sm">
+        {magnetLeads.length === 0 ? (
+          <li className="text-slate-500">No checklist signups yet.</li>
+        ) : (
+          magnetLeads.map((lead) => (
+            <li key={lead.id} className="rounded-xl border border-white/10 px-4 py-3">
+              <strong>{lead.name}</strong> · {lead.email}
+              <span className="block text-slate-400">
+                {lead.details || "business kind not given"}
+                {lead.notificationState ? ` · checklist email ${lead.notificationState}` : ""}
+                {lead.env === "staging" ? " · env staging" : ""} · {lead.createdAt}
+              </span>
+              <LeadStageSelect id={lead.id} stage={stageOf(lead)} who={lead.name} />
+            </li>
+          ))
+        )}
+      </ul>
 
       <h2 className="mt-8 text-lg font-semibold">Checklist leads</h2>
       <ul className="mt-3 space-y-2 text-sm">
