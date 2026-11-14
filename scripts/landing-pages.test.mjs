@@ -24,9 +24,9 @@ function publicGuides() {
     .filter((p) => p.deliverable?.type === "file" && p.deliverable.fileKey.startsWith("ebooks/"));
 }
 
-test("landing facts: every listed+priced guide has gumroadUrl, audience, includes and lane", () => {
+test("landing facts: every listed+priced guide has gumroadUrl, audience and includes; lane on all but the Audit Kit", () => {
   const guides = publicGuides();
-  assert.equal(guides.length, 8, "expected the 8 sellable guides to be public");
+  assert.equal(guides.length, 12, "expected the 12 sellable guides to be public");
   for (const guide of guides) {
     assert.ok(guide.gumroadUrl, `${guide.slug}: gumroadUrl missing`);
     assert.match(guide.gumroadUrl, /^https:\/\/40sinc\.gumroad\.com\/l\//, `${guide.slug}: gumroadUrl is not a Gumroad product link`);
@@ -35,7 +35,12 @@ test("landing facts: every listed+priced guide has gumroadUrl, audience, include
     for (const bullet of guide.includes) {
       assert.ok(typeof bullet === "string" && bullet.trim().length > 0, `${guide.slug}: empty includes bullet`);
     }
-    assert.ok(guide.lane, `${guide.slug}: lane missing`);
+    if (guide.slug === "website-audit-kit") {
+      // The Audit Kit is a business tool, not part of any audience lane: it carries no lane by design.
+      assert.equal(guide.lane, undefined, "website-audit-kit: lane must stay unset");
+    } else {
+      assert.ok(guide.lane, `${guide.slug}: lane missing`);
+    }
   }
 });
 
@@ -66,4 +71,5 @@ test("landing routes exist and unlisted guides stay invisible to getProduct", ()
   // Parked pending expert review: priced but unlisted, so no landing page may exist.
   assert.equal(catalog.getProduct("strong-bones-after-50"), undefined);
   assert.equal(catalog.getProduct("padel-after-50"), undefined);
+  assert.equal(catalog.getProduct("balance-after-60"), undefined);
 });
