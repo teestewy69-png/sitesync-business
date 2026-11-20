@@ -128,8 +128,11 @@ function sitemapLocPaths(origin: string, xml: string): string[] {
   return [...new Set(paths)];
 }
 
-export async function crawlSite(startUrl: string, opts: { maxPages?: number } = {}): Promise<CrawlResult> {
+export async function crawlSite(startUrl: string, opts: { maxPages?: number; budgetMs?: number } = {}): Promise<CrawlResult> {
   const maxPages = Math.min(Math.max(1, opts.maxPages ?? SEO_AUDIT_PAGE_LIMIT), SEO_AUDIT_PAGE_LIMIT);
+  // Callers on a request clock (the public free audit) can ask for a shorter crawl; the budget
+  // never exceeds the standard one, and a crawl that hits it returns the pages it has.
+  const budgetMs = Math.min(CRAWL_BUDGET_MS, Math.max(5_000, opts.budgetMs ?? CRAWL_BUDGET_MS));
   let start: URL;
   try {
     start = assertSafeUrl(startUrl);
@@ -145,7 +148,7 @@ export async function crawlSite(startUrl: string, opts: { maxPages?: number } = 
   }
   const origin = new URL(first.finalUrl).origin;
   const startPath = crawlablePath(origin, first.finalUrl) || "/";
-  const deadline = Date.now() + CRAWL_BUDGET_MS;
+  const deadline = Date.now() + budgetMs;
 
   const [robots, sitemap] = await Promise.all([
     safeFetchText(`${origin}/robots.txt`, { maxBytes: 200_000 }),
@@ -823,6 +826,12 @@ const STREET_SUFFIXES: Record<string, string> = {
 const STREET_ADDRESS_RE =
   /\b\d{1,6}\s+(?:[A-Za-z0-9.'’-]+\s+){0,3}(?:Street|St|Avenue|Ave|Boulevard|Blvd|Road|Rd|Drive|Dr|Lane|Ln|Court|Ct|Circle|Cir|Place|Pl|Way|Highway|Hwy|Parkway|Pkwy|Terrace|Ter|Trail|Trl)\b\.?/gi;
 
+const DIRECTIONALS: Record<string, string> = {
+  n: "north", north: "north", s: "south", south: "south", e: "east", east: "east", w: "west", west: "west",
+  ne: "northeast", northeast: "northeast", nw: "northwest", northwest: "northwest",
+  se: "southeast", southeast: "southeast", sw: "southwest", southwest: "southwest",
+};
+
 /** Comparison form of a street address: lowercase, punctuation-free, abbreviations expanded, unit numbers dropped. */
 export function normalizeStreet(display: string): string {
   return display
@@ -832,15 +841,27 @@ export function normalizeStreet(display: string): string {
     .replace(/[.,]/g, " ")
     .split(/\s+/)
     .filter(Boolean)
-    .map((w) => STREET_SUFFIXES[w] ?? w)
+    .map((w) => STREET_SUFFIXES[w] ?? DIRECTIONALS[w] ?? w)
     .join(" ");
 }
 
 /** Street addresses in a text blob, as display + normalized pairs (first occurrence wins per normalized form). */
 export function extractStreetAddresses(text: string): { display: string; normalized: string }[] {
   const out = new Map<string, string>();
-  for (const m of text.matchAll(STREET_ADDRESS_RE)) {
-    const display = m[0].replace(/\s+/g, " ").trim();
+  // Phone numbers come out first: in flattened page text a phone often sits directly in front of
+  // the address ("Phone: (909) 323-1575 1968 South Coast Hwy"), and the address pattern would
+  // otherwise read the phone's last four digits as the house number ("1575 1968 South Coast Hwy").
+  const cleaned = text.replace(TEXT_PHONE_RE, " ");
+  for (const m of cleaned.matchAll(STREET_ADDRESS_RE)) {
+    let display = m[0].replace(/\s+/g, " ").trim();
+    // A ZIP code from the text just before the address ("…Covina, CA 90502 519 N Curtis Ave",
+    // flattened with a space) glues itself onto the front and poses as the house number. When
+    // the match starts with a 5-digit number followed by a second number, and the remainder
+    // still ends in a street suffix, the second number is the house number.
+    const glue = /^(\d{5})\s+(\d{1,6}\s+.*)$/.exec(display);
+    if (glue && /(?:Street|St|Avenue|Ave|Boulevard|Blvd|Road|Rd|Drive|Dr|Lane|Ln|Court|Ct|Circle|Cir|Place|Pl|Way|Highway|Hwy|Parkway|Pkwy|Terrace|Ter|Trail|Trl)\.?$/i.test(glue[2])) {
+      display = glue[2];
+    }
     const normalized = normalizeStreet(display);
     if (normalized && !out.has(normalized)) out.set(normalized, display);
   }
@@ -890,8 +911,11 @@ export type SiteNap = {
   schema: { name: string; phone: string; street: string; city: string } | null;
   /** Distinct raw business names across the site's LocalBusiness schema. */
   names: string[];
-  /** Every distinct phone number published (schema, tel: links, page text), merged by normalized digits. */
-  phones: { key: string; display: string; pages: string[] }[];
+  /** Every distinct phone number published (schema, tel: links, page text), merged by normalized digits.
+   *  `mentionsOnly` marks a number seen only as page text, and only on pages that also publish a
+   *  corroborated (schema / tel:) number — i.e. someone else's number quoted in an article or
+   *  comparison ("cancel Rival Co by calling …"), not one of the business's own numbers. */
+  phones: { key: string; display: string; pages: string[]; mentionsOnly: boolean }[];
   /** Every distinct street address published (schema + page text), merged by normalized form. */
   addresses: { normalized: string; display: string; pages: string[] }[];
 };
@@ -902,13 +926,14 @@ export function siteNap(result: CrawlResult): SiteNap {
   let schema: SiteNap["schema"] = null;
   let best = -1;
   const names: string[] = [];
-  const phoneMap = new Map<string, { display: string; pages: Set<string> }>();
+  const phoneMap = new Map<string, { display: string; pages: Set<string>; strong: boolean }>();
   const addrMap = new Map<string, { display: string; pages: Set<string> }>();
-  const addPhone = (raw: string, page: string) => {
+  const addPhone = (raw: string, page: string, strong: boolean) => {
     const key = normalizePhoneKey(raw);
     if (key.replace(/\D/g, "").length < 7) return;
-    if (!phoneMap.has(key)) phoneMap.set(key, { display: raw.trim(), pages: new Set() });
+    if (!phoneMap.has(key)) phoneMap.set(key, { display: raw.trim(), pages: new Set(), strong: false });
     const entry = phoneMap.get(key)!;
+    if (strong) entry.strong = true;
     // Display the most human-formatted raw form seen (the page text's "(909) 555-0142",
     // not the tel: href's "+19095550142"): most punctuation wins; ties go to the national
     // format (no leading "+"), then to the longer form.
@@ -931,7 +956,7 @@ export function siteNap(result: CrawlResult): SiteNap {
     const name = stringProp(node, "name");
     if (name && !names.includes(name)) names.push(name);
     const phone = stringProp(node, "telephone");
-    if (phone) addPhone(phone, page);
+    if (phone) addPhone(phone, page, true);
     const { street, city } = schemaAddress(node);
     if (street) addAddress(street, page);
     const richness = [name, phone, street].filter(Boolean).length;
@@ -943,20 +968,42 @@ export function siteNap(result: CrawlResult): SiteNap {
   for (const page of result.pages) {
     if (pageBroken(page)) continue;
     for (const link of page.externalLinks) {
-      if (/^tel:/i.test(link)) addPhone(link.replace(/^tel:/i, "").split(/[?;]/)[0], page.path);
+      if (/^tel:/i.test(link)) addPhone(link.replace(/^tel:/i, "").split(/[?;]/)[0], page.path, true);
     }
     if (page.text) {
-      for (const raw of extractPhonesFromText(page.text)) addPhone(raw, page.path);
+      for (const raw of extractPhonesFromText(page.text)) addPhone(raw, page.path, false);
       for (const addr of extractStreetAddresses(page.text)) addAddress(addr.display, page.path);
     }
   }
+  // A number counts as a mere mention when it was never published via schema or a tel: link and
+  // every page it appears on also publishes a corroborated number — quoted third-party numbers
+  // (a competitor's cancellation line, a supplier's hotline) live exactly like that, while a page
+  // that publishes ONLY a conflicting number (the classic wrong-number-on-the-contact-page case)
+  // keeps it a published number, so genuine conflicts still fire.
+  const strongPages = new Set<string>();
+  for (const v of phoneMap.values()) if (v.strong) for (const p of v.pages) strongPages.add(p);
   const byPage = (a: { pages: string[] }, b: { pages: string[] }) => a.pages[0].localeCompare(b.pages[0]);
   return {
     schema,
     names,
-    phones: [...phoneMap.entries()].map(([key, v]) => ({ key, display: v.display, pages: [...v.pages].sort() })).sort(byPage),
+    phones: [...phoneMap.entries()]
+      .map(([key, v]) => ({
+        key,
+        display: v.display,
+        pages: [...v.pages].sort(),
+        mentionsOnly: !v.strong && v.pages.size > 0 && [...v.pages].every((p) => strongPages.has(p)),
+      }))
+      .sort(byPage),
     addresses: [...addrMap.entries()].map(([normalized, v]) => ({ normalized, display: v.display, pages: [...v.pages].sort() })).sort(byPage),
   };
+}
+
+/** The numbers the business publishes as its own: text-only mentions of other people's numbers
+ *  are excluded when a corroborated number exists (see SiteNap.phones). Falls back to every
+ *  number found when nothing is corroborated, so schema-less sites are judged as before. */
+export function publishedPhones(nap: SiteNap): SiteNap["phones"] {
+  const own = nap.phones.filter((p) => !p.mentionsOnly);
+  return own.length ? own : nap.phones;
 }
 
 /** True when the site publishes a verifiable local identity: LocalBusiness schema or a street address. */
@@ -1159,8 +1206,11 @@ export function localPresenceIssues(result: CrawlResult, opts: AuditOptions = {}
 
   // NAP consistency: formatting differences are normalized away before this point, so a conflict
   // here is a genuinely different number or address — the kind that costs the business customers.
-  if (nap.phones.length > 1) {
-    const list = nap.phones
+  // Quoted third-party numbers (mentionsOnly) are not the business publishing a second number;
+  // they get a separate low note below instead of a false high.
+  const ownPhones = publishedPhones(nap);
+  if (ownPhones.length > 1) {
+    const list = ownPhones
       .slice(0, 3)
       .map((p) => `${p.display} (on ${p.pages.slice(0, 3).join(", ")}${p.pages.length > 3 ? "…" : ""})`)
       .join(" and ");
@@ -1169,6 +1219,19 @@ export function localPresenceIssues(result: CrawlResult, opts: AuditOptions = {}
       "site",
       `Phone numbers disagree across the site: ${list}.`,
       "Pick the one number that actually rings your business and use it everywhere — header, contact page and structured data. A wrong number costs you customers: people call once, reach the wrong place, and move on to the next business."
+    );
+  }
+  const mentions = nap.phones.filter((p) => p.mentionsOnly);
+  if (mentions.length && ownPhones.length) {
+    const list = mentions
+      .slice(0, 3)
+      .map((p) => `${p.display} (on ${p.pages.slice(0, 3).join(", ")}${p.pages.length > 3 ? "…" : ""})`)
+      .join(" and ");
+    add(
+      "low",
+      "site",
+      `Another phone number appears in your site's text: ${list}.`,
+      "If that's someone else's number quoted in an article or comparison, no change is needed. If it is yours, pick the one number that rings your business and use it everywhere — header, contact page and structured data."
     );
   }
   if (nap.addresses.length > 1) {
@@ -1250,13 +1313,13 @@ export function localPresenceIssues(result: CrawlResult, opts: AuditOptions = {}
   // Live Places comparison (only when a lookup actually ran): listing-vs-site mismatches are high.
   const places = opts.places ?? null;
   if (places) {
-    if (places.phone && nap.phones.length > 0) {
+    if (places.phone && ownPhones.length > 0) {
       const key = normalizePhoneKey(places.phone);
-      if (!nap.phones.some((p) => p.key === key)) {
+      if (!ownPhones.some((p) => p.key === key)) {
         add(
           "high",
           "site",
-          `Your Google listing shows the phone number ${places.phone}, but your site shows ${nap.phones.map((p) => p.display).join(", ")}.`,
+          `Your Google listing shows the phone number ${places.phone}, but your site shows ${ownPhones.map((p) => p.display).join(", ")}.`,
           "Make the number identical in both places — update whichever one is wrong. Customers who find a number that doesn't ring your business call the next listing instead."
         );
       }
@@ -1326,8 +1389,9 @@ export function localPresenceSection(result: CrawlResult, extras: RenderExtras =
   const status = googleLinkStatus(result);
   const profiles = linkedProfiles(result);
   const yesNo = (v: boolean) => (v ? "found" : "<strong>not found</strong>");
-  const napLine = nap.schema?.name || nap.phones.length || nap.addresses.length
-    ? `<p>What your site itself publishes: ${nap.schema?.name ? `<strong>${esc(nap.schema.name)}</strong>` : "no business name in structured data"}${nap.phones.length ? ` · phone ${nap.phones.map((p) => esc(p.display)).join(", ")}` : ""}${nap.addresses.length ? ` · ${nap.addresses.map((a) => esc(a.display)).join(", ")}` : ""}.</p>`
+  const ownPhones = publishedPhones(nap);
+  const napLine = nap.schema?.name || ownPhones.length || nap.addresses.length
+    ? `<p>What your site itself publishes: ${nap.schema?.name ? `<strong>${esc(nap.schema.name)}</strong>` : "no business name in structured data"}${ownPhones.length ? ` · phone ${ownPhones.map((p) => esc(p.display)).join(", ")}` : ""}${nap.addresses.length ? ` · ${nap.addresses.map((a) => esc(a.display)).join(", ")}` : ""}.</p>`
     : "<p>Your site publishes no machine-readable name, address or phone that we could find.</p>";
   let placesLine = "";
   if (extras.places) {

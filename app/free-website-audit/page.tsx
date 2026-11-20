@@ -10,7 +10,7 @@ import { COMPARE } from "@/lib/compare";
 
 const title = "Free Website Audit for Small Businesses | Sitesinc";
 const description =
-  "Free website diagnostic for small businesses: 7 plain checks — HTTPS, mobile, speed, title, description, contact info, Google profile. No email needed.";
+  "Free website diagnostic for small businesses: 7 quick checks in seconds, then a deep audit that crawls up to 10 pages and scores your whole site — broken links, missing descriptions, contact details that disagree. No email needed.";
 
 export const metadata: Metadata = {
   title,
@@ -28,11 +28,12 @@ const CHECKS = [
   ["Search description", "Is there a meta description for your search listing?"],
   ["Contact info on the page", "Is there a phone number, an email link, a contact page link, and a tap-to-call link for phones?"],
   ["Link to your Google Business Profile", "Does the page link to your Google Maps or Business Profile listing?"],
+  ["Full-site deep audit", "After the quick checks, we crawl up to 10 pages of your site and score it 0-100: broken links, missing titles and descriptions, phone numbers or addresses that disagree between pages, and pages search engines can't reach."],
 ];
 
 const FAQ = [
-  ["What does the audit actually do?", "It loads the one page you enter, the same way a visitor's browser would, and reads the HTML that comes back. Each result tells you what we saw."],
-  ["What does it not do?", "It is not a full SEO, speed or design review. It does not measure Google's Core Web Vitals, rankings or traffic, and it only looks at one page. For a deeper speed test, use Google PageSpeed Insights."],
+  ["What does the audit actually do?", "First it loads the one page you enter, the same way a visitor's browser would, and runs seven quick checks on what comes back. Then the deep audit crawls up to 10 pages of your site and scores what it finds — broken links, missing descriptions, contact details that disagree between pages, and more. Each result tells you what we saw."],
+  ["What does it not do?", "It is not a full SEO, design or traffic review. It does not measure Google's Core Web Vitals, rankings or traffic. For a deeper speed test, use Google PageSpeed Insights."],
   ["Do you store my website address?", "No. The audit runs when you press the button and does not save your address or ask for your email."],
   ["Does it work on every site?", "No. Some sites block automated visitors or load most of their content with JavaScript, so the results can miss things. If a result looks wrong, call us and we'll check it by hand."],
 ];
@@ -66,7 +67,8 @@ export default function FreeWebsiteAudit() {
         <p className="text-xs font-semibold uppercase tracking-wider text-brand-300">Free tool</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Free website diagnostic for your small business</h1>
         <p className="mt-3 text-base text-slate-300">
-          Type in your website address and get a free diagnostic: seven plain checks in seconds. No email, no sales call. If your site needs more
+          Type in your website address and get a free diagnostic: seven plain checks in seconds, then a deep audit that crawls
+          up to 10 pages of your site and scores it. No email, no sales call. If your site needs more
           than a few fixes, we build real, working websites, not subscriptions like the rest, for $1,995 flat.
         </p>
         <div className="mt-8">

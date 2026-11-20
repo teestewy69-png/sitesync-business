@@ -21,6 +21,9 @@ const {
   visibleText,
   detectMapEmbed,
   normalizePhoneKey,
+  extractStreetAddresses,
+  normalizeStreet,
+  publishedPhones,
 } = await import("../lib/siteflow/generators/seo-audit.ts");
 
 const ORIGIN = "https://example.com";
@@ -351,4 +354,84 @@ test("genuinely different pages do not cluster; tiny pages are skipped", () => {
   const res = result([a, b, tiny1, tiny2]);
   assert.deepEqual(nearDuplicateClusters(res), []);
   assert.equal(has(auditIssues(res), /Near-duplicate/), false);
+});
+
+/* --------------------- quoted numbers & glued phone/address -------------------------- */
+
+test("a competitor's number quoted in page text is a mention, not a disagreement (the Hibu case)", () => {
+  // Mirrors sitesinc.co/compare/hibu-alternative: the page publishes the business's own number
+  // (schema + tel: link + footer text) and quotes the rival's cancellation number in an article.
+  const compare = page("/compare/rival-alternative", {
+    jsonLd: LB(),
+    externalLinks: ["tel:+19095550100"],
+    text: "Rival Co's General Terms say you may cancel by telephoning (877) 555-0199, Monday through Friday. Questions? Call (909) 555-0100 or visit 1200 Main Street, Walnut.",
+  });
+  const res = result([compare]);
+  const issues = auditIssues(res);
+  assert.equal(has(issues, /Phone numbers disagree/), false);
+  const note = issues.find((i) => /Another phone number appears/.test(i.issue));
+  assert.ok(note, "expected the low mention note");
+  assert.equal(note.severity, "low");
+  assert.match(note.issue, /877\) 555-0199/);
+  const nap = siteNap(res);
+  assert.equal(nap.phones.length, 2);
+  assert.equal(nap.phones.find((p) => p.key === "8775550199").mentionsOnly, true);
+  assert.equal(publishedPhones(nap).length, 1);
+});
+
+test("a text-only number on a page that publishes no other number still counts (contact-page case)", () => {
+  const home = page("/", { jsonLd: LB(), text: "Walnut Plumbing Co, 1200 Main Street. Call (909) 555-0100." });
+  const contact = page("/contact", { externalLinks: [], text: "Emergencies only: (909) 555-0199." });
+  const nap = siteNap(result([home, contact]));
+  assert.equal(nap.phones.find((p) => p.key === "9095550199").mentionsOnly, false);
+  assert.equal(publishedPhones(nap).length, 2);
+});
+
+test("a phone glued to the address in flattened text does not spawn a phantom address", () => {
+  // Footer shape: "Phone: (909) 323-1575 1968 South Coast Hwy #3632, Laguna Beach, CA 92651" —
+  // the phone's last four digits must not become the house number ("1575 1968 South Coast Hwy").
+  const found = extractStreetAddresses("Phone: (909) 323-1575 1968 South Coast Hwy #3632, Laguna Beach, CA 92651");
+  assert.equal(found.length, 1);
+  assert.equal(found[0].display, "1968 South Coast Hwy");
+  assert.equal(found[0].normalized, "1968 south coast highway");
+
+  const res = result([
+    page("/", {
+      jsonLd: LB({ address: { "@type": "PostalAddress", streetAddress: "1968 South Coast Hwy #3632", addressLocality: "Laguna Beach" } }),
+      externalLinks: ["tel:+19093231575"],
+      text: "Phone: (909) 323-1575 1968 South Coast Hwy #3632, Laguna Beach, CA 92651",
+    }),
+  ]);
+  const nap = siteNap(res);
+  assert.equal(nap.addresses.length, 1);
+  assert.equal(has(auditIssues(res), /Street addresses disagree/), false);
+});
+
+test("the same address abbreviated on one page and spelled out on another is one address", () => {
+  // The Roofing Company case (first hunt, 2026-11-20): "1420 W 11th St" on the homepage and
+  // "1420 West 11th Street" on the contact page are the same address, not a disagreement.
+  assert.equal(normalizeStreet("1420 W 11th St"), normalizeStreet("1420 West 11th Street"));
+  const res = result([
+    page("/", { text: "Visit us at 1420 W 11th St, Pomona, CA." }),
+    page("/contact-us", { text: "Our office: 1420 West 11th Street, Pomona, CA." }),
+  ]);
+  const nap = siteNap(res);
+  assert.equal(nap.addresses.length, 1);
+  assert.equal(has(auditIssues(res), /Street addresses disagree/), false);
+});
+
+test("a ZIP code glued onto the front of an address is not the house number", () => {
+  // The SC Tree case (first hunt, 2026-11-20): flattened text "…Covina, CA 90502 519 N Curtis Ave"
+  // made the ZIP pose as a house number ("90502 519 N Curtis Ave"), a phantom second address.
+  const found = extractStreetAddresses("Covina, CA 90502 519 N Curtis Ave — stop by today");
+  assert.equal(found.length, 1);
+  assert.equal(found[0].display, "519 N Curtis Ave");
+
+  const res = result([
+    page("/", { text: "Southern California Tree and Landscape, 519 N Curtis Ave, Covina, CA 90502" }),
+    page("/contact-us", { text: "Covina, CA 90502 519 N Curtis Ave" }),
+  ]);
+  const nap = siteNap(res);
+  assert.equal(nap.addresses.length, 1);
+  assert.equal(has(auditIssues(res), /Street addresses disagree/), false);
 });
