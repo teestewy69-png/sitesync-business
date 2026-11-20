@@ -27,6 +27,7 @@ import {
   type UsCity,
 } from "@/lib/city-launch";
 import { evaluateGate, popChangePct } from "@/lib/city-launch/gate";
+import { getCityResearch, mergeResearchNotes } from "@/lib/city-launch/research";
 import { findHonestyIssues, repairInstructions, type HonestyGeo, type HonestyIssue } from "@/lib/city-launch/honesty";
 import {
   clampInt,
@@ -69,7 +70,6 @@ import {
 import { FACTORY_COOKIE, factoryToken, sessionValue } from "./auth";
 import { backgroundEnabled, backgroundLooksStuck, backgroundPending, triggerBackground } from "./city-launch-background";
 import { configFromProject } from "./client-config";
-import { ownerFactsContext } from "./owner-intake";
 import { scheduleAfterResponse } from "./client-automation";
 
 const SAFE_ID = /^[a-z0-9_-]{1,80}$/i;
@@ -185,7 +185,6 @@ export function cityLaunchContext(project: ClientProject): CityLaunchClientConte
       baseState: baseCity?.state || state,
       primaryGoal: project.primaryGoal || config.primaryGoal || "",
       notes: project.notes || config.notes || "",
-      ownerFacts: ownerFactsContext(config.owner),
     },
     baseCity,
     contactPath: contact ? `/demo/client/${project.id}/contact` : `/demo/client/${project.id}`,
@@ -530,11 +529,18 @@ export async function writeCityContent(
       ? nearestCities({ slug: "__base__", lat: base.lat, lng: base.lng }, [{ slug: item.slug, lat: item.lat, lng: item.lng }], 1)[0]
       : null;
   const city = promptCity(item);
+  // The research agent fills the VERIFIED LOCAL NOTES slot with sourced facts gathered for this
+  // city (Wikipedia + the city's official site), so the writer grounds the page in real local
+  // material instead of Census numbers alone — and the honesty gate accepts those claims because
+  // the same notes flow into its support text below. No brief (offline, unknown city) means
+  // today's behavior, unchanged.
+  const brief = await getCityResearch({ name: item.name, state: item.state, stateName: item.stateName });
+  const runSettings = brief ? { ...settings, localFacts: mergeResearchNotes(settings.localFacts, brief) } : settings;
   const messages = [
-    { role: "system" as const, content: systemPrompt(settings, city) },
+    { role: "system" as const, content: systemPrompt(runSettings, city) },
     {
       role: "user" as const,
-      content: userPrompt(settings, city, ctx.business, nearby, fromBase ? { distanceMiles: fromBase.distanceMiles, direction: fromBase.direction } : null),
+      content: userPrompt(runSettings, city, ctx.business, nearby, fromBase ? { distanceMiles: fromBase.distanceMiles, direction: fromBase.direction } : null),
     },
   ];
   const reply = await chatCompletion(resolved, messages, {
@@ -561,7 +567,7 @@ export async function writeCityContent(
     baseCity: ctx.business.baseCity,
     baseState: ctx.business.baseState,
     businessName: ctx.business.businessName,
-    support: supportText(item, settings),
+    support: supportText(item, runSettings),
     popChangePct: popChangePct({ city: { population: item.population, pop2020: city.pop2020 } as CityDraft["city"] }),
     stateRank: city.stateRank,
     geo: cityHonestyGeo(item, nearby.map((n) => n.slug), base),
