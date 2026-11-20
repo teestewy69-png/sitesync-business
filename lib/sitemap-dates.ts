@@ -16,6 +16,7 @@ const LASTMOD: Record<string, string> = {
   "/privacy": "2026-10-20",
   "/terms": "2026-10-27",
   "/free-website-audit": "2026-10-27",
+  "/free-book": "2026-11-20",
   "/styles": "2026-11-06",
   "/compare/hibu-alternative": "2026-10-27",
   "/compare/thryv-alternative": "2026-10-27",

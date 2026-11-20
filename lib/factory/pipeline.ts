@@ -20,6 +20,7 @@ export const PUBLIC_PATHS = [
   "/blog/diy-vs-done-for-you-websites",
   "/free-website-audit",
   "/start",
+  "/free-book",
   "/giveaway",
   "/styles",
   "/compare/hibu-alternative",

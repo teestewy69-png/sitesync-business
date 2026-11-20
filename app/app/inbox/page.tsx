@@ -1,6 +1,7 @@
 import FactoryShell from "@/components/factory/Shell";
 import LeadStageSelect from "@/components/factory/LeadStageSelect";
 import { LEAD_MAGNET_SOURCE } from "@/lib/lead-magnet";
+import { FLIPRADAR_BOOK_SOURCE, FREE_BOOK_SOURCE } from "@/lib/free-book";
 import { stageOf } from "@/lib/lead-stage";
 import { ensureBlobsFromRequest, listInquiries, listLeads, listProjects, storeInfo } from "@/lib/store";
 import { readWorkspace } from "@/lib/factory/workspace";
@@ -27,6 +28,8 @@ export default async function InboxPage() {
   }
   const store = storeInfo();
   const magnetLeads = leads.filter((lead) => lead.source === LEAD_MAGNET_SOURCE);
+  const freeBookLeads = leads.filter((lead) => lead.source === FREE_BOOK_SOURCE);
+  const flipRadarLeads = leads.filter((lead) => lead.source === FLIPRADAR_BOOK_SOURCE);
 
   return (
     <FactoryShell title="Private intake inbox">
@@ -66,6 +69,68 @@ export default async function InboxPage() {
               <span className="block text-slate-400">
                 {lead.details || "business kind not given"}
                 {lead.notificationState ? ` · checklist email ${lead.notificationState}` : ""}
+                {lead.env === "staging" ? " · env staging" : ""} · {lead.createdAt}
+              </span>
+              <LeadStageSelect id={lead.id} stage={stageOf(lead)} who={lead.name} />
+            </li>
+          ))
+        )}
+      </ul>
+
+      <h2 className="mt-8 text-lg font-semibold">
+        Lead magnet signups — What Your Web Builder Won&apos;t Tell You ({freeBookLeads.length})
+      </h2>
+      <p className="mt-1 text-sm text-slate-400">
+        People who asked for the free ebook on /free-book — comparison shoppers pricing a
+        website.{" "}
+        <a
+          className="text-brand-300 hover:underline"
+          href="/api/factory/export?format=leads-csv&source=lead-magnet-free-book"
+        >
+          Download this list as CSV
+        </a>
+      </p>
+      <ul className="mt-3 space-y-2 text-sm">
+        {freeBookLeads.length === 0 ? (
+          <li className="text-slate-500">No ebook signups yet.</li>
+        ) : (
+          freeBookLeads.map((lead) => (
+            <li key={lead.id} className="rounded-xl border border-white/10 px-4 py-3">
+              <strong>{lead.name}</strong> · {lead.email}
+              <span className="block text-slate-400">
+                {lead.details || "business kind not given"}
+                {lead.notificationState ? ` · ebook email ${lead.notificationState}` : ""}
+                {lead.env === "staging" ? " · env staging" : ""} · {lead.createdAt}
+              </span>
+              <LeadStageSelect id={lead.id} stage={stageOf(lead)} who={lead.name} />
+            </li>
+          ))
+        )}
+      </ul>
+
+      <h2 className="mt-8 text-lg font-semibold">
+        Lead magnet signups — Your First Flip, via FlipRadar ({flipRadarLeads.length})
+      </h2>
+      <p className="mt-1 text-sm text-slate-400">
+        People who asked for the free FlipRadar ebook on flipradar.co — captured cross-origin
+        into this same store.{" "}
+        <a
+          className="text-brand-300 hover:underline"
+          href="/api/factory/export?format=leads-csv&source=lead-magnet-flipradar"
+        >
+          Download this list as CSV
+        </a>
+      </p>
+      <ul className="mt-3 space-y-2 text-sm">
+        {flipRadarLeads.length === 0 ? (
+          <li className="text-slate-500">No FlipRadar signups yet.</li>
+        ) : (
+          flipRadarLeads.map((lead) => (
+            <li key={lead.id} className="rounded-xl border border-white/10 px-4 py-3">
+              <strong>{lead.name}</strong> · {lead.email}
+              <span className="block text-slate-400">
+                {lead.details || "business kind not given"}
+                {lead.notificationState ? ` · ebook email ${lead.notificationState}` : ""}
                 {lead.env === "staging" ? " · env staging" : ""} · {lead.createdAt}
               </span>
               <LeadStageSelect id={lead.id} stage={stageOf(lead)} who={lead.name} />

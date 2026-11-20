@@ -47,6 +47,18 @@ export default function Footer() {
               Leave us a Google review
             </a>
           </p>
+          <p className="text-sm text-slate-400 sm:text-sm">
+            Free ebook:{" "}
+            <a href="/free-book" className="text-brand-300 hover:underline">
+              What Your Web Builder Won&apos;t Tell You
+            </a>
+          </p>
+          <p className="text-sm text-slate-400 sm:text-sm">
+            Free starter checklist:{" "}
+            <a href="/start" className="text-brand-300 hover:underline">
+              The New Business Website Starter Checklist
+            </a>
+          </p>
           <address className="text-sm not-italic text-slate-400 sm:text-sm">
             {footer.address.street}, {footer.address.city}, {footer.address.region}{" "}
             {footer.address.postalCode}
