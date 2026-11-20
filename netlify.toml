@@ -35,3 +35,11 @@
   [headers.values]
     Cache-Control = "public, max-age=60, must-revalidate"
     X-Content-Type-Options = "nosniff"
+
+# The netlify.app address is not the live site (Tony, 2026-11-20): anyone who lands
+# on sitesyncllc.netlify.app is bounced to the real domain, path preserved.
+[[redirects]]
+  from = "https://sitesyncllc.netlify.app/*"
+  to = "https://sitesinc.co/:splat"
+  status = 301
+  force = true
