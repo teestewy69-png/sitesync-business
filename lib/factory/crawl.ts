@@ -4,7 +4,7 @@ import { publicAnalyticsMeasurementId } from "@/lib/site-env";
 import { gscConfigured } from "./search-console";
 import { newId, storeWritable } from "@/lib/store";
 import { PRODUCTION_ORIGIN } from "./pipeline";
-import { crawlablePath, enqueue, newDiscovery, robotsDisallows } from "./crawl-discovery";
+import { crawlSiteForSeo } from "./seo-crawler";
 import type {
   BaselineSnapshot,
   BrokenLink,
@@ -323,35 +323,22 @@ export async function captureBaseline(opts?: {
       `No crawl paths for siteId=${siteId}. Pass paths explicitly for client/unknown sites.`
     );
   }
-  const pageInventory: PageAudit[] = [];
   const paths = demo || !sitesincSite
     ? [...new Set<string>(seedPaths)]
     : [...new Set<string>([...seedPaths, ...extraPaths, "/case-study"])];
-  if (!discover) {
-    for (const pathName of paths) {
-      const fetched = await fetchText(`${origin}${pathName === "/" ? "" : pathName}`);
-      pageInventory.push(parsePage(origin, pathName, fetched));
-    }
-  } else {
-    const maxPages = Math.max(1, Math.min(opts?.maxPages || 30, 200));
-    const disallow = robots.ok ? robotsDisallows(robots.body) : [];
-    const queue = newDiscovery(paths);
-    for (const loc of sitemapList) enqueue(queue, crawlablePath(origin, loc), 3, disallow);
-    while (queue.queue.length && pageInventory.length < maxPages) {
-      const pathName = queue.queue.shift()!;
-      const fetched = await fetchText(`${origin}${pathName === "/" ? "" : pathName}`);
-      const page = parsePage(origin, pathName, fetched);
-      page.discoveredVia = paths.includes(pathName)
-        ? "seed"
-        : sitemapList.some((loc) => crawlablePath(origin, loc) === pathName)
-          ? "sitemap"
-          : "link";
-      pageInventory.push(page);
-      if (fetched.ok) {
-        for (const href of page.internalLinks) enqueue(queue, crawlablePath(origin, href), 3, disallow);
-      }
-    }
-  }
+  // The SEO department's crawler (lib/factory/seo-crawler.ts) does the fetching and
+  // extraction now: SSRF-safe fetches, robots/sitemap discovery, clean main text (word
+  // counts no longer include nav/footer boilerplate). mainText is stripped here so the
+  // stored snapshot keeps the exact PageAudit shape it always had. In non-discovery mode
+  // every seed path is fetched, as before (the crawler's own cap still applies at 200).
+  const crawl = await crawlSiteForSeo(origin, {
+    seeds: paths,
+    discover,
+    maxPages: discover ? opts?.maxPages : Math.max(paths.length, opts?.maxPages || 0),
+    robotsTxt: robots.ok ? robots.body : "",
+    sitemapUrls: sitemapList,
+  });
+  const pageInventory: PageAudit[] = crawl.pages.map(({ mainText: _mainText, ...page }) => page);
 
   const brokenLinks: BrokenLink[] = [];
   const seen = new Set<string>();
