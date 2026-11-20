@@ -36,6 +36,17 @@ export default function Footer() {
               {footer.phone}
             </a>
           </p>
+          <p className="text-sm text-slate-400 sm:text-sm">
+            Reviews:{" "}
+            <a
+              href={footer.googleReviewUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-brand-300 hover:underline"
+            >
+              Leave us a Google review
+            </a>
+          </p>
           <address className="text-sm not-italic text-slate-400 sm:text-sm">
             {footer.address.street}, {footer.address.city}, {footer.address.region}{" "}
             {footer.address.postalCode}

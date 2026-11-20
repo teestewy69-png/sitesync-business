@@ -40,6 +40,17 @@ export default function ContactPage() {
           {footer.address.street}, {footer.address.city}, {footer.address.region}{" "}
           {footer.address.postalCode}
         </address>
+        <p className="mt-2 text-base text-slate-400">
+          Worked with us?{" "}
+          <a
+            href={footer.googleReviewUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-brand-300 hover:underline"
+          >
+            Leave us a Google review
+          </a>
+        </p>
       </section>
       <EmailCapture variant="contact" />
     </SitePage>
