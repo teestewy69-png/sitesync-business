@@ -1,5 +1,5 @@
 import { after, NextRequest, NextResponse } from "next/server";
-import { getNotifyEmail, isMailConfigured, sendMail } from "@/lib/mail";
+import { sendSubscribeEmails } from "@/lib/subscribe-mail";
 import {
   appendLead,
   ensureBlobsFromRequest,
@@ -8,7 +8,6 @@ import {
   findLeadByIdempotency,
   findProjectByLeadId,
   stableId,
-  storeInfo,
   updateLead,
 } from "@/lib/store";
 import { asNonEmptyString, isValidEmail, normalizeEmail } from "@/lib/validate";
@@ -16,42 +15,6 @@ import { clientKey, rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-const CHECKLIST_TEXT = `Hey!
-
-Thanks for requesting a Sitesinc website. This is a request, not a purchase. If we accept the project, we send a $997.50 start invoice by email. The remaining $997.50 is due at launch. Optional monitoring is $129/month and can be added later.
-
-Here is the same checklist we run through on every build:
-
-DESIGN
-[ ] Dark or light theme picked deliberately (not the builder default)
-[ ] One clear headline that says what you do and who it's for
-[ ] Your phone number / main CTA visible without scrolling
-[ ] Real photos of your work, not just stock images
-
-COPY
-[ ] Every page answers "what's in it for me?" for the visitor
-[ ] Services listed with plain-language descriptions and prices (or "from" prices)
-[ ] At least one testimonial with a real name
-[ ] A clear next step on every page (call, book, buy)
-
-SEO BASICS
-[ ] Unique title + meta description on every page
-[ ] Your city/service area in the homepage title
-[ ] Google Business Profile claimed and linked
-[ ] Fast hosting + SSL (https)
-
-MONEY PIECES (the ones most sites forget)
-[ ] Lead capture form that goes somewhere you actually check
-[ ] A way to take payment online (Stripe link is enough to start)
-[ ] Email list signup so you own your audience
-[ ] Tracking (even simple analytics) so you know what's working
-
-Website builds are $1,995. $997.50 to start. $997.50 at launch. Optional monitoring $129/month. Cancel anytime. No long-term contract. https://sitesinc.co
-
-Questions? Just reply to this email.
-
-save@sitesinc.co`;
 
 async function readBody(req: NextRequest): Promise<Record<string, unknown>> {
   const type = req.headers.get("content-type") || "";
@@ -188,46 +151,36 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, id: lead.id, projectId, reused: true, duplicate: true });
     }
 
-    // Answer the visitor as soon as the request is saved. The confirmation
-    // and notification emails send after the response (Next `after`), so a
-    // slow or failing mail server can no longer hold the form on "Saving..."
-    // or eat the request. The lead's notificationState still records the
-    // real send outcome, moments later.
-    const notifyEmail = getNotifyEmail();
-    const mailConfigured = isMailConfigured();
-    const storeBackend = storeInfo().backend;
-    const leadCreatedAt = lead.createdAt;
-    after(async () => {
-      let mailed = { sent: false };
-      try {
-        mailed = await sendMail({
-          to: email,
-          subject: "Your Sitesinc website request",
-          text: CHECKLIST_TEXT,
-        });
-        await sendMail({
-          to: notifyEmail,
-          subject: `New website request: ${lead.id}`,
-          text: `New website request\n\nName: ${name}\nEmail: ${email}\nLead ID: ${lead.id}\nProject ID: ${projectId || "not linked"}\nMonitoring interest: ${monitoringInterest ? "yes" : "no"}\nReused existing lead: ${existing ? "yes" : "no"}\nStore: ${storeBackend}\nSent ${leadCreatedAt}\nSMTP configured: ${mailConfigured ? "yes" : "no"}`,
-        });
-      } catch (err) {
-        console.error("Subscribe email error:", err);
-      }
-      try {
-        await updateLead(lead.id, {
-          notificationState: mailed.sent
-            ? "sent"
-            : mailConfigured
-              ? "failed"
-              : "not_configured",
-        });
-      } catch (err) {
-        console.error(
-          "Subscribe notification-state update failed:",
-          err instanceof Error ? `${err.name}: ${err.message}` : "unknown"
-        );
-      }
-    });
+    // Answer the visitor as soon as the request is saved. The emails are
+    // handed to the background notify route — Netlify answers that call
+    // with 202 immediately and the sends run in the background (up to 15
+    // minutes) — so a slow mail server can no longer hold the form on
+    // "Saving...". Next `after` alone did NOT release the response early
+    // on Netlify (the platform held it until the sends finished; proven
+    // live 2026-11-23), so `after` stays only as the fallback for when
+    // the handoff itself fails. The lead's notificationState records the
+    // real send outcome either way.
+    let handedOff = false;
+    try {
+      const handoff = await fetch(
+        new URL("/api/subscribe/notify-background", req.nextUrl.origin),
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-subscribe-secret": process.env.SUBSCRIBE_NOTIFY_SECRET || "",
+          },
+          body: JSON.stringify({ leadId: lead.id }),
+          signal: AbortSignal.timeout(2500),
+        }
+      );
+      handedOff = handoff.status === 202;
+    } catch {
+      handedOff = false;
+    }
+    if (!handedOff) {
+      after(() => sendSubscribeEmails(lead.id));
+    }
 
     return NextResponse.json({ ok: true, id: lead.id, projectId, reused: Boolean(existing) });
   } catch (err) {
