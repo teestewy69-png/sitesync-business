@@ -118,6 +118,14 @@ export type ClientProject = {
    * Never falls back to Sitesinc's GOOGLE_SEARCH_CONSOLE_SITE_URL.
    */
   gscSiteUrl?: string;
+  /** Owner-intake facts (see lib/factory/owner-intake.ts). Optional on legacy projects. */
+  yearsInBusiness?: string;
+  commonJobs?: string;
+  serviceTowns?: string;
+  differentiator?: string;
+  customerStory?: string;
+  licenseInfo?: string;
+  ownerVideoUrl?: string;
 };
 
 export type ClientDomainIQState = {
