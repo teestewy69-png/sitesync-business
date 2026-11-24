@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Check, X } from "lucide-react";
 import SitePage from "@/components/SitePage";
-import PilotOffer from "@/components/PilotOffer";
+import FreeAuditBanner from "@/components/PilotOffer";
 import {
   COMMON_TRADE_FAQS,
   SERVICE_AREA,
@@ -133,7 +133,6 @@ export default function TradeLanding({ trade }: { trade: Trade }) {
               <p className="text-lg font-semibold">Website build</p>
               <p className="mt-4 text-5xl font-bold tracking-tight">$1,995</p>
               <p className="mt-2 text-base text-slate-300">$997.50 to start · $997.50 at launch</p>
-              <p className="mt-2 text-sm text-emerald-300">Pilot pricing: $1,495 for our first 3 clients. Ask if a spot is open.</p>
               <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                 <a href={SITESINC_PHONE_HREF} data-analytics-cta="call" data-analytics-location={`${loc}_pricing`} className="inline-flex items-center justify-center rounded-xl bg-gradient-to-b from-brand-300 to-brand-600 px-5 py-3 text-sm font-semibold text-zinc-950">
                   Talk it over first: {SITESINC_PHONE}
@@ -159,7 +158,7 @@ export default function TradeLanding({ trade }: { trade: Trade }) {
         </div>
       </section>
 
-      <PilotOffer location={trade.slug} />
+      <FreeAuditBanner location={trade.slug} />
 
       <section id="faq" className="border-t border-white/5 bg-black px-6 py-14">
         <div className="mx-auto max-w-3xl">

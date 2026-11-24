@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { CheckCircle2, X } from "lucide-react";
 import content from "@/content.json";
 import { trackLead } from "@/lib/analytics";
-import { GUIDE_OFFER_ID, GUIDE_PATH, GUIDE_TITLE } from "@/lib/lead-guide";
 import {
   DESKTOP_EXIT_TOP_PX,
   DWELL_THRESHOLD_MS,
@@ -36,12 +35,12 @@ function writeSeenAt() {
 }
 
 /**
- * One-time exit-intent popup offering the free guide (and an optional free audit). Decision rules
+ * One-time exit-intent popup offering the free website audit. Decision rules
  * live in lib/exit-intent.ts; this component only wires them to the DOM and
  * mirrors EmailCapture's /api/subscribe contract exactly (same endpoint,
  * payload fields, honeypot, Idempotency-Key, required privacy consent).
  * Mounted globally in app/layout.tsx; self-excludes on commerce, factory,
- * API, and the audit / guide pages themselves.
+ * API, and the audit page itself.
  */
 export default function ExitIntentCapture() {
   const pathname = usePathname() || "/";
@@ -176,8 +175,8 @@ export default function ExitIntentCapture() {
 
     const url = siteUrl.trim();
     const details = url
-      ? `Exit popup — free guide (${GUIDE_TITLE}) + audit my site: ${url}`
-      : `Exit popup — free guide (${GUIDE_TITLE})`;
+      ? `Exit popup — audit my site: ${url}`
+      : "Exit popup — free audit offer";
 
     try {
       const res = await fetch("/api/subscribe", {
@@ -191,7 +190,6 @@ export default function ExitIntentCapture() {
           email,
           privacy,
           monitoring: false,
-          offer: GUIDE_OFFER_ID,
           details,
           company_website: honeypot,
         }),
@@ -202,14 +200,25 @@ export default function ExitIntentCapture() {
       }
       setSuccessMessage(
         data?.warning
-          ? "Saved. The email couldn't send right now, but you can read the guide here now."
+          ? "Request saved — we have your name and email. The confirmation email could not send yet, but we'll follow up from here."
           : url
-            ? "Done. The guide is on its way to your inbox, and we'll email you what we find when we check your site."
-            : "Done. The guide is on its way to your inbox."
+            ? "Request received. Your free website checklist is on its way to your inbox, and we'll email you what we find when we check your site."
+            : "Request received. Your free website checklist is on its way to your inbox."
       );
       setStatus("success");
+      // Fire-and-forget: the confirmation email sends in its own request,
+      // so this form never waits on the mail server. keepalive lets the
+      // call finish even if the visitor moves on right after submitting.
+      if (data?.id) {
+        fetch("/api/subscribe/notify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ leadId: data.id }),
+          keepalive: true,
+        }).catch(() => {});
+      }
       // Only after the lead was saved. No PII in params.
-      trackLead("free_guide_request", { source: "exit_intent" });
+      trackLead("free_audit_request", { source: "exit_intent" });
     } catch (err) {
       submitting.current = false;
       setStatus("error");
@@ -244,7 +253,7 @@ export default function ExitIntentCapture() {
         </button>
 
         <p className="text-xs font-semibold uppercase tracking-wider text-brand-300">
-          Free guide
+          Free website audit
         </p>
         <h2
           id="exit-capture-title"
@@ -253,10 +262,9 @@ export default function ExitIntentCapture() {
           Before you go
         </h2>
         <p className="mt-3 text-base text-slate-400">
-          Get our free guide, &ldquo;{GUIDE_TITLE}.&rdquo; It&apos;s a short,
-          plain-English checklist you can run on your own site in a few
-          minutes. Add your website if you&apos;d also like a free audit. No
-          charge, no sales call.
+          Get a free audit of your current website. We check how it shows up on
+          Google — secure connection, mobile setup, page title, contact info —
+          and email you what we find. No charge, no sales call.
         </p>
 
         {status === "success" ? (
@@ -318,7 +326,7 @@ export default function ExitIntentCapture() {
               name="site_url"
               value={siteUrl}
               onChange={(e) => setSiteUrl(e.target.value)}
-              placeholder="yourbusiness.com (optional, for a free audit)"
+              placeholder="yourbusiness.com (optional)"
               autoComplete="url"
               inputMode="url"
               className="w-full rounded-xl bg-surface-elevated px-4 py-3 text-white ring-1 ring-white/10 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-brand-400"
@@ -357,7 +365,7 @@ export default function ExitIntentCapture() {
               disabled={status === "loading"}
               className="rounded-xl bg-gradient-to-b from-brand-300 to-brand-600 px-6 py-3 text-sm font-semibold text-zinc-950 shadow-glow transition hover:from-brand-200 hover:to-brand-500 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {status === "loading" ? "Sending..." : "Email me the free guide"}
+              {status === "loading" ? "Saving..." : "Email my free audit"}
             </button>
           </form>
         )}
@@ -366,27 +374,17 @@ export default function ExitIntentCapture() {
           <p className="mt-3 text-sm text-red-400">{errorMessage}</p>
         )}
 
-        <p className="mt-4 text-center text-sm">
-          <Link
-            href={GUIDE_PATH}
-            onClick={dismiss}
-            className="font-medium text-brand-300 hover:underline"
-          >
-            Read the guide now
-          </Link>
-          {status !== "success" && (
-            <>
-              {" · "}
-              <Link
-                href="/free-website-audit"
-                onClick={dismiss}
-                className="font-medium text-brand-300 hover:underline"
-              >
-                Or run the audit now
-              </Link>
-            </>
-          )}
-        </p>
+        {status !== "success" && (
+          <p className="mt-4 text-center text-sm">
+            <Link
+              href="/free-website-audit"
+              onClick={dismiss}
+              className="font-medium text-brand-300 hover:underline"
+            >
+              Or run the audit now
+            </Link>
+          </p>
+        )}
 
         <p className="mt-4 text-center text-sm text-slate-400">
           {emailCapture.finePrint}{" "}

@@ -1,5 +1,13 @@
 "use client";
 
+/**
+ * LEGACY (2026-11-23): the instant on-page audit form. The founder replaced
+ * it with the email-capture flow (AuditCaptureForm + /api/free-website-audit
+ * request/send routes) — results are emailed, not shown on the spot. This
+ * component is no longer used by the audit page; kept in the repo only
+ * because the push tooling cannot delete files.
+ */
+
 import { FormEvent, useState } from "react";
 import { CheckCircle2, AlertTriangle, XCircle, Loader2 } from "lucide-react";
 import type { AuditCheck, AuditResult } from "@/lib/site-audit";

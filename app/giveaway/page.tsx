@@ -122,8 +122,7 @@ export default function GiveawayPage() {
           </ul>
           <p className="mt-8 text-center text-sm text-slate-400">
             Can&apos;t wait for a drawing? SitesInc builds real, working websites for a flat
-            one-time fee — pilot pricing of $1,495 for our first 3 clients (regularly $1,995), no
-            subscriptions.
+            one-time fee — $1,995, no subscriptions.
           </p>
         </div>
       </section>

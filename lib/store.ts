@@ -30,7 +30,7 @@ export type Lead = {
   details?: string;
   linkageState?: "linked" | "project_pending";
   idempotencyKey?: string;
-  notificationState?: "sent" | "failed" | "not_configured";
+  notificationState?: "sending" | "sent" | "failed" | "not_configured";
   env?: "staging";
   /** Operator-only pipeline stage; absent means "new". */
   stage?: LeadStage;
@@ -118,15 +118,6 @@ export type ClientProject = {
    * Never falls back to Sitesinc's GOOGLE_SEARCH_CONSOLE_SITE_URL.
    */
   gscSiteUrl?: string;
-  /** Owner first-hand intake answers (lib/factory/owner-intake.ts). Lists are newline-separated. All optional. */
-  yearsInBusiness?: string;
-  commonJobs?: string;
-  serviceTowns?: string;
-  differentiator?: string;
-  customerStory?: string;
-  licenseInfo?: string;
-  /** Optional owner intro video (https YouTube/Vimeo/.mp4). The client-site video section is hidden when empty. */
-  ownerVideoUrl?: string;
 };
 
 export type ClientDomainIQState = {

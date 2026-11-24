@@ -3,7 +3,7 @@ import Link from "next/link";
 import { OG_IMAGE } from "@/lib/og-image";
 import SitePage from "@/components/SitePage";
 import OrgJsonLd from "@/components/OrgJsonLd";
-import PilotOffer from "@/components/PilotOffer";
+import FreeAuditBanner from "@/components/PilotOffer";
 import { SERVICE_AREA, SITESINC_PHONE, SITESINC_PHONE_HREF, TRADES } from "@/data/trades";
 
 const title = "Trade Websites in SoCal | $1,995 Flat | Sitesinc";
@@ -44,7 +44,7 @@ export default function TradesHub() {
           <Link href="/contact" className="text-brand-300 hover:underline">send a request</Link>.
         </p>
       </section>
-      <PilotOffer location="trades_hub" />
+      <FreeAuditBanner location="trades_hub" />
     </SitePage>
   );
 }

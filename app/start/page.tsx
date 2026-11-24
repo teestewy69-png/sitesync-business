@@ -52,8 +52,7 @@ export default function StartPage() {
           </ul>
           <p className="mt-8 text-center text-sm text-slate-400">
             When you&apos;re ready for the site itself: SitesInc builds real, working websites for
-            a flat one-time fee — pilot pricing of $1,495 for our first 3 clients (regularly
-            $1,995), no subscriptions.
+            a flat one-time fee — $1,995, no subscriptions.
           </p>
         </div>
       </section>

@@ -64,6 +64,17 @@ export default function EmailCapture({ variant = "intake" }: { variant?: Variant
           : "Request received. This is not a purchase. If we accept the project, you will get a $997.50 start invoice by email."
       );
       setStatus("success");
+      // Fire-and-forget: the confirmation email sends in its own request,
+      // so this form never waits on the mail server. keepalive lets the
+      // call finish even if the visitor moves on right after submitting.
+      if (data?.id) {
+        fetch("/api/subscribe/notify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ leadId: data.id }),
+          keepalive: true,
+        }).catch(() => {});
+      }
       // Only after the lead was saved. No PII in params.
       trackLead("website_build_request", { monitoring_opt_in: monitoring, source: variant });
     } catch (err) {

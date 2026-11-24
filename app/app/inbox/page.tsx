@@ -2,6 +2,7 @@ import FactoryShell from "@/components/factory/Shell";
 import LeadStageSelect from "@/components/factory/LeadStageSelect";
 import { LEAD_MAGNET_SOURCE } from "@/lib/lead-magnet";
 import { FLIPRADAR_BOOK_SOURCE, FREE_BOOK_SOURCE } from "@/lib/free-book";
+import { FREE_AUDIT_SOURCE } from "@/lib/audit-mail";
 import { stageOf } from "@/lib/lead-stage";
 import { ensureBlobsFromRequest, listInquiries, listLeads, listProjects, storeInfo } from "@/lib/store";
 import { readWorkspace } from "@/lib/factory/workspace";
@@ -30,6 +31,7 @@ export default async function InboxPage() {
   const magnetLeads = leads.filter((lead) => lead.source === LEAD_MAGNET_SOURCE);
   const freeBookLeads = leads.filter((lead) => lead.source === FREE_BOOK_SOURCE);
   const flipRadarLeads = leads.filter((lead) => lead.source === FLIPRADAR_BOOK_SOURCE);
+  const auditLeads = leads.filter((lead) => lead.source === FREE_AUDIT_SOURCE);
 
   return (
     <FactoryShell title="Private intake inbox">
@@ -131,6 +133,37 @@ export default async function InboxPage() {
               <span className="block text-slate-400">
                 {lead.details || "business kind not given"}
                 {lead.notificationState ? ` · ebook email ${lead.notificationState}` : ""}
+                {lead.env === "staging" ? " · env staging" : ""} · {lead.createdAt}
+              </span>
+              <LeadStageSelect id={lead.id} stage={stageOf(lead)} who={lead.name} />
+            </li>
+          ))
+        )}
+      </ul>
+
+      <h2 className="mt-8 text-lg font-semibold">
+        Free website audit requests ({auditLeads.length})
+      </h2>
+      <p className="mt-1 text-sm text-slate-400">
+        People who asked for a free audit on /free-website-audit — the results and the free
+        ebook go out by email; the audited site is in the details line.{" "}
+        <a
+          className="text-brand-300 hover:underline"
+          href="/api/factory/export?format=leads-csv&source=free-audit"
+        >
+          Download this list as CSV
+        </a>
+      </p>
+      <ul className="mt-3 space-y-2 text-sm">
+        {auditLeads.length === 0 ? (
+          <li className="text-slate-500">No audit requests yet.</li>
+        ) : (
+          auditLeads.map((lead) => (
+            <li key={lead.id} className="rounded-xl border border-white/10 px-4 py-3">
+              <strong>{lead.name}</strong> · {lead.email}
+              <span className="block text-slate-400">
+                {lead.details || "site not given"}
+                {lead.notificationState ? ` · audit email ${lead.notificationState}` : ""}
                 {lead.env === "staging" ? " · env staging" : ""} · {lead.createdAt}
               </span>
               <LeadStageSelect id={lead.id} stage={stageOf(lead)} who={lead.name} />

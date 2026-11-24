@@ -1,8 +1,8 @@
 /**
  * Trade landing pages (/trades/<slug>). Copy rules: facts only. No invented stats,
  * testimonials, client counts, rankings or guarantees. Every number here comes from
- * the Sitesinc offer: $1,995 flat, 50% ($997.50) to start, 50% at launch, pilot
- * $1,495 for the first 3 clients, optional $129/mo monitoring (1st month free).
+ * the Sitesinc offer: $1,995 flat, 50% ($997.50) to start, 50% at launch,
+ * optional $129/mo monitoring (1st month free).
  */
 import { LIVE_PAYMENT_LINKS as PAYMENT_LINKS } from "@/lib/payment-links";
 
@@ -270,7 +270,7 @@ export const COMMON_TRADE_FAQS = [
   {
     question: "How much does it cost?",
     answer:
-      "The website build is $1,995 flat: $997.50 to start and $997.50 at launch. Pilot pricing is $1,495 for our first 3 clients. Monitoring is optional: 1st month free, then $129/mo.",
+      "The website build is $1,995 flat: $997.50 to start and $997.50 at launch. Monitoring is optional: 1st month free, then $129/mo.",
   },
   {
     question: "What areas do you serve?",

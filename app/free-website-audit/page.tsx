@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import SitePage from "@/components/SitePage";
 import OrgJsonLd from "@/components/OrgJsonLd";
-import AuditForm from "@/components/AuditForm";
+import AuditCaptureForm from "@/components/AuditCaptureForm";
 import content from "@/content.json";
 import { OG_IMAGE } from "@/lib/og-image";
 import { LOCATIONS_ORIGIN } from "@/lib/locations";
@@ -10,7 +10,7 @@ import { COMPARE } from "@/lib/compare";
 
 const title = "Free Website Audit for Small Businesses | Sitesinc";
 const description =
-  "Free website diagnostic for small businesses: 7 quick checks in seconds, then a deep audit that crawls up to 10 pages and scores your whole site — broken links, missing descriptions, contact details that disagree. No email needed.";
+  "Free website audit for small businesses: give us your website address and email, and we crawl up to 10 pages, score your site 0-100, and email you the results — broken links, missing descriptions, contact details that disagree — with a free copy of our ebook.";
 
 export const metadata: Metadata = {
   title,
@@ -20,22 +20,28 @@ export const metadata: Metadata = {
   openGraph: { title, description, url: `${LOCATIONS_ORIGIN}/free-website-audit`, images: [OG_IMAGE] },
 };
 
+const GETS = [
+  "Your audit results, emailed to you — what we checked, what we found, and your site's score out of 100",
+  "A free copy of our ebook, What Your Web Builder Won't Tell You",
+  "No obligation — the results and the ebook are yours to keep, and the next step is yours",
+];
+
 const CHECKS = [
-  ["Secure connection (HTTPS)", "Does the page load over HTTPS? Browsers warn visitors on sites that don't."],
-  ["Mobile-ready setup", "Does the page declare a mobile viewport so phones don't show a shrunken desktop page?"],
-  ["Page load (quick check)", "How long our server took to load the page, and how big the HTML is. This is a basic check, not a full speed test."],
-  ["Page title", "Is there a title, and is it a sensible length for Google results?"],
-  ["Search description", "Is there a meta description for your search listing?"],
-  ["Contact info on the page", "Is there a phone number, an email link, a contact page link, and a tap-to-call link for phones?"],
-  ["Link to your Google Business Profile", "Does the page link to your Google Maps or Business Profile listing?"],
-  ["Full-site deep audit", "After the quick checks, we crawl up to 10 pages of your site and score it 0-100: broken links, missing titles and descriptions, phone numbers or addresses that disagree between pages, and pages search engines can't reach."],
+  ["Secure connection (HTTPS)", "Does the site load over HTTPS? Browsers warn visitors on sites that don't."],
+  ["Mobile-ready setup", "Does the site declare a mobile viewport so phones don't show a shrunken desktop page?"],
+  ["Page titles and search descriptions", "Does every page have a title and a meta description at a sensible length for Google results?"],
+  ["Broken links and unreachable pages", "Do internal links lead somewhere real, and can search engines reach every page?"],
+  ["Contact details that agree", "Do the phone numbers and addresses match across pages — or do different pages tell visitors different things?"],
+  ["Tap-to-call and contact paths", "Can a phone visitor call you in one tap, and is there a working contact path?"],
+  ["Link to your Google Business Profile", "Does the site link to your Google Maps or Business Profile listing?"],
+  ["A score for the whole site", "We crawl up to 10 pages and score the site 0-100, with the findings ranked high, medium and low."],
 ];
 
 const FAQ = [
-  ["What does the audit actually do?", "First it loads the one page you enter, the same way a visitor's browser would, and runs seven quick checks on what comes back. Then the deep audit crawls up to 10 pages of your site and scores what it finds — broken links, missing descriptions, contact details that disagree between pages, and more. Each result tells you what we saw."],
+  ["What does the audit actually do?", "We crawl up to 10 pages of your site and score what we find — broken links, missing titles and descriptions, contact details that disagree between pages, pages search engines can't reach, and more — then email you the results with your score."],
   ["What does it not do?", "It is not a full SEO, design or traffic review. It does not measure Google's Core Web Vitals, rankings or traffic. For a deeper speed test, use Google PageSpeed Insights."],
-  ["Do you store my website address?", "No. The audit runs when you press the button and does not save your address or ask for your email."],
-  ["Does it work on every site?", "No. Some sites block automated visitors or load most of their content with JavaScript, so the results can miss things. If a result looks wrong, call us and we'll check it by hand."],
+  ["Why do you need my email?", "Because the results come back to you by email, along with your free ebook. We save your website address and email with your audit so we can send it. If you'd rather not hear from us again, reply to the email and say so."],
+  ["Does it work on every site?", "No. Some sites block automated visitors or load most of their content with JavaScript, so the results can miss things. If we can't get in, we'll email you — and if you ask, we'll check your site by hand."],
 ];
 
 export default function FreeWebsiteAudit() {
@@ -65,14 +71,23 @@ export default function FreeWebsiteAudit() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <section className="mx-auto max-w-3xl px-6 py-16">
         <p className="text-xs font-semibold uppercase tracking-wider text-brand-300">Free tool</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Free website diagnostic for your small business</h1>
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Get a free audit of your website, sent to your inbox</h1>
         <p className="mt-3 text-base text-slate-300">
-          Type in your website address and get a free diagnostic: seven plain checks in seconds, then a deep audit that crawls
-          up to 10 pages of your site and scores it. No email, no sales call. If your site needs more
-          than a few fixes, we build real, working websites, not subscriptions like the rest, for $1,995 flat.
+          Enter your website address and your email, and we&rsquo;ll run the audit and send the results to your inbox.
         </p>
+
+        <h2 className="mt-10 text-xl font-semibold">What you get</h2>
+        <ul className="mt-3 space-y-2">
+          {GETS.map((item) => (
+            <li key={item} className="flex gap-2 text-base text-slate-300">
+              <span aria-hidden="true" className="text-emerald-300">✓</span>
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+
         <div className="mt-8">
-          <AuditForm />
+          <AuditCaptureForm />
         </div>
 
         <h2 className="mt-14 text-2xl font-semibold">What we check</h2>

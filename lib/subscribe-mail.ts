@@ -50,7 +50,12 @@ export async function sendSubscribeEmails(leadId: string): Promise<void> {
     console.error("Subscribe email: lead not found:", leadId);
     return;
   }
-  if (lead.notificationState === "sent") return;
+  if (lead.notificationState === "sent" || lead.notificationState === "sending") return;
+
+  // Claim the lead before sending: if a second trigger fires while this
+  // send is in flight (double submit, platform retry, two paths racing),
+  // it sees "sending" and skips instead of duplicating the email.
+  await updateLead(lead.id, { notificationState: "sending" });
 
   const notifyEmail = getNotifyEmail();
   const mailConfigured = isMailConfigured();

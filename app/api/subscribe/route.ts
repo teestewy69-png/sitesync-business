@@ -1,5 +1,4 @@
-import { after, NextRequest, NextResponse } from "next/server";
-import { sendSubscribeEmails } from "@/lib/subscribe-mail";
+import { NextRequest, NextResponse } from "next/server";
 import {
   appendLead,
   ensureBlobsFromRequest,
@@ -151,36 +150,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, id: lead.id, projectId, reused: true, duplicate: true });
     }
 
-    // Answer the visitor as soon as the request is saved. The emails are
-    // handed to the background notify route — Netlify answers that call
-    // with 202 immediately and the sends run in the background (up to 15
-    // minutes) — so a slow mail server can no longer hold the form on
-    // "Saving...". Next `after` alone did NOT release the response early
-    // on Netlify (the platform held it until the sends finished; proven
-    // live 2026-11-23), so `after` stays only as the fallback for when
-    // the handoff itself fails. The lead's notificationState records the
-    // real send outcome either way.
-    let handedOff = false;
-    try {
-      const handoff = await fetch(
-        new URL("/api/subscribe/notify-background", req.nextUrl.origin),
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-subscribe-secret": process.env.SUBSCRIBE_NOTIFY_SECRET || "",
-          },
-          body: JSON.stringify({ leadId: lead.id }),
-          signal: AbortSignal.timeout(2500),
-        }
-      );
-      handedOff = handoff.status === 202;
-    } catch {
-      handedOff = false;
-    }
-    if (!handedOff) {
-      after(() => sendSubscribeEmails(lead.id));
-    }
+    // Answer the visitor as soon as the request is saved. This route does
+    // no mail work at all: the capture forms fire a separate
+    // /api/subscribe/notify call (fire-and-forget) that sends the emails
+    // in its own invocation, so the mail server's speed never reaches
+    // this response. Two earlier attempts failed on Netlify — awaiting
+    // the sends held the form ~10s, and both Next `after` and a
+    // background-route handoff kept the sends on this response's clock
+    // (the handoff version also produced a duplicate email when its
+    // fallback raced it; all proven live 2026-11-23). The lead's
+    // notificationState records the real send outcome.
 
     return NextResponse.json({ ok: true, id: lead.id, projectId, reused: Boolean(existing) });
   } catch (err) {
