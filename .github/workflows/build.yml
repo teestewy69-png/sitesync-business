@@ -1,0 +1,35 @@
+name: Build check
+
+# Runs on every push to master so a commit that does not build shows a red X
+# on GitHub immediately, instead of failing silently at Netlify deploy time.
+# Node 22 matches the version pinned for Netlify builds in netlify.toml.
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies (clean, from the lockfile)
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      # Informational only: the suite has 7 known pre-existing failures
+      # (baseline 374/381, unchanged since 2026-11-23), so this step reports
+      # without failing the check. The build step above is the gate.
+      - name: Test suite (informational)
+        if: always()
+        continue-on-error: true
+        run: npm test
