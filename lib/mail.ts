@@ -29,9 +29,9 @@ function createTransporter(mode: "ssl465" | "starttls587") {
       secure: false,
       requireTLS: true,
       auth: { user, pass },
-      connectionTimeout: 8000,
-      greetingTimeout: 8000,
-      socketTimeout: 12000,
+      connectionTimeout: 5000,
+      greetingTimeout: 5000,
+      socketTimeout: 8000,
     });
   }
 
@@ -40,9 +40,9 @@ function createTransporter(mode: "ssl465" | "starttls587") {
     port: 465,
     secure: true,
     auth: { user, pass },
-    connectionTimeout: 8000,
-    greetingTimeout: 8000,
-    socketTimeout: 12000,
+    connectionTimeout: 5000,
+    greetingTimeout: 5000,
+    socketTimeout: 8000,
   });
 }
 
@@ -89,9 +89,9 @@ function createZohoTransporter(mode: "ssl465" | "starttls587") {
       secure: false,
       requireTLS: true,
       auth: { user, pass },
-      connectionTimeout: 8000,
-      greetingTimeout: 8000,
-      socketTimeout: 12000,
+      connectionTimeout: 5000,
+      greetingTimeout: 5000,
+      socketTimeout: 8000,
     });
   }
 
@@ -100,9 +100,9 @@ function createZohoTransporter(mode: "ssl465" | "starttls587") {
     port: 465,
     secure: true,
     auth: { user, pass },
-    connectionTimeout: 8000,
-    greetingTimeout: 8000,
-    socketTimeout: 12000,
+    connectionTimeout: 5000,
+    greetingTimeout: 5000,
+    socketTimeout: 8000,
   });
 }
 
@@ -128,7 +128,7 @@ export async function sendFlipRadarMail(opts: {
     ...(opts.html ? { html: stagingMailHtml(opts.html) } : {}),
   };
 
-  const modes: Array<"ssl465" | "starttls587"> = ["ssl465", "starttls587"];
+  const modes: Array<"ssl465" | "starttls587"> = ["starttls587", "ssl465"];
   let lastAuthFail = false;
 
   for (const mode of modes) {
@@ -192,7 +192,7 @@ export async function sendMail(opts: {
     replyTo: opts.replyTo,
   };
 
-  const modes: Array<"ssl465" | "starttls587"> = ["ssl465", "starttls587"];
+  const modes: Array<"ssl465" | "starttls587"> = ["starttls587", "ssl465"];
   let lastAuthFail = false;
 
   for (const mode of modes) {

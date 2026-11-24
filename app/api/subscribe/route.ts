@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
 import { getNotifyEmail, isMailConfigured, sendMail } from "@/lib/mail";
 import {
   appendLead,
@@ -13,7 +13,6 @@ import {
 } from "@/lib/store";
 import { asNonEmptyString, isValidEmail, normalizeEmail } from "@/lib/validate";
 import { clientKey, rateLimit } from "@/lib/rate-limit";
-import { GUIDE_OFFER_ID, GUIDE_TITLE, guideEmailText } from "@/lib/lead-guide";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -89,8 +88,6 @@ export async function POST(req: NextRequest) {
     const monitoringInterest = asFlag(body?.monitoring);
     const goals = asNonEmptyString(body?.goals, 2000);
     const details = asNonEmptyString(body?.details, 4000);
-    // Free guide (exit-intent pop-up, /free-guide): same lead capture, but the visitor gets the guide email.
-    const wantsGuide = asNonEmptyString(body?.offer, 60) === GUIDE_OFFER_ID;
     const idempotencyKey =
       asNonEmptyString(req.headers.get("idempotency-key"), 120) ||
       asNonEmptyString(body?.idempotencyKey, 120);
@@ -156,7 +153,7 @@ export async function POST(req: NextRequest) {
           null;
         const project = await intakeToProject(
           "subscribe",
-          wantsGuide ? "Free guide lead" : "Website build request",
+          "Website build request",
           lead.id,
           monitoringInterest,
           {
@@ -191,38 +188,47 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, id: lead.id, projectId, reused: true, duplicate: true });
     }
 
-    let mailed = { sent: false };
-    try {
-      mailed = await sendMail(
-        wantsGuide
-          ? { to: email, subject: `Your free guide: ${GUIDE_TITLE}`, text: guideEmailText() }
-          : { to: email, subject: "Your Sitesinc website request", text: CHECKLIST_TEXT }
-      );
-      await sendMail({
-        to: getNotifyEmail(),
-        subject: wantsGuide ? `New free guide lead: ${lead.id}` : `New website request: ${lead.id}`,
-        text: `${wantsGuide ? `New free guide lead (${GUIDE_TITLE})` : "New website request"}\n\nName: ${name}\nDetails: ${details || "-"}\nEmail: ${email}\nLead ID: ${lead.id}\nProject ID: ${projectId || "not linked"}\nMonitoring interest: ${monitoringInterest ? "yes" : "no"}\nReused existing lead: ${existing ? "yes" : "no"}\nStore: ${storeInfo().backend}\nSent ${lead.createdAt}\nSMTP configured: ${isMailConfigured() ? "yes" : "no"}`,
-      });
-    } catch (err) {
-      console.error("Subscribe email error:", err);
-    }
+    // Answer the visitor as soon as the request is saved. The confirmation
+    // and notification emails send after the response (Next `after`), so a
+    // slow or failing mail server can no longer hold the form on "Saving..."
+    // or eat the request. The lead's notificationState still records the
+    // real send outcome, moments later.
+    const notifyEmail = getNotifyEmail();
+    const mailConfigured = isMailConfigured();
+    const storeBackend = storeInfo().backend;
+    const leadCreatedAt = lead.createdAt;
+    after(async () => {
+      let mailed = { sent: false };
+      try {
+        mailed = await sendMail({
+          to: email,
+          subject: "Your Sitesinc website request",
+          text: CHECKLIST_TEXT,
+        });
+        await sendMail({
+          to: notifyEmail,
+          subject: `New website request: ${lead.id}`,
+          text: `New website request\n\nName: ${name}\nEmail: ${email}\nLead ID: ${lead.id}\nProject ID: ${projectId || "not linked"}\nMonitoring interest: ${monitoringInterest ? "yes" : "no"}\nReused existing lead: ${existing ? "yes" : "no"}\nStore: ${storeBackend}\nSent ${leadCreatedAt}\nSMTP configured: ${mailConfigured ? "yes" : "no"}`,
+        });
+      } catch (err) {
+        console.error("Subscribe email error:", err);
+      }
+      try {
+        await updateLead(lead.id, {
+          notificationState: mailed.sent
+            ? "sent"
+            : mailConfigured
+              ? "failed"
+              : "not_configured",
+        });
+      } catch (err) {
+        console.error(
+          "Subscribe notification-state update failed:",
+          err instanceof Error ? `${err.name}: ${err.message}` : "unknown"
+        );
+      }
+    });
 
-    if (!mailed.sent) {
-      await updateLead(lead.id, {
-        notificationState: isMailConfigured() ? "failed" : "not_configured",
-      });
-      return NextResponse.json({
-        ok: true,
-        id: lead.id,
-        projectId,
-        reused: Boolean(existing),
-        warning: wantsGuide
-          ? "Saved. We have your name and email. The guide email could not send yet."
-          : "Request saved. This was a request, not a purchase. We have your name and email internally. The confirmation email could not send yet.",
-      });
-    }
-
-    await updateLead(lead.id, { notificationState: "sent" });
     return NextResponse.json({ ok: true, id: lead.id, projectId, reused: Boolean(existing) });
   } catch (err) {
     console.error(
