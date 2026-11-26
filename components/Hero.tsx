@@ -56,7 +56,7 @@ export default function Hero() {
           />
           <Image
             src="/images/hero-owner.jpg"
-            alt="A barber in his own shop, smiling as he answers a call from a customer"
+            alt="A salon owner in her own shop, smiling as she answers a call from a customer"
             width={1920}
             height={1280}
             priority
