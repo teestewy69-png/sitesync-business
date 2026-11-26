@@ -16,6 +16,28 @@ export default function robots(): MetadataRoute.Robots {
         allow: "/",
         disallow: [...PUBLIC_NOINDEX_DISALLOWS],
       },
+      {
+        // AI training / learning crawlers — blocked site-wide (Tony, 2026-11-25).
+        // AI answer/search bots (OAI-SearchBot, PerplexityBot, Claude-SearchBot,
+        // Googlebot, Bingbot) are intentionally NOT listed: they follow the
+        // general rule above so the site can still be cited in AI answers.
+        userAgent: [
+          "GPTBot",
+          "Google-Extended",
+          "CCBot",
+          "anthropic-ai",
+          "ClaudeBot",
+          "Meta-ExternalAgent",
+          "Bytespider",
+          "Applebot-Extended",
+          "cohere-ai",
+          "AI2Bot",
+          "Diffbot",
+          "ImagesiftBot",
+          "Omgilibot",
+        ],
+        disallow: "/",
+      },
     ],
     sitemap: "https://sitesinc.co/sitemap.xml",
   };
