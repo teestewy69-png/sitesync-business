@@ -5,15 +5,15 @@ import SitePage from "@/components/SitePage";
 import OrgJsonLd from "@/components/OrgJsonLd";
 
 export const metadata: Metadata = {
-  title: "DMCA Copyright & Acceptable Use Policy | Sitesinc",
+  title: "DMCA Copyright & Acceptable Use Policy | SitesInc",
   description:
-    "Digital Millennium Copyright Act (DMCA) notice procedure and Acceptable Use Policy for Sitesinc (sitesinc.co).",
+    "Digital Millennium Copyright Act (DMCA) notice procedure and Acceptable Use Policy for SitesInc (sitesinc.co).",
   alternates: { canonical: "/dmca" },
   robots: { index: true, follow: true },
   openGraph: {
-    title: "DMCA Copyright & Acceptable Use Policy | Sitesinc",
+    title: "DMCA Copyright & Acceptable Use Policy | SitesInc",
     description:
-      "Digital Millennium Copyright Act (DMCA) notice procedure and Acceptable Use Policy for Sitesinc (sitesinc.co).",
+      "Digital Millennium Copyright Act (DMCA) notice procedure and Acceptable Use Policy for SitesInc (sitesinc.co).",
     url: "/dmca",
     images: [OG_IMAGE],
   },
@@ -34,7 +34,7 @@ export default function DmcaPage() {
         <div className="mt-8 space-y-8 text-base leading-7 text-slate-300">
           <section>
             <p>
-              Sitesinc respects the intellectual property rights of others and complies with the Digital Millennium Copyright Act (17 U.S.C. &sect; 512).
+              SitesInc respects the intellectual property rights of others and complies with the Digital Millennium Copyright Act (17 U.S.C. &sect; 512).
             </p>
           </section>
 
@@ -61,7 +61,7 @@ export default function DmcaPage() {
               2. Acceptable Use Policy
             </h2>
             <p className="mt-2">
-              Users of sitesinc.co and client sites built by Sitesinc may not use our services or infrastructure to transmit unlawful, defamatory, infringing, or malicious material, attempt unauthorized access to administrative endpoints, or perform automated denial-of-service or scraping attacks. See our{" "}
+              Users of sitesinc.co and client sites built by SitesInc may not use our services or infrastructure to transmit unlawful, defamatory, infringing, or malicious material, attempt unauthorized access to administrative endpoints, or perform automated denial-of-service or scraping attacks. See our{" "}
               <Link href="/terms" className="text-sky-400 underline">Terms of Service</Link> for full contractual terms.
             </p>
           </section>

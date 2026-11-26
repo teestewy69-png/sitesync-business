@@ -52,9 +52,19 @@ export type JsonLdNode = Record<string, unknown>;
 
 /** A crawled page plus generator-side extras parsed from the same fetched HTML: its JSON-LD blocks
  * (parsePage itself only records the type names), its normalized visible text (Tier 3: contact-signal
- * extraction and near-duplicate detection; memory-only, never persisted), and whether it embeds a
- * Google Map. Hand-built fixtures may omit all three; the checks that need them then stay silent. */
-export type AuditedPage = PageAudit & { jsonLd?: JsonLdNode[]; text?: string; embedsMap?: boolean };
+ * extraction and near-duplicate detection; memory-only, never persisted), whether it embeds a
+ * Google Map, and three raw-HTML monitor signals parsePage doesn't keep — whether a Google
+ * Analytics / Tag Manager tag is present, whether the page sets a mobile viewport, and the full
+ * set of JSON-LD @type names found anywhere in its blocks (nested types included).
+ * Hand-built fixtures may omit all of these; the checks that need them then stay silent. */
+export type AuditedPage = PageAudit & {
+  jsonLd?: JsonLdNode[];
+  text?: string;
+  embedsMap?: boolean;
+  hasAnalytics?: boolean;
+  hasViewport?: boolean;
+  schemaTypesFound?: string[];
+};
 
 /** Visible text of a page: script/style/comments stripped, tags removed, whitespace collapsed. */
 export function visibleText(html: string): string {
@@ -75,6 +85,16 @@ export function visibleText(html: string): string {
 /** True when the page embeds a Google Map (an iframe pointing at Google Maps). */
 export function detectMapEmbed(html: string): boolean {
   return /<iframe[^>]+src=["'][^"']*(?:google\.[a-z.]+\/maps|maps\.google\.)/i.test(html);
+}
+
+/** True when the page carries a Google Analytics (GA4) or Google Tag Manager tag. */
+export function detectAnalytics(html: string): boolean {
+  return /googletagmanager\.com|google-analytics\.com|\bgtag\s*\(|GTM-[A-Z0-9]{4,}|\bG-[A-Z0-9]{8,}\b/i.test(html);
+}
+
+/** True when the page sets a mobile viewport (<meta name="viewport">). */
+export function detectViewport(html: string): boolean {
+  return /<meta[^>]+name\s*=\s*["']viewport["']/i.test(html);
 }
 
 /**
@@ -107,6 +127,37 @@ export function parseJsonLd(html: string): JsonLdNode[] {
   return nodes;
 }
 
+/**
+ * Every @type named in parsed JSON-LD nodes, recursing into nested blocks (an Offer inside a
+ * Product, an item inside a list) and @type arrays — sorted and de-duplicated.
+ */
+function collectSchemaTypes(nodes: JsonLdNode[]): string[] {
+  const found = new Set<string>();
+  const visit = (value: unknown) => {
+    if (Array.isArray(value)) {
+      for (const item of value) visit(item);
+      return;
+    }
+    if (!value || typeof value !== "object") return;
+    const raw = (value as JsonLdNode)["@type"];
+    for (const t of Array.isArray(raw) ? raw : [raw]) {
+      if (typeof t === "string") found.add(t);
+    }
+    for (const item of Object.values(value as JsonLdNode)) visit(item);
+  };
+  for (const node of nodes) visit(node);
+  return [...found].sort();
+}
+
+/**
+ * Every @type named anywhere in the page's JSON-LD. parsePage's schemaTypes records only the
+ * top-level names; the schema-expectation checks need the full set, nested types included.
+ * A page with no (parseable) JSON-LD records an empty set — a real measurement, not a gap.
+ */
+export function detectSchemaTypes(html: string): string[] {
+  return collectSchemaTypes(parseJsonLd(html));
+}
+
 export type CrawlResult = {
   origin: string;
   pages: AuditedPage[];
@@ -128,18 +179,28 @@ function sitemapLocPaths(origin: string, xml: string): string[] {
   return [...new Set(paths)];
 }
 
-export async function crawlSite(startUrl: string, opts: { maxPages?: number; budgetMs?: number } = {}): Promise<CrawlResult> {
+export async function crawlSite(
+  startUrl: string,
+  opts: { maxPages?: number; budgetMs?: number; concurrency?: number; fetchTimeoutMs?: number } = {}
+): Promise<CrawlResult> {
   const maxPages = Math.min(Math.max(1, opts.maxPages ?? SEO_AUDIT_PAGE_LIMIT), SEO_AUDIT_PAGE_LIMIT);
   // Callers on a request clock (the public free audit) can ask for a shorter crawl; the budget
   // never exceeds the standard one, and a crawl that hits it returns the pages it has.
   const budgetMs = Math.min(CRAWL_BUDGET_MS, Math.max(5_000, opts.budgetMs ?? CRAWL_BUDGET_MS));
+  // Bounded parallelism for the page loop (default 1 = the original sequential crawl) and an
+  // optional per-fetch timeout override; both exist so a caller on a short clock can cover a
+  // whole site inside its budget. Every fetch still goes through safeFetchText and its SSRF
+  // guards — concurrency changes scheduling, never the fetch path.
+  const concurrency = Math.min(8, Math.max(1, Math.floor(opts.concurrency ?? 1)));
+  const fetchTimeoutMs = opts.fetchTimeoutMs && opts.fetchTimeoutMs > 0 ? opts.fetchTimeoutMs : undefined;
+  const fetchOpts = fetchTimeoutMs ? { timeoutMs: fetchTimeoutMs } : {};
   let start: URL;
   try {
     start = assertSafeUrl(startUrl);
   } catch (err) {
     throw new NonRetryableError(err instanceof UnsafeUrlError ? `Cannot audit that URL: ${err.message}` : "Cannot audit that URL.");
   }
-  const first = await safeFetchText(start.toString());
+  const first = await safeFetchText(start.toString(), fetchOpts);
   if (!first.ok) {
     if (/private|reserved|not allowed|credentials|ports/i.test(first.error)) {
       throw new NonRetryableError(`Cannot audit that URL: ${first.error}`);
@@ -151,8 +212,8 @@ export async function crawlSite(startUrl: string, opts: { maxPages?: number; bud
   const deadline = Date.now() + budgetMs;
 
   const [robots, sitemap] = await Promise.all([
-    safeFetchText(`${origin}/robots.txt`, { maxBytes: 200_000 }),
-    safeFetchText(`${origin}/sitemap.xml`, { maxBytes: 1_000_000 }),
+    safeFetchText(`${origin}/robots.txt`, { maxBytes: 200_000, ...fetchOpts }),
+    safeFetchText(`${origin}/sitemap.xml`, { maxBytes: 1_000_000, ...fetchOpts }),
   ]);
   const disallows = robots.ok ? robotsDisallows(robots.body) : [];
   const sitemapOk = sitemap.ok && /<urlset|<sitemapindex/i.test(sitemap.body);
@@ -179,6 +240,9 @@ export async function crawlSite(startUrl: string, opts: { maxPages?: number; bud
     jsonLd: parseJsonLd(first.body),
     text: visibleText(first.body),
     embedsMap: detectMapEmbed(first.body),
+    hasAnalytics: detectAnalytics(first.body),
+    hasViewport: detectViewport(first.body),
+    schemaTypesFound: detectSchemaTypes(first.body),
   };
   firstPage.discoveredVia = "seed";
   pages.push(firstPage);
@@ -186,20 +250,30 @@ export async function crawlSite(startUrl: string, opts: { maxPages?: number; bud
     for (const href of page.internalLinks) offer(crawlablePath(origin, href), "link");
   };
   harvest(firstPage);
+  // Pages are fetched in queue order, in batches of `concurrency`; each batch is parsed and
+  // harvested in order before the next begins, so discovery stays breadth-first and a batch
+  // that crosses the deadline still returns everything it managed to fetch.
   while (discovery.queue.length && pages.length < maxPages && Date.now() < deadline) {
-    const p = discovery.queue.shift()!;
-    const fetched = await safeFetchText(`${origin}${p}`);
-    if (fetched.ok && new URL(fetched.finalUrl).origin !== origin) continue;
-    if (fetched.contentType && !/html/i.test(fetched.contentType)) continue;
-    const page: AuditedPage = {
-      ...parsePage(origin, p, fetched),
-      jsonLd: parseJsonLd(fetched.body),
-      text: visibleText(fetched.body),
-      embedsMap: detectMapEmbed(fetched.body),
-    };
-    page.discoveredVia = via.get(p) ?? "link";
-    pages.push(page);
-    if (fetched.ok) harvest(page);
+    const batch = discovery.queue.splice(0, Math.min(concurrency, maxPages - pages.length));
+    const fetchedBatch = await Promise.all(batch.map((p) => safeFetchText(`${origin}${p}`, fetchOpts)));
+    for (let i = 0; i < batch.length; i++) {
+      const p = batch[i];
+      const fetched = fetchedBatch[i];
+      if (fetched.ok && new URL(fetched.finalUrl).origin !== origin) continue;
+      if (fetched.contentType && !/html/i.test(fetched.contentType)) continue;
+      const page: AuditedPage = {
+        ...parsePage(origin, p, fetched),
+        jsonLd: parseJsonLd(fetched.body),
+        text: visibleText(fetched.body),
+        embedsMap: detectMapEmbed(fetched.body),
+        hasAnalytics: detectAnalytics(fetched.body),
+        hasViewport: detectViewport(fetched.body),
+        schemaTypesFound: detectSchemaTypes(fetched.body),
+      };
+      page.discoveredVia = via.get(p) ?? "link";
+      pages.push(page);
+      if (fetched.ok) harvest(page);
+    }
   }
 
   // Link health: every internal target either was crawled (status known) or gets one light probe.
@@ -229,7 +303,7 @@ export async function crawlSite(startUrl: string, opts: { maxPages?: number; bud
     .slice(0, PROBE_LIMIT);
   for (const target of probeTargets) {
     if (Date.now() >= deadline) break;
-    const probe = await safeFetchText(`${origin}${target}`, { maxBytes: 32_768, timeoutMs: 6_000 });
+    const probe = await safeFetchText(`${origin}${target}`, { maxBytes: 32_768, timeoutMs: fetchTimeoutMs ?? 6_000 });
     if (probe.status >= 400) pushBroken(target, probe.status, probe.error || `HTTP ${probe.status}`);
     else if (!probe.ok && probe.status === 0 && !/abort|timed?\s*out/i.test(probe.error)) {
       // A timeout can be a slow page rather than a missing one; only hard failures count as broken.
@@ -551,6 +625,97 @@ export function auditIssues(result: CrawlResult, opts: AuditOptions = {}): Issue
     }
     if (schema.includes("InvalidJSON-LD")) add("medium", "site", "Structured data contains invalid JSON.", "Fix the JSON-LD block so search engines can read it.");
   }
+
+  // Monitor signals recorded from the raw HTML at crawl time: analytics presence and the mobile
+  // viewport. Both stay silent unless the crawl actually recorded the signal — hand-built
+  // fixtures and older crawls omit the fields, and an unmeasured check must not read as a
+  // failure. Only healthy pages count: an error page's error template proves nothing either way.
+  const healthyPages = result.pages.filter((p) => !(p.statusCode && p.statusCode >= 400) && !(p.error && !p.statusCode));
+  const analyticsChecked = healthyPages.filter((p) => p.hasAnalytics !== undefined);
+  if (analyticsChecked.length && !analyticsChecked.some((p) => p.hasAnalytics)) {
+    add("medium", "site", "No analytics tag (Google Analytics or Tag Manager) found on any page we crawled.", "Add Google Analytics (GA4) or Google Tag Manager to every page, so you can see how many people visit, which pages they look at, and which pages lead to calls.");
+  }
+  const viewportChecked = healthyPages.filter((p) => p.hasViewport !== undefined);
+  const viewportMissing = viewportChecked.filter((p) => !p.hasViewport);
+  if (viewportMissing.length) {
+    const everywhere = viewportMissing.length === viewportChecked.length;
+    add(
+      everywhere ? "medium" : "low",
+      "site",
+      everywhere
+        ? "No mobile viewport setting on any page we crawled."
+        : `No mobile viewport setting on ${viewportMissing.length} of ${viewportChecked.length} pages we crawled (${viewportMissing.slice(0, 3).map((p) => p.path).join(", ")}).`,
+      "Add the viewport meta tag to the page template, so phones lay each page out for a small screen instead of shrinking the desktop version down."
+    );
+  }
+
+  // Schema expectations: a page whose job is clear from its address or its content should carry
+  // the structured data that job calls for — an article page an Article block, a page carrying a
+  // questions-and-answers section an FAQPage block, a store page Product blocks with prices, a
+  // location page the business identity plus its breadcrumb trail, a service page a Service
+  // block. The check reads the @type set recorded at crawl time (detectSchemaTypes; a page whose
+  // blocks were parsed some other way falls back to its parsed JSON-LD). Like the monitor
+  // signals above, it stays silent for any page whose types were never recorded — a recorded
+  // empty set is a real measurement (the page was parsed; no JSON-LD was found). Healthy pages
+  // only: an error page's template proves nothing about the real page.
+  const ARTICLE_TYPES = ["BlogPosting", "Article", "NewsArticle", "TechArticle"];
+  const BUSINESS_TYPES = new Set(["LocalBusiness", "Organization", ...LOCAL_BUSINESS_SUBTYPES]);
+  for (const p of healthyPages) {
+    const types =
+      p.schemaTypesFound !== undefined
+        ? new Set(p.schemaTypesFound)
+        : p.jsonLd
+          ? new Set(collectSchemaTypes(p.jsonLd))
+          : null;
+    if (!types) continue;
+    const at = p.path;
+    const segments = at.split("/").filter(Boolean).map((s) => s.toLowerCase());
+    const hasSegment = (...names: string[]) => segments.some((s) => names.includes(s));
+    const text = p.text ?? "";
+
+    // Article pages: a post sitting under a blog / articles / news section.
+    const sectionAt = segments.findIndex((s) => ["blog", "articles", "article", "news", "posts"].includes(s));
+    if (sectionAt >= 0 && segments.length > sectionAt + 1 && !ARTICLE_TYPES.some((t) => types.has(t))) {
+      add("low", at, "No Article structured data on this article page.", "Add BlogPosting (or Article) JSON-LD with the headline, author, publish date and image, so search engines and AI tools can read the post as an article and credit it.");
+    }
+
+    // FAQ: a dedicated FAQ page, or any page carrying a questions-and-answers section.
+    const headingText = [...p.headings.h1, ...p.headings.h2, ...p.headings.h3].join(" ");
+    const faqSignal =
+      hasSegment("faq", "faqs", "frequently-asked-questions") ||
+      /frequently asked questions|\bfaqs?\b/i.test(headingText) ||
+      /frequently asked questions/i.test(text);
+    if (faqSignal && !types.has("FAQPage")) {
+      add("low", at, "No FAQPage structured data, though the page carries a questions-and-answers section.", "Mark the questions and answers up as FAQPage JSON-LD matching the words on the page, so search engines and AI answers can quote them directly.");
+    }
+
+    // Store / product / cart pages: Product blocks, with an Offer carrying the price. The
+    // address usually gives the page away; otherwise it takes real product markup — several
+    // prices plus an add-to-cart / buy-now action — so a pricing mention alone never trips it.
+    const priceCount = (text.match(/\$\s?\d[\d,]*(?:\.\d{2})?\b/g) ?? []).length;
+    const storeSignal = hasSegment("store", "shop", "cart", "product", "products") || (priceCount >= 3 && /add to cart|buy now/i.test(text));
+    if (storeSignal && !types.has("Product")) {
+      add("medium", at, "No Product structured data on this store page.", "Add Product JSON-LD for what the page sells, with an Offer carrying the price and availability, so search engines and AI tools can read your products and prices as data.");
+    } else if (storeSignal && !types.has("Offer")) {
+      add("low", at, "Product structured data carries no Offer (price) on this store page.", "Add an Offer with the price and availability to each Product block — a product search engines can see but cannot price is only half listed.");
+    }
+
+    // Location / city landing pages: the business identity and the breadcrumb trail.
+    if (hasSegment("location", "locations", "service-area", "service-areas", "areas-served")) {
+      if (![...types].some((t) => BUSINESS_TYPES.has(t))) {
+        add("medium", at, "No LocalBusiness / Organization structured data on this location page.", "Add LocalBusiness JSON-LD for this location — name, address, phone, hours and the area it serves — so Google can tie the page to the business in this town.");
+      }
+      if (!types.has("BreadcrumbList")) {
+        add("low", at, "No BreadcrumbList structured data on this location page.", "Add BreadcrumbList JSON-LD showing where the page sits (Home, Locations, this town), so search results show the path instead of a bare address.");
+      }
+    }
+
+    // Service pages: a Service block naming what is offered.
+    if (hasSegment("service", "services") && !types.has("Service")) {
+      add("low", at, "No Service structured data on this service page.", "Add Service JSON-LD naming the service, who provides it and the area served, so search engines and AI tools can match the page to people looking for that service.");
+    }
+  }
+
   // Local presence (Tier 3): NAP consistency, schema completeness, GBP website-side signals,
   // profile links, the Places comparison (when one ran) and near-duplicate pages.
   issues.push(...localPresenceIssues(result, opts));

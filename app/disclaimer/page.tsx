@@ -5,15 +5,15 @@ import SitePage from "@/components/SitePage";
 import OrgJsonLd from "@/components/OrgJsonLd";
 
 export const metadata: Metadata = {
-  title: "Disclaimer, Affiliate & Earnings Disclosure | Sitesinc",
+  title: "Disclaimer, Affiliate & Earnings Disclosure | SitesInc",
   description:
-    "Service, SEO performance, pricing, and FTC affiliate disclosures for Sitesinc (sitesinc.co).",
+    "Service, SEO performance, pricing, and FTC affiliate disclosures for SitesInc (sitesinc.co).",
   alternates: { canonical: "/disclaimer" },
   robots: { index: true, follow: true },
   openGraph: {
-    title: "Disclaimer, Affiliate & Earnings Disclosure | Sitesinc",
+    title: "Disclaimer, Affiliate & Earnings Disclosure | SitesInc",
     description:
-      "Service, SEO performance, pricing, and FTC affiliate disclosures for Sitesinc (sitesinc.co).",
+      "Service, SEO performance, pricing, and FTC affiliate disclosures for SitesInc (sitesinc.co).",
     url: "/disclaimer",
     images: [OG_IMAGE],
   },
@@ -34,7 +34,7 @@ export default function DisclaimerPage() {
         <div className="mt-8 space-y-8 text-base leading-7 text-slate-300">
           <section>
             <p>
-              This Disclaimer &amp; Disclosure policy applies to Sitesinc (&ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;) and our website at{" "}
+              This Disclaimer &amp; Disclosure policy applies to SitesInc (&ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;) and our website at{" "}
               <span className="text-slate-100">sitesinc.co</span>, including our{" "}
               <Link href="/locations" className="text-sky-400 underline">
                 500 U.S. city web design &amp; local SEO guides
@@ -48,7 +48,7 @@ export default function DisclaimerPage() {
               1. No Guarantee of Specific Search Rankings or Revenue
             </h2>
             <p className="mt-2">
-              Sitesinc builds custom, search-engine-optimized websites with clean technical architecture, mobile-first performance, structured schema markup, and local SEO foundations for a flat $1,995 build fee. While our sites are engineered to follow search engine best practices, search engine algorithms (Google, Bing), local competition, domain age, and customer review velocity are outside our control. Accordingly, we do not guarantee specific keyword rankings, organic traffic volumes, lead counts, or revenue outcomes.
+              SitesInc builds custom, search-engine-optimized websites with clean technical architecture, mobile-first performance, structured schema markup, and local SEO foundations for a flat $1,995 build fee. While our sites are engineered to follow search engine best practices, search engine algorithms (Google, Bing), local competition, domain age, and customer review velocity are outside our control. Accordingly, we do not guarantee specific keyword rankings, organic traffic volumes, lead counts, or revenue outcomes.
             </p>
           </section>
 
@@ -67,7 +67,7 @@ export default function DisclaimerPage() {
               3. Third-Party Tools &amp; Affiliate Disclosure (FTC 16 CFR Part 255)
             </h2>
             <p className="mt-2">
-              In compliance with Federal Trade Commission (FTC) guidelines, some articles or digital properties operated or built by Sitesinc may reference third-party software, hosting providers, domain registrars, or business tools. Where an outbound referral or affiliate link is used, we may receive a referral commission at no extra cost to the buyer.
+              In compliance with Federal Trade Commission (FTC) guidelines, some articles or digital properties operated or built by SitesInc may reference third-party software, hosting providers, domain registrars, or business tools. Where an outbound referral or affiliate link is used, we may receive a referral commission at no extra cost to the buyer.
             </p>
           </section>
 

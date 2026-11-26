@@ -28,8 +28,8 @@ export async function generateMetadata({
   const { id } = await params;
   const style = getDesignStyle(id);
   if (!style) return {};
-  const title = `${style.name} Layout | Sitesinc`;
-  const description = `${style.blurb} One of eight Sitesinc layouts for the $1,995 website build.`;
+  const title = `${style.name} Layout | SitesInc`;
+  const description = `${style.blurb} One of eight SitesInc layouts for the $1,995 website build.`;
   return {
     title,
     description,
@@ -69,7 +69,7 @@ export default async function StyleDetailPage({
         </h1>
         <p className="mt-3 max-w-2xl text-base text-slate-300">{style.blurb}</p>
         <p className="mt-3 text-sm text-slate-400">
-          Public preview of the live Sitesinc offer in this layout — not a client
+          Public preview of the live SitesInc offer in this layout — not a client
           site.{" "}
           <Link href="/styles" className="font-medium text-brand-300 hover:underline">
             All 8 layouts
@@ -92,7 +92,7 @@ export default async function StyleDetailPage({
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/80" />
             </div>
             <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-wider text-slate-300">
-              Sitesinc · {style.name}
+              SitesInc · {style.name}
             </div>
           </div>
           <div className="rounded-[26px] border border-white/5 bg-black/40 p-4 sm:p-5">

@@ -5,10 +5,10 @@ import SitePage from "@/components/SitePage";
 import OrgJsonLd from "@/components/OrgJsonLd";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | Sitesinc Website Builds",
-  description: "Terms of Service for Sitesinc website builds: $1,995 flat, 50% to start and 50% at launch, one revision round, ownership, and optional monitored SEO.",
+  title: "Terms of Service | SitesInc Website Builds",
+  description: "Terms of Service for SitesInc website builds: $1,995 flat, 50% to start and 50% at launch, one revision round, ownership, and optional website monitoring.",
   alternates: { canonical: "/terms" },
-  openGraph: { title: "Terms of Service | Sitesinc Website Builds", description: "Terms of Service for Sitesinc website builds: $1,995 flat, 50% to start and 50% at launch, one revision round, ownership, and optional monitored SEO.", url: "/terms", images: [OG_IMAGE] },
+  openGraph: { title: "Terms of Service | SitesInc Website Builds", description: "Terms of Service for SitesInc website builds: $1,995 flat, 50% to start and 50% at launch, one revision round, ownership, and optional website monitoring.", url: "/terms", images: [OG_IMAGE] },
 };
 
 export default function TermsPage() {
@@ -28,8 +28,8 @@ export default function TermsPage() {
             <p>
               These Terms of Service (“Terms”) govern your use of the website at{" "}
               <span className="text-slate-100">sitesinc.co</span> and the
-              website design and development services offered by Sitesync
-              Business (“we,” “us,” or “our”). By using this website, purchasing
+              website design and development services offered by SiteSync
+              LLC, operating as SitesInc (“we,” “us,” or “our”). By using this website, purchasing
               a service, or submitting project information, you agree to these
               Terms.
             </p>
@@ -40,7 +40,8 @@ export default function TermsPage() {
               1. Who We Are
             </h2>
             <p className="mt-2">
-              Sitesinc builds custom websites for small businesses
+              SitesInc is the website and brand of SiteSync LLC. SiteSync
+              LLC builds custom websites for small businesses
               using modern tools such as Next.js, Tailwind CSS, and Netlify
               hosting. Our public site and contact email are:
             </p>
@@ -250,7 +251,7 @@ export default function TermsPage() {
               13. Limitation of Liability
             </h2>
             <p className="mt-2">
-              To the fullest extent permitted by law, Sitesinc is not
+              To the fullest extent permitted by law, SitesInc is not
               liable for indirect, incidental, special, consequential, or lost
               profit damages arising from your use of the site or our services.
               Our total liability for any claim related to a paid project is
@@ -298,7 +299,7 @@ export default function TermsPage() {
             </p>
             <p className="mt-3">
               <span className="font-medium text-slate-100">
-                Sitesinc
+                SitesInc
               </span>
               <br />
               1968 South Coast Hwy #3632

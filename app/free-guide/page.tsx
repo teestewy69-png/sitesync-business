@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { Download, PhoneCall } from "lucide-react";
 import SitePage from "@/components/SitePage";
+import OrgJsonLd from "@/components/OrgJsonLd";
 import GuideEmailForm from "@/components/GuideEmailForm";
 import content from "@/content.json";
 import { OG_IMAGE } from "@/lib/og-image";
@@ -15,7 +16,7 @@ import {
   GUIDE_TITLE,
 } from "@/lib/lead-guide";
 
-const TITLE = `Free guide: ${GUIDE_TITLE} | Sitesinc`;
+const TITLE = `Free guide: ${GUIDE_TITLE} | SitesInc`;
 const DESCRIPTION =
   "A free, plain-English checklist for local service businesses: the 7 basics that make it easy for a visitor to call you.";
 
@@ -26,10 +27,26 @@ export const metadata: Metadata = {
   openGraph: { title: TITLE, description: DESCRIPTION, url: GUIDE_PATH, images: [OG_IMAGE] },
 };
 
+const BREADCRUMB_JSONLD = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "SitesInc", item: "https://sitesinc.co" },
+    { "@type": "ListItem", position: 2, name: "Free Guide", item: "https://sitesinc.co/free-guide" },
+  ],
+};
+
 export default function FreeGuidePage() {
   const { footer } = content;
   return (
     <SitePage>
+      {/* Schema fix (2026-11-25 audit): this page shipped with zero JSON-LD.
+          It now carries the sitewide Organization block plus a breadcrumb. */}
+      <OrgJsonLd />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(BREADCRUMB_JSONLD) }}
+      />
       <article className="mx-auto max-w-3xl px-6 py-16">
         <p className="text-xs font-semibold uppercase tracking-wider text-brand-300">Free guide</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">{GUIDE_TITLE}</h1>
@@ -98,7 +115,7 @@ export default function FreeGuidePage() {
             <Link href="/free-website-audit" className="font-semibold text-brand-300 hover:underline">
               free website audit
             </Link>{" "}
-            on your site, or call Sitesinc at{" "}
+            on your site, or call SitesInc at{" "}
             <a href={footer.phoneHref} className="font-semibold text-brand-300 hover:underline">
               {footer.phone}
             </a>

@@ -2,7 +2,7 @@
  * Path A offer guard (Tony, 2026-10-05; payment links 2026-11-06). The public offer is ONLY:
  *   - website builds are $1,995 (flat fee), paid 50% to start and 50% at launch, or $1,995 in one payment
  *   - those amounts are collected on the live buy buttons (see lib/payment-links.ts)
- *   - monitored SEO NOT included in the build: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days (Tony, 2026-10-20)
+ *   - website monitoring NOT included in the build: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days (Tony, 2026-10-20)
  * Public copy must not promise digital-product delivery, SiteFlow product checkout, affiliate or monetization
  * placeholders, discounts/strike-through prices, or scarcity. scripts/offer-copy.test.mjs scans
  * the public sources with these patterns, and published factory pages are checked at render time.

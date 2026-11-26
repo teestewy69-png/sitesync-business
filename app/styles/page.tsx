@@ -6,9 +6,9 @@ import StylePreviewCard from "@/components/StylePreviewCard";
 import { DESIGN_STYLES } from "@/lib/design-styles";
 import { OG_IMAGE } from "@/lib/og-image";
 
-const title = "8 Website Layouts | Sitesinc";
+const title = "8 Website Layouts | SitesInc";
 const description =
-  "See all eight Sitesinc website layouts on one public page. Same $1,995 live offer, eight structures — pick the look before you start the build.";
+  "See all eight SitesInc website layouts on one public page. Same $1,995 live offer, eight structures — pick the look before you start the build.";
 
 export const metadata: Metadata = {
   title,
@@ -34,7 +34,7 @@ export default function StylesPage() {
           Pick the layout. We build the site.
         </h1>
         <p className="mt-4 max-w-2xl text-base text-slate-300">
-          These are the eight layouts Sitesinc ships — the same live offer you see
+          These are the eight layouts SitesInc ships — the same live offer you see
           on sitesinc.co, not private client demos. Open any card for a larger
           preview, then start the $1,995 build.
         </p>

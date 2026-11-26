@@ -64,7 +64,7 @@ export default async function LocationPage({ params }: { params: Promise<Params>
   const faqs = [
     {
       q: `How much does a website cost for a business in ${place}?`,
-      a: `The Sitesinc website build is $1,995, a flat one-time price. You pay 50% ($997.50) to start and 50% ($997.50) at launch. Optional monitoring is separate: ${MONITORING}.`,
+      a: `The SitesInc website build is $1,995, a flat one-time price. You pay 50% ($997.50) to start and 50% ($997.50) at launch. Optional monitoring is separate: ${MONITORING}.`,
     },
     {
       q: "Is there a long-term contract?",
@@ -85,7 +85,7 @@ export default async function LocationPage({ params }: { params: Promise<Params>
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
       itemListElement: [
-        { "@type": "ListItem", position: 1, name: "Sitesinc", item: "https://sitesinc.co" },
+        { "@type": "ListItem", position: 1, name: "SitesInc", item: "https://sitesinc.co" },
         { "@type": "ListItem", position: 2, name: "Locations", item: "https://sitesinc.co/locations" },
         { "@type": "ListItem", position: 3, name: place, item: url },
       ],
@@ -107,7 +107,7 @@ export default async function LocationPage({ params }: { params: Promise<Params>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <article className="mx-auto max-w-4xl px-6 py-16">
         <nav aria-label="Breadcrumb" className="text-sm text-slate-400">
-          <Link href="/" className="hover:text-brand-300">Sitesinc</Link> ›{" "}
+          <Link href="/" className="hover:text-brand-300">SitesInc</Link> ›{" "}
           <Link href="/locations" className="hover:text-brand-300">Locations</Link> › {place}
         </nav>
         <p className="mt-6 text-xs font-semibold uppercase tracking-wider text-brand-300">{place}</p>
@@ -121,7 +121,7 @@ export default async function LocationPage({ params }: { params: Promise<Params>
         </p>
         <p className="mt-3 text-base text-slate-300">
           {city.name} is a city in {city.stateName} with an estimated {pop} residents (U.S. Census Bureau, 2024
-          estimate). Sitesinc is based in {content.footer.address.city}, {content.footer.address.region} and builds
+          estimate). SitesInc is based in {content.footer.address.city}, {content.footer.address.region} and builds
           websites online, so we work with small businesses in {city.name} without an in-person visit.
         </p>
         {indexed && city.county ? (

@@ -101,10 +101,10 @@ export function FactoryArticle({
         </p>
       )}
       <p className="text-xs font-semibold uppercase tracking-wider text-brand-300">
-        Sitesinc factory
+        SitesInc factory
       </p>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-        {page.title.replace(/\s*\|\s*Sitesinc$/, "")}
+        {page.title.replace(/\s*\|\s*SitesInc$/, "")}
       </h1>
       {page.metaDescription ? (
         <p className="mt-3 text-base text-slate-300">{page.metaDescription}</p>
@@ -158,7 +158,7 @@ export function FactoryArticle({
           );
         })}
       </div>
-      <nav aria-label="Related Sitesinc pages" className="mt-10 border-t border-white/10 pt-6">
+      <nav aria-label="Related SitesInc pages" className="mt-10 border-t border-white/10 pt-6">
         <p className="text-sm font-medium text-slate-200">Related pages</p>
         <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-sm">
           {SITE_HUB_LINKS.filter((link) => link.href !== page.path && link.href !== `/${page.slug}`).map((link) => (
@@ -190,7 +190,7 @@ export async function PublishedOrNotFound({ slug, lead }: { slug: string; lead?:
     <SitePage>
       <OrgJsonLd />
       <ServiceJsonLd
-        name={page.title.replace(/\s*\|\s*Sitesinc$/, "")}
+        name={page.title.replace(/\s*\|\s*SitesInc$/, "")}
         description={page.metaDescription}
         path={page.path || `/${page.slug}`}
         faqs={PAGE_FAQS[slug] || []}

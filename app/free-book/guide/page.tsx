@@ -7,7 +7,7 @@ import type { GuideBlock } from "@/data/free-book-guide";
 import content from "@/content.json";
 
 export const metadata: Metadata = {
-  title: "What Your Web Builder Won't Tell You | Sitesinc",
+  title: "What Your Web Builder Won't Tell You | SitesInc",
   description:
     "The hidden costs of a website — the full fee stack, a three-year true-cost worksheet, three worked comparisons, red flags, and the 10 questions to ask any builder before you sign.",
   robots: { index: false, follow: false },

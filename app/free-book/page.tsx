@@ -6,7 +6,7 @@ import { GUIDE } from "@/lib/free-book";
 import { OG_IMAGE } from "@/lib/og-image";
 import { LOCATIONS_ORIGIN } from "@/lib/locations";
 
-const title = "Free Ebook: What Your Web Builder Won't Tell You | Sitesinc";
+const title = "Free Ebook: What Your Web Builder Won't Tell You | SitesInc";
 const description =
   "Get the free ebook: the 14 hidden costs behind a website's sticker price, a three-year worksheet to calculate the real price of any quote, three worked comparisons, and the 10 questions to ask any builder before you sign.";
 

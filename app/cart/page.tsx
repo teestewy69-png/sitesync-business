@@ -34,7 +34,7 @@ export default function CartPage() {
           href="/"
           className="mt-8 inline-flex items-center justify-center rounded-full bg-gradient-to-b from-brand-300 to-brand-600 px-6 py-3 text-sm font-semibold text-zinc-950 shadow-glow transition hover:from-brand-200 hover:to-brand-500"
         >
-          Back to Sitesinc
+          Back to SitesInc
         </Link>
       </section>
     );

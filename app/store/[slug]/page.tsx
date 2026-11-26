@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import AddToCartButton from "@/components/siteflow/AddToCartButton";
 import ProductImage from "@/components/siteflow/ProductImage";
+import ProductJsonLd from "@/components/siteflow/ProductJsonLd";
 import { getProduct, getPublicProducts } from "@/data/products";
 import { siteflowEnabled } from "@/lib/siteflow/flag";
 import { getLane } from "@/lib/siteflow/lanes";
@@ -17,10 +18,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const product = getProduct(slug);
   if (!product) return { robots: { index: false, follow: false } };
   return {
-    title: `${product.name} | Sitesinc`,
+    title: `${product.name} | SitesInc`,
     description: product.description,
-    // Deliberately unlisted like /store: no sitemap or navigation entry.
-    robots: { index: false, follow: false },
+    alternates: { canonical: `/store/${product.slug}` },
+    // Open to search and AI (Tony's decision, 2026-11-25): indexed, followed,
+    // in the sitemap, and reachable from the store index and its lane page.
+    robots: { index: true, follow: true },
   };
 }
 
@@ -44,6 +47,7 @@ export default async function ProductLandingPage({ params }: Props) {
 
   return (
     <main className="mx-auto min-h-screen max-w-3xl bg-black px-6 py-16 text-white">
+      <ProductJsonLd product={product} />
       <p className="text-sm">
         <Link href="/store" className="font-semibold text-brand-300 hover:underline">
           ← Back to the store

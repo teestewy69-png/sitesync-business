@@ -96,12 +96,12 @@ export const GUIDE_QUICK_TEST = [
 
 function contactLine() {
   const { footer } = content as { footer: { phone: string; email?: string } };
-  return `Questions? Call Sitesinc at ${footer.phone}${footer.email ? ` or email ${footer.email}` : ""}.`;
+  return `Questions? Call SitesInc at ${footer.phone}${footer.email ? ` or email ${footer.email}` : ""}.`;
 }
 
 function mailingAddress() {
   const a = (content as { footer: { address: { street: string; city: string; region: string; postalCode: string } } }).footer.address;
-  return `Sitesinc · ${a.street}, ${a.city}, ${a.region} ${a.postalCode}`;
+  return `SitesInc · ${a.street}, ${a.city}, ${a.region} ${a.postalCode}`;
 }
 
 /** Plain-text version: the email body and the /free-guide/download file. */

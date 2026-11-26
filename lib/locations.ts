@@ -8,7 +8,7 @@ export { INDEXABLE_LOCATION_SLUGS };
 
 const INDEXABLE = new Set<string>(INDEXABLE_LOCATION_SLUGS);
 
-/** The 500 cities with a Sitesinc location page. Facts come only from U.S. Census Bureau data (public domain). */
+/** The 500 cities with a SitesInc location page. Facts come only from U.S. Census Bureau data (public domain). */
 export function getLocationCities(): UsCity[] {
   const index = getUsCityIndex();
   const out: UsCity[] = [];

@@ -108,7 +108,7 @@ export default function PickYourDesign() {
             data-nosnippet
           >
             <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-brand-300">
-              Example client site — not Sitesinc pricing or contact info
+              Example client site — not SitesInc pricing or contact info
             </p>
             <MiniSiteFrame style={active} content={content} />
           </div>

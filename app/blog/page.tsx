@@ -6,10 +6,10 @@ import SitePage from "@/components/SitePage";
 import OrgJsonLd from "@/components/OrgJsonLd";
 
 export const metadata: Metadata = {
-  title: "Sitesinc Blog | Small Business Website Guides",
-  description: "Straightforward guides from Sitesinc on small business websites, local SEO, lead capture and getting more from the site you already pay to run.",
+  title: "SitesInc Blog | Small Business Website Guides",
+  description: "Straightforward guides from SitesInc on small business websites, local SEO, lead capture and getting more from the site you already pay to run.",
   alternates: { canonical: "/blog" },
-  openGraph: { title: "Sitesinc Blog | Small Business Website Guides", description: "Straightforward guides from Sitesinc on small business websites, local SEO, lead capture and getting more from the site you already pay to run.", url: "/blog", images: [OG_IMAGE] },
+  openGraph: { title: "SitesInc Blog | Small Business Website Guides", description: "Straightforward guides from SitesInc on small business websites, local SEO, lead capture and getting more from the site you already pay to run.", url: "/blog", images: [OG_IMAGE] },
 };
 
 export default function BlogIndex() {
@@ -20,7 +20,7 @@ export default function BlogIndex() {
       <OrgJsonLd />
       <section className="mx-auto max-w-4xl px-6 py-16">
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-          Sitesinc Blog
+          SitesInc Blog
         </h1>
         <p className="mt-3 text-base text-slate-300">
           Straightforward guides on websites, SEO, and making your small

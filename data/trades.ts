@@ -1,7 +1,7 @@
 /**
  * Trade landing pages (/trades/<slug>). Copy rules: facts only. No invented stats,
  * testimonials, client counts, rankings or guarantees. Every number here comes from
- * the Sitesinc offer: $1,995 flat, 50% ($997.50) to start, 50% at launch,
+ * the SitesInc offer: $1,995 flat, 50% ($997.50) to start, 50% at launch,
  * optional $129/mo monitoring (1st month free).
  */
 import { LIVE_PAYMENT_LINKS as PAYMENT_LINKS } from "@/lib/payment-links";
@@ -45,7 +45,7 @@ export const TRADES: Trade[] = [
     slug: "plumbers",
     name: "Plumbers",
     short: "Plumbing",
-    metaTitle: "Plumber Websites in SoCal | $1,995 Flat | Sitesinc",
+    metaTitle: "Plumber Websites in SoCal | $1,995 Flat | SitesInc",
     metaDescription:
       "Plumber websites built for phone calls: tap-to-call, service pages and a quote form that emails you. $1,995 flat, 50% to start. SoCal.",
     overline: "Websites for plumbers",
@@ -82,7 +82,7 @@ export const TRADES: Trade[] = [
     slug: "roofers",
     name: "Roofers",
     short: "Roofing",
-    metaTitle: "Roofer Websites in SoCal | $1,995 Flat | Sitesinc",
+    metaTitle: "Roofer Websites in SoCal | $1,995 Flat | SitesInc",
     metaDescription:
       "Roofing websites that turn searches into estimate requests: tap-to-call, photos, service-area pages and an estimate form. $1,995 flat. SoCal.",
     overline: "Websites for roofers",
@@ -119,7 +119,7 @@ export const TRADES: Trade[] = [
     slug: "hvac",
     name: "HVAC Contractors",
     short: "HVAC",
-    metaTitle: "HVAC Websites in SoCal | $1,995 Flat | Sitesinc",
+    metaTitle: "HVAC Websites in SoCal | $1,995 Flat | SitesInc",
     metaDescription:
       "HVAC websites built for calls on the hottest days: tap-to-call, AC and heating pages, and a service request form. $1,995 flat. SoCal.",
     overline: "Websites for HVAC contractors",
@@ -156,7 +156,7 @@ export const TRADES: Trade[] = [
     slug: "electricians",
     name: "Electricians",
     short: "Electrical",
-    metaTitle: "Electrician Websites in SoCal | $1,995 Flat | Sitesinc",
+    metaTitle: "Electrician Websites in SoCal | $1,995 Flat | SitesInc",
     metaDescription:
       "Electrician websites that make you look as solid as your work: tap-to-call, service pages, and a quote form. $1,995 flat. SoCal.",
     overline: "Websites for electricians",
@@ -193,7 +193,7 @@ export const TRADES: Trade[] = [
     slug: "landscapers",
     name: "Landscapers",
     short: "Landscaping",
-    metaTitle: "Landscaper Websites in SoCal | $1,995 Flat | Sitesinc",
+    metaTitle: "Landscaper Websites in SoCal | $1,995 Flat | SitesInc",
     metaDescription:
       "Landscaping websites that show your yards and bring in quote requests: galleries, service pages, and a quote form. $1,995 flat. SoCal.",
     overline: "Websites for landscapers",
@@ -230,7 +230,7 @@ export const TRADES: Trade[] = [
     slug: "auto-repair",
     name: "Auto Repair Shops",
     short: "Auto repair",
-    metaTitle: "Auto Repair Websites in SoCal | $1,995 Flat | Sitesinc",
+    metaTitle: "Auto Repair Websites in SoCal | $1,995 Flat | SitesInc",
     metaDescription:
       "Auto repair shop websites for drivers on a phone: tap-to-call, directions, hours, and an appointment form. $1,995 flat. SoCal.",
     overline: "Websites for auto repair shops",
@@ -265,7 +265,7 @@ export const TRADES: Trade[] = [
   },
 ];
 
-/** Questions every trade page answers (facts from the Sitesinc offer only). */
+/** Questions every trade page answers (facts from the SitesInc offer only). */
 export const COMMON_TRADE_FAQS = [
   {
     question: "How much does it cost?",

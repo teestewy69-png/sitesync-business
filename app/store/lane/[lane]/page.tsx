@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ProductImage from "@/components/siteflow/ProductImage";
+import StoreJsonLd from "@/components/siteflow/StoreJsonLd";
 import { getPublicProducts } from "@/data/products";
 import { siteflowEnabled } from "@/lib/siteflow/flag";
 import { getLane } from "@/lib/siteflow/lanes";
@@ -16,13 +17,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lane = getLane(laneSlug);
   if (!lane) return { robots: { index: false, follow: false } };
   return {
-    title: `${lane.name} | Sitesinc`,
-    description: `Sitesinc guides for ${lane.name}: ${getPublicProducts()
+    title: `${lane.name} | SitesInc`,
+    description: `SitesInc guides for ${lane.name}: ${getPublicProducts()
       .filter((p) => p.lane === lane.slug)
       .map((p) => p.name)
       .join(", ")}.`,
-    // Deliberately unlisted like /store: no sitemap or navigation entry.
-    robots: { index: false, follow: false },
+    alternates: { canonical: `/store/lane/${lane.slug}` },
+    // Open to search and AI (Tony's decision, 2026-11-25): indexed, followed,
+    // in the sitemap, and reachable from the store index and product pages.
+    robots: { index: true, follow: true },
   };
 }
 
@@ -44,6 +47,14 @@ export default async function LanePage({ params }: Props) {
 
   return (
     <main className="mx-auto min-h-screen max-w-3xl bg-black px-6 py-16 text-white">
+      <StoreJsonLd
+        crumbs={[
+          { name: "SitesInc", path: "" },
+          { name: "Store", path: "/store" },
+          { name: lane.name, path: `/store/lane/${lane.slug}` },
+        ]}
+        products={products}
+      />
       <p className="text-sm">
         <Link href="/store" className="font-semibold text-brand-300 hover:underline">
           ← Back to the store
@@ -105,7 +116,7 @@ export default async function LanePage({ params }: Props) {
                       href={`/store/${product.slug}`}
                       className="font-semibold text-brand-300 hover:underline"
                     >
-                      Details
+                      View {product.name}
                     </Link>
                   </p>
                 </div>

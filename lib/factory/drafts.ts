@@ -11,7 +11,7 @@ type Draft = Pick<FactoryPage, "title" | "metaDescription" | "headings" | "body"
 
 export const PAGE_DRAFTS: Record<string, Draft> = {
   "website-design": {
-    title: "Affordable Website Design for Small Business | Sitesinc",
+    title: "Affordable Website Design for Small Business | SitesInc",
     metaDescription:
       "Custom small business website design for $1,995 flat: mobile-fast, Google-ready, lead forms that email you. 50% to start. You own the code.",
     headings: [
@@ -25,17 +25,17 @@ export const PAGE_DRAFTS: Record<string, Draft> = {
 
 ## What a small-business site has to do in the first 5 seconds
 
-Show the offer. Show a real photo if you have one. Put the main action — call, book, or buy — where a thumb can hit it on a phone. Sitesinc builds that kind of page on purpose. We do not start from a marketplace template and hope the layout works.
+Show the offer. Show a real photo if you have one. Put the main action — call, book, or buy — where a thumb can hit it on a phone. SitesInc builds that kind of page on purpose. We do not start from a marketplace template and hope the layout works.
 
 ## Custom Next.js vs drag-and-drop
 
-Wix, Squarespace, and GoDaddy builders are fine if you want to rent a site and stay inside their editor. Sitesinc is a different product: a one-time Next.js + Tailwind build, hosted on Netlify, with the full code handed to you. You are not locked into a page builder. Any developer can open the repo later.
+Wix, Squarespace, and GoDaddy builders are fine if you want to rent a site and stay inside their editor. SitesInc is a different product: a one-time Next.js + Tailwind build, hosted on Netlify, with the full code handed to you. You are not locked into a page builder. Any developer can open the repo later.
 
 That also means we are not a “change this block yourself every Tuesday” tool. If you want weekly DIY edits in a visual editor, a builder may fit better.
 
 ## What we actually build
 
-Website builds are $1,995 — a flat fee. No negotiation. Pay 50% to start and 50% at launch. Monitored SEO is optional: 1st month free, then $129/mo. The package includes a complete custom site, a choice of eight design directions (see the Layouts page), on-page SEO setup, a lead form, hosting setup, domain connection, one round of revisions, Those numbers must match the homepage. Timeline is confirmed in writing before work starts. We will not invent a different price here.
+Website builds are $1,995 — a flat fee. No negotiation. Pay 50% to start and 50% at launch. Website Monitoring is optional: 1st month free, then $129/mo. The package includes a complete custom site, a choice of eight design directions (see the Layouts page), on-page SEO setup, a lead form, hosting setup, domain connection, one round of revisions. Timeline is confirmed in writing before work starts. We will not invent a different price here.
 
 This is the same affordable website design we build for contractors, plumbers, and barbers: a working site, not a subscription.
 
@@ -47,19 +47,19 @@ Business name, what you sell, photos you want used, logo and colors if you have 
 
 If you need a 40-page catalog, a custom app, or same-day copywriting from thin air, say so before you pay. We will tell you no rather than ship a thin site. If a rebuild is not the right move yet, read the redesign page first.
 
-See current pricing on the homepage or the packages page. No ranking promises — a clearer site is the deliverable.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional monitored SEO: 1st month free, then $129/mo. Questions? Call (909) 323-1575 or email save@sitesinc.co.`,
+See current pricing on the homepage or the packages page. No ranking promises — a clearer site is the deliverable.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional website monitoring: 1st month free, then $129/mo. Questions? Call (909) 323-1575 or email save@sitesinc.co.`,
   },
   packages: {
-    title: "Website Packages & Pricing: $1,995 Flat | Sitesinc",
+    title: "Website Packages & Pricing: $1,995 Flat | SitesInc",
     metaDescription:
-      "Sitesinc website packages: the build is $1,995, 50% to start and 50% at launch, optional monitored SEO free the 1st month, then $129/mo.",
+      "SitesInc website packages: the build is $1,995, 50% to start and 50% at launch, optional website monitoring free the 1st month, then $129/mo.",
     headings: [
       "One-time build",
       "Optional monitoring",
       "What is not a package",
       "How payment works",
     ],
-    body: `Sitesinc sells a build, not a membership. Optional monitoring is extra and you can skip it.
+    body: `SitesInc sells a build, not a membership. Optional monitoring is extra and you can skip it.
 
 ## One-time build
 
@@ -77,21 +77,21 @@ We do not sell 20 “city + service” landing pages. We do not sell guaranteed 
 
 ## How payment works
 
-Pay on this page: $997.50 to start (the start deposit), $997.50 at launch (the remaining balance), or $1,995 in one payment. We start once the start amount is paid and your onboarding details are in. If you have questions first, send a request or email save@sitesinc.co — that form is not a purchase. Prices on this page must match the homepage — if they ever drift, trust the homepage and tell us.
+Pay on this page: $997.50 to start (the start deposit), $997.50 at launch (the remaining balance), or $1,995 in one payment. We start once the start amount is paid and your onboarding details are in. If you have questions first, send a request or email save@sitesinc.co — that form is not a purchase.
 
-Twelve-month math, stated plainly: the $1,995 build plus optional monitored SEO (1st month free, then $129/mo) adds $1,419 (11 paid months × $129) if you keep it for the first year. A typical DIY builder plan in the $30–$50/mo range is cheaper up front and more expensive if you stay for years — and you still do not own the code. Pick the model that matches how you want to operate.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional monitored SEO: 1st month free, then $129/mo. Questions? Call (909) 323-1575 or email save@sitesinc.co.`,
+Twelve-month math, stated plainly: the $1,995 build plus optional website monitoring (1st month free, then $129/mo) adds $1,419 (11 paid months × $129) if you keep it for the first year. A typical DIY builder plan in the $30–$50/mo range is cheaper up front and more expensive if you stay for years — and you still do not own the code. Pick the model that matches how you want to operate.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional website monitoring: 1st month free, then $129/mo. Questions? Call (909) 323-1575 or email save@sitesinc.co.`,
   },
   "website-redesign": {
-    title: "Small Business Website Redesign | Sitesinc",
+    title: "Small Business Website Redesign | SitesInc",
     metaDescription:
-      "When a Sitesinc website redesign is worth it, and when to keep your current site. $1,995 flat rebuild, honest advice, no scare pitch.",
+      "When a SitesInc website redesign is worth it, and when to keep your current site. $1,995 flat rebuild, honest advice, no scare pitch.",
     headings: [
       "Signs the current site is costing you calls",
       "What we keep",
       "What we replace",
       "When not to redesign",
     ],
-    body: `A redesign is a rebuild, not a coat of paint. Sitesinc will tell you not to buy one if the current site already does the job.
+    body: `A redesign is a rebuild, not a coat of paint. SitesInc will tell you not to buy one if the current site already does the job.
 
 ## Signs the current site is costing you calls
 
@@ -111,12 +111,12 @@ The template, the theme lock-in, and the layout that hides the CTA. We rebuild i
 
 If you have no photos, no offer, and no time to answer onboarding questions, wait. If you only need a new logo, hire a designer. If you need a native app, we are the wrong shop.
 
-Related reading: our blog posts on what a real small-business site needs and DIY vs done-for-you. This page will not claim a redesign raises revenue. It claims a clearer site is easier to use.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional monitored SEO: 1st month free, then $129/mo. Questions? Call (909) 323-1575 or email save@sitesinc.co.`,
+Related reading: our blog posts on what a real small-business site needs and DIY vs done-for-you. This page will not claim a redesign raises revenue. It claims a clearer site is easier to use.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional website monitoring: 1st month free, then $129/mo. Questions? Call (909) 323-1575 or email save@sitesinc.co.`,
   },
   "seo-ready-websites": {
-    title: "SEO for Small Business: Ready Websites | Sitesinc",
+    title: "SEO for Small Business: Ready Websites | SitesInc",
     metaDescription:
-      "SEO for small business at Sitesinc: titles, one H1, sitemap, robots, canonicals, forms that notify someone. Indexing is not guaranteed.",
+      "SEO for small business at SitesInc: titles, one H1, sitemap, robots, canonicals, forms that notify someone. Indexing is not guaranteed.",
     headings: [
       "Titles, descriptions, and one H1",
       "Sitemap, robots, canonicals",
@@ -124,7 +124,7 @@ Related reading: our blog posts on what a real small-business site needs and DIY
       "Forms that actually notify someone",
       "What SEO-ready does not mean",
     ],
-    body: `SEO for small business at Sitesinc means the site launches with the on-page pieces Google’s public starter guide already asks for. It does not mean we rank you. Google decides what to crawl and index. An SEO-ready website is the starting point, not a ranking promise.
+    body: `SEO for small business at SitesInc means the site launches with the on-page pieces Google’s public starter guide already asks for. It does not mean we rank you. Google decides what to crawl and index. An SEO-ready website is the starting point, not a ranking promise.
 
 ## Titles, descriptions, and one H1
 
@@ -146,12 +146,12 @@ A lead form that writes to a store and emails save@sitesinc.co is part of SEO-re
 
 It does not mean page-one rankings, a set number of leads, or that submitting a sitemap indexes the URL. Search Console, when connected, is how we verify status. Until then we record “submitted” or “not submitted” and we do not mark pages indexed.
 
-Google’s SEO Starter Guide is the public reference we align with. This factory case study tracks the same checklist on sitesinc.co itself.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional monitored SEO: 1st month free, then $129/mo. Questions? Call (909) 323-1575 or email save@sitesinc.co.`,
+Google’s SEO Starter Guide is the public reference we align with. This factory case study tracks the same checklist on sitesinc.co itself.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional website monitoring: 1st month free, then $129/mo. Questions? Call (909) 323-1575 or email save@sitesinc.co.`,
   },
   "website-monitoring": {
-    title: "Website Monitoring: 1st Month Free | Sitesinc",
+    title: "Website Monitoring: 1st Month Free | SitesInc",
     metaDescription:
-      "Optional Sitesinc monitored SEO: 1st month free, then $129/mo. Uptime, small edits, basic technical updates. The site works if you skip it.",
+      "Optional SitesInc website monitoring: 1st month free, then $129/mo. Uptime, small edits, basic technical updates. The site works if you skip it.",
     headings: [
       "What monitoring means here",
       "What the $129/mo plan covers",
@@ -171,10 +171,10 @@ Technical updates and security basics, uptime/monitoring and basic fixes, and tw
 
 You can host the handed-off repo yourself and never pay the care plan. The build is complete without it. If you want us to keep watching it, ask for the $129/mo monitoring plan. If you want to cancel later, you still have the code.
 
-This page will not scare you into a subscription. The homepage already says the care plan is optional. We repeat that here so a search for website monitoring does not hide the opt-out.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional monitored SEO: 1st month free, then $129/mo. Questions? Call (909) 323-1575 or email save@sitesinc.co.`,
+This page will not scare you into a subscription. The homepage already says the care plan is optional. We repeat that here so a search for website monitoring does not hide the opt-out.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional website monitoring: 1st month free, then $129/mo. Questions? Call (909) 323-1575 or email save@sitesinc.co.`,
   },
   "for-local-service-businesses": {
-    title: "Websites for Contractors, Plumbers, Barbers | Sitesinc",
+    title: "Websites for Contractors, Plumbers, Barbers | SitesInc",
     metaDescription:
       "Website design for contractors, plumbers, and barbers — one useful page, not a city doorway farm. $1,995 flat.",
     headings: [
@@ -209,9 +209,9 @@ One offer, one next step, proof that you have done the work. A 12-page “about 
 
 ## One factory, not 50 doorways
 
-Sitesinc will not clone this page for “barber in [city]” fifty times. If we ever add a second industry page, it will have new examples, not a find-and-replace. That is a quality rule, not a slogan.
+SitesInc will not clone this page for “barber in [city]” fifty times. If we ever add a second industry page, it will have new examples, not a find-and-replace. That is a quality rule, not a slogan.
 
-The same factory that is rebuilding sitesinc.co — research, brief, human approval, staging, then publish — is the factory we run for a shop. We confirm the schedule in writing before work starts. The 90-day case study on this domain is about proving the marketing system, not delaying your build.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional monitored SEO: 1st month free, then $129/mo. Questions? Call (909) 323-1575 or email save@sitesinc.co.`,
+The same factory that is rebuilding sitesinc.co — research, brief, human approval, staging, then publish — is the factory we run for a shop. We confirm the schedule in writing before work starts. The 90-day case study on this domain is about proving the marketing system, not delaying your build.\n\nPricing: $1,995 flat build, 50% to start and 50% at launch. Optional website monitoring: 1st month free, then $129/mo. Questions? Call (909) 323-1575 or email save@sitesinc.co.`,
   },
   ...SEO_HUB_DRAFTS,
 };

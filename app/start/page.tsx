@@ -6,7 +6,7 @@ import { CHECKLIST } from "@/lib/lead-magnet";
 import { OG_IMAGE } from "@/lib/og-image";
 import { LOCATIONS_ORIGIN } from "@/lib/locations";
 
-const title = "Free New Business Website Starter Checklist | Sitesinc";
+const title = "Free New Business Website Starter Checklist | SitesInc";
 const description =
   "Starting a business? Get the free New Business Website Starter Checklist: what to decide, what to gather, the pages you need, Google Business Profile basics, and the cost traps to avoid.";
 

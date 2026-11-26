@@ -212,7 +212,7 @@ export default function AuditForm() {
               {problems.length ? `${problems.length} ${problems.length === 1 ? "item" : "items"} to fix.` : "Your basics look solid."} Want a real, working website built for you?
             </p>
             <p className="mt-1 text-sm text-slate-300">
-              Sitesinc builds it for a flat $1,995, one time. 50% to start, 50% at launch. No long-term contract, and you own your website.
+              SitesInc builds it for a flat $1,995, one time. 50% to start, 50% at launch. No long-term contract, and you own your website.
             </p>
             <a
               href="/contact#contact-form"

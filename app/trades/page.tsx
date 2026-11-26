@@ -6,7 +6,7 @@ import OrgJsonLd from "@/components/OrgJsonLd";
 import FreeAuditBanner from "@/components/PilotOffer";
 import { SERVICE_AREA, SITESINC_PHONE, SITESINC_PHONE_HREF, TRADES } from "@/data/trades";
 
-const title = "Trade Websites in SoCal | $1,995 Flat | Sitesinc";
+const title = "Trade Websites in SoCal | $1,995 Flat | SitesInc";
 const description =
   "Websites for plumbers, roofers, HVAC, electricians, landscapers and auto shops in LA, OC, Riverside and San Bernardino. $1,995 flat, 50% to start.";
 
@@ -17,10 +17,25 @@ export const metadata: Metadata = {
   openGraph: { title, description, url: "/trades", images: [OG_IMAGE] },
 };
 
+const BREADCRUMB_JSONLD = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "SitesInc", item: "https://sitesinc.co" },
+    { "@type": "ListItem", position: 2, name: "Trades", item: "https://sitesinc.co/trades" },
+  ],
+};
+
 export default function TradesHub() {
   return (
     <SitePage>
       <OrgJsonLd />
+      {/* Breadcrumb (2026-11-25 gate): the trades hub carried no
+          BreadcrumbList; its landing pages and the locations hub now do. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(BREADCRUMB_JSONLD) }}
+      />
       <section className="mx-auto max-w-5xl px-6 py-14 sm:py-20">
         <p className="text-xs font-semibold uppercase tracking-wider text-brand-300">Trades</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">

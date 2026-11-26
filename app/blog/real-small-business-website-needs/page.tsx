@@ -5,10 +5,10 @@ import SitePage from "@/components/SitePage";
 import ArticleJsonLd from "@/components/ArticleJsonLd";
 
 export const metadata: Metadata = {
-  title: "What a Real Small Business Website Actually Needs | Sitesinc",
+  title: "What a Real Small Business Website Actually Needs | SitesInc",
   description: "The sections and technical basics every small business website needs: clear hero, offer, proof, booking flow, FAQ, speed and security.",
   alternates: { canonical: "/blog/real-small-business-website-needs" },
-  openGraph: { title: "What a Real Small Business Website Actually Needs | Sitesinc", description: "The sections and technical basics every small business website needs: clear hero, offer, proof, booking flow, FAQ, speed and security.", url: "/blog/real-small-business-website-needs", images: [OG_IMAGE] },
+  openGraph: { title: "What a Real Small Business Website Actually Needs | SitesInc", description: "The sections and technical basics every small business website needs: clear hero, offer, proof, booking flow, FAQ, speed and security.", url: "/blog/real-small-business-website-needs", images: [OG_IMAGE] },
 };
 
 export default function RealSmallBusinessWebsiteNeeds() {
@@ -160,7 +160,7 @@ export default function RealSmallBusinessWebsiteNeeds() {
 
           <section>
             <h2 className="text-lg font-semibold text-slate-50 sm:text-xl">
-              How Sitesinc bakes all of this into your site
+              How SitesInc bakes all of this into your site
             </h2>
             <p className="mt-2">
               When we build your site, these elements aren&apos;t
@@ -195,10 +195,33 @@ export default function RealSmallBusinessWebsiteNeeds() {
                 href="/"
                 className="font-semibold text-brand-300 hover:underline"
               >
-                Click here to see how Sitesinc can build it for you.
+                Click here to see how SitesInc can build it for you.
               </Link>{" "}
               We&apos;ll handle the structure, design, SEO basics, and lead
               capture so you can focus on running your business.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-slate-50 sm:text-xl">
+              Keep reading
+            </h2>
+            <p className="mt-2">
+              <Link
+                href="/blog/diy-vs-done-for-you-websites"
+                className="font-semibold text-brand-300 hover:underline"
+              >
+                DIY Website Builders vs. Done-For-You: The Real Cost
+              </Link>{" "}
+              compares building it yourself with having it built for you. And
+              if you&apos;d rather have it built for you, see{" "}
+              <Link
+                href="/website-design"
+                className="font-semibold text-brand-300 hover:underline"
+              >
+                how our website design service works
+              </Link>
+              .
             </p>
           </section>
         </div>

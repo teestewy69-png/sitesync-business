@@ -5,7 +5,7 @@ import { CHECKLIST, CHECKLIST_PDF_PATH } from "@/lib/lead-magnet";
 import content from "@/content.json";
 
 export const metadata: Metadata = {
-  title: "The New Business Website Starter Checklist | Sitesinc",
+  title: "The New Business Website Starter Checklist | SitesInc",
   description:
     "What to decide before you build, what to gather, the pages a starter site needs, Google Business Profile basics, cost traps to avoid, and a launch-day checklist.",
   robots: { index: false, follow: false },

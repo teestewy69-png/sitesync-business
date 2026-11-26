@@ -44,7 +44,7 @@ export function noindexLocationTitle(city: UsCity): string {
 }
 
 export function noindexLocationDescription(city: UsCity): string {
-  return `Sitesinc builds real, working websites for small businesses in ${city.name}, ${city.state}. $1,995 flat, one time. No long-term contract. You own your website.`;
+  return `SitesInc builds real, working websites for small businesses in ${city.name}, ${city.state}. $1,995 flat, one time. No long-term contract. You own your website.`;
 }
 
 export function noindexLocationH1(city: UsCity): string {

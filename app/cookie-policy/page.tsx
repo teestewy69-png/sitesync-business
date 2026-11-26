@@ -5,15 +5,15 @@ import SitePage from "@/components/SitePage";
 import OrgJsonLd from "@/components/OrgJsonLd";
 
 export const metadata: Metadata = {
-  title: "Cookie Policy | Sitesinc Small Business Websites",
+  title: "Cookie Policy | SitesInc Small Business Websites",
   description:
-    "How Sitesinc (sitesinc.co) uses essential, functional, and analytics cookies and how you can manage your browser preferences.",
+    "How SitesInc (sitesinc.co) uses essential, functional, and analytics cookies and how you can manage your browser preferences.",
   alternates: { canonical: "/cookie-policy" },
   robots: { index: true, follow: true },
   openGraph: {
-    title: "Cookie Policy | Sitesinc Small Business Websites",
+    title: "Cookie Policy | SitesInc Small Business Websites",
     description:
-      "How Sitesinc (sitesinc.co) uses essential, functional, and analytics cookies and how you can manage your browser preferences.",
+      "How SitesInc (sitesinc.co) uses essential, functional, and analytics cookies and how you can manage your browser preferences.",
     url: "/cookie-policy",
     images: [OG_IMAGE],
   },
@@ -34,7 +34,7 @@ export default function CookiePolicyPage() {
         <div className="mt-8 space-y-8 text-base leading-7 text-slate-300">
           <section>
             <p>
-              This Cookie Policy explains how Sitesinc uses cookies and similar technologies on{" "}
+              This Cookie Policy explains how SitesInc uses cookies and similar technologies on{" "}
               <span className="text-slate-100">sitesinc.co</span>.
             </p>
           </section>
@@ -68,7 +68,7 @@ export default function CookiePolicyPage() {
               3. Managing Your Cookie Preferences
             </h2>
             <p className="mt-2">
-              Most browsers allow you to block or delete cookies via their privacy settings. Disabling non-essential cookies will not affect your ability to browse Sitesinc, read our guides, or submit a project request. For more information on how we handle personal data, see our{" "}
+              Most browsers allow you to block or delete cookies via their privacy settings. Disabling non-essential cookies will not affect your ability to browse SitesInc, read our guides, or submit a project request. For more information on how we handle personal data, see our{" "}
               <Link href="/privacy" className="text-sky-400 underline">Privacy Policy</Link>.
             </p>
           </section>

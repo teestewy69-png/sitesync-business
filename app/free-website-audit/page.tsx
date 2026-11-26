@@ -8,7 +8,7 @@ import { OG_IMAGE } from "@/lib/og-image";
 import { LOCATIONS_ORIGIN } from "@/lib/locations";
 import { COMPARE } from "@/lib/compare";
 
-const title = "Free Website Audit for Small Businesses | Sitesinc";
+const title = "Free Website Audit for Small Businesses | SitesInc";
 const description =
   "Free website audit for small businesses: give us your website address and email, and we crawl up to 10 pages, score your site 0-100, and email you the results — broken links, missing descriptions, contact details that disagree — with a free copy of our ebook.";
 

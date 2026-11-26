@@ -1,4 +1,4 @@
-/** Neutral 404 for client domains (no Sitesinc branding). */
+/** Neutral 404 for client domains (no SitesInc branding). */
 import Link from "next/link";
 export default function ClientDomainNotFound() {
   return (

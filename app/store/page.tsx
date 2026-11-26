@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import AddToCartButton from "@/components/siteflow/AddToCartButton";
 import ProductImage from "@/components/siteflow/ProductImage";
+import StoreJsonLd from "@/components/siteflow/StoreJsonLd";
 import { getPublicProducts } from "@/data/products";
 import { siteflowEnabled } from "@/lib/siteflow/flag";
 
@@ -11,11 +12,13 @@ export const dynamic = "force-dynamic";
 export function generateMetadata(): Metadata {
   if (!siteflowEnabled()) return { robots: { index: false, follow: false } };
   return {
-    title: "Store | Sitesinc",
+    title: "Store | SitesInc",
     description:
-      "Sitesinc website monitoring: 1st month free, then $129/mo. Uptime checks, basic technical updates, and small monthly edits. Cancel anytime.",
-    // Deliberately unlisted like /tools: no sitemap or navigation entry.
-    robots: { index: false, follow: false },
+      "The SitesInc store: Website Monitoring for a site we built for you (1st month free, then $129/mo, cancel anytime) and digital guides for travel, home, family and daily life after 50.",
+    alternates: { canonical: "/store" },
+    // Open to search and AI (Tony's decision, 2026-11-25): indexed, followed,
+    // in the sitemap, and linked from the sitewide footer.
+    robots: { index: true, follow: true },
   };
 }
 
@@ -35,9 +38,16 @@ export default function StorePage() {
 
   return (
     <main className="mx-auto min-h-screen max-w-3xl bg-black px-6 py-16 text-white">
+      <StoreJsonLd
+        crumbs={[
+          { name: "SitesInc", path: "" },
+          { name: "Store", path: "/store" },
+        ]}
+        products={products}
+      />
       <h1 className="text-3xl font-semibold tracking-tight">Store</h1>
       <p className="mt-3 text-base text-slate-300">
-        Add Sitesinc website monitoring to a site we built for you. The 1st month is
+        Add SitesInc website monitoring to a site we built for you. The 1st month is
         free, then it is $129/mo. Monitoring is a monthly subscription you can cancel
         anytime.
       </p>

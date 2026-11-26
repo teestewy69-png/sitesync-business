@@ -9,8 +9,8 @@ export const dynamic = "force-dynamic";
 export function generateMetadata(): Metadata {
   if (!siteflowEnabled()) return { robots: { index: false, follow: false } };
   return {
-    title: "Tools we use | Sitesinc",
-    description: "Domain registrars and tools Sitesinc works with.",
+    title: "Tools we use | SitesInc",
+    description: "Domain registrars and tools SitesInc works with.",
     // Unlisted (noindex, not in the sitemap or navigation) until Tony picks affiliate programs.
     robots: toolsPageListed() ? undefined : { index: false, follow: false },
   };
@@ -42,7 +42,7 @@ export default function ToolsPage() {
     <main className="mx-auto min-h-screen max-w-3xl bg-black px-6 py-16 text-white">
       <h1 className="text-3xl font-semibold tracking-tight">Tools we use</h1>
       <p className="mt-3 text-base text-slate-300">
-        Where we send clients to register domains. You buy and own the domain yourself; Sitesinc never registers it for you.
+        Where we send clients to register domains. You buy and own the domain yourself; SitesInc never registers it for you.
       </p>
       <AffiliateDisclosure className="mt-3" />
       {group("Domain registrars", registrars)}

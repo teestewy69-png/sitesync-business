@@ -55,14 +55,14 @@ export default function ComparePage({ entry }: { entry: CompareEntry }) {
         </ul>
         {entry.verifyNote ? <p className="mt-4 text-sm text-slate-400">{entry.verifyNote}</p> : null}
 
-        <h2 className="mt-12 text-2xl font-semibold">How Sitesinc works</h2>
+        <h2 className="mt-12 text-2xl font-semibold">How SitesInc works</h2>
         <ul className="mt-4 list-disc space-y-2 pl-6 text-base text-slate-300">
           <li>Website build: $1,995 flat, one time. {`${PATH_A_OFFER.startDue}`} to start and {`${PATH_A_OFFER.launchDue}`} at launch.</li>
           <li>No long-term contract, and you own your website.</li>
           <li>
-            Optional monitored SEO is separate and not part of the build: {PATH_A_OFFER.monitoring} (optional).
+            Optional website monitoring is separate and not part of the build: {PATH_A_OFFER.monitoring} (optional).
           </li>
-          <li>Sitesinc is a small company. We build websites; we are not a software platform or an ad agency.</li>
+          <li>SitesInc is a small company. We build websites; we are not a software platform or an ad agency.</li>
         </ul>
 
         <h2 className="mt-12 text-2xl font-semibold">Questions to ask any provider, including us</h2>
@@ -99,7 +99,7 @@ export default function ComparePage({ entry }: { entry: CompareEntry }) {
           ))}
         </p>
         <p className="mt-4 text-xs text-slate-500">
-          {entry.name} is a trademark of its owner. Sitesinc is not affiliated with {entry.name}. Information is taken from the sources linked above and may be out of date; see the source for current terms.
+          {entry.name} is a trademark of its owner. SitesInc is not affiliated with {entry.name}. Information is taken from the sources linked above and may be out of date; see the source for current terms.
         </p>
       </article>
     </SitePage>

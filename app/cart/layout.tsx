@@ -5,7 +5,11 @@ import { siteflowEnabled } from "@/lib/siteflow/flag";
 
 // Evaluated per request so the SiteFlow flag is read at runtime, not baked in at build time.
 export const dynamic = "force-dynamic";
-export const metadata = { robots: { index: false, follow: false } };
+export const metadata = {
+  // Unique title (2026-11-25 audit): cart fell back to the homepage title.
+  title: "Your Cart | SitesInc",
+  robots: { index: false, follow: false },
+};
 
 export default function CartLayout({ children }: { children: ReactNode }) {
   // Product checkout is paused with SiteFlow (phase 2): /cart does not exist unless SITEFLOW_ENABLED is set.

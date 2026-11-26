@@ -4,7 +4,7 @@ import { usePathname, useSelectedLayoutSegment } from "next/navigation";
 import type { ReactNode } from "react";
 
 /**
- * Hides Sitesinc's own marketing chrome (pricing ticker) on the factory workshop (/app, including
+ * Hides SitesInc's own marketing chrome (pricing ticker) on the factory workshop (/app, including
  * sign-in), the per-client preview pages (/demo/client/*), and the client's real domain. A real-domain
  * request is rewritten by middleware to app/client-domain/[host]/..., so the browser path is "/" or
  * "/locations" there; the matched route segment ("client-domain") is what identifies it, on the server

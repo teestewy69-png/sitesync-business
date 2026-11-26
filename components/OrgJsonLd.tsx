@@ -9,6 +9,7 @@ export default function OrgJsonLd() {
     "@type": ["Organization", "LocalBusiness", "ProfessionalService"],
     "@id": `${origin}/#organization`,
     name: content.site.name,
+    legalName: "SiteSync LLC",
     url: origin,
     email: footer.email,
     telephone: "+1-909-323-1575",

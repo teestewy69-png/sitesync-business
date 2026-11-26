@@ -1,6 +1,8 @@
 import type { MetadataRoute } from "next";
 import { PUBLIC_PATHS } from "@/lib/factory/pipeline";
 import { readPublicWorkspace } from "@/lib/factory/workspace";
+import { getPublicProducts } from "@/data/products";
+import { siteflowEnabled } from "@/lib/siteflow/flag";
 import { isStagingEnv } from "@/lib/site-env";
 import { DESIGN_STYLES } from "@/lib/design-styles";
 import { getIndexableLocationCities } from "@/lib/locations";
@@ -18,6 +20,9 @@ const BLOCKED = new Set(["/cart", "/checkout", "/thank-you", "/case-study", "/ap
  * The public offer is the website build + optional monitoring. There is no shop: /shop and /shop/* 301 to /
  * (middleware.ts) and are never listed. /cart belongs to paused SiteFlow and 404s.
  * /checkout is the public $1,995 Payment Links page (noindex) while SiteFlow is paused.
+ * The SiteFlow store (/store, its product pages and lane pages) is public whenever
+ * SITEFLOW_ENABLED is set — opened to search/AI by Tony's decision, 2026-11-25 — and
+ * its URLs are added below only in that state, so the sitemap never lists a 404.
  * Published factory hub pages are appended at runtime so the sitemap matches what actually 200s.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -31,6 +36,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   paths.add("/free-guide");
   paths.add("/trades");
   for (const trade of TRADES) paths.add(`/trades/${trade.slug}`);
+  if (siteflowEnabled()) {
+    paths.add("/store");
+    const storeLanes = new Set<string>();
+    for (const product of getPublicProducts()) {
+      paths.add(`/store/${product.slug}`);
+      if (product.lane) storeLanes.add(product.lane);
+    }
+    for (const lane of storeLanes) paths.add(`/store/lane/${lane}`);
+  }
   for (const style of DESIGN_STYLES) paths.add(`/styles/${style.id}`);
   for (const city of getIndexableLocationCities()) paths.add(`/locations/${city.slug}`);
   const workspace = await readPublicWorkspace();

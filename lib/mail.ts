@@ -184,7 +184,7 @@ export async function sendMail(opts: {
   }
 
   const mail = {
-    from: `"Sitesinc" <${user}>`,
+    from: `"SitesInc" <${user}>`,
     to: opts.to,
     subject: stagingMailSubject(opts.subject),
     text: stagingMailBody(opts.text),

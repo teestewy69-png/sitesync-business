@@ -13,7 +13,7 @@ export default function Page() {
         <PaymentOptions
           location="website-monitoring"
           keys={["monitoring"]}
-          heading="Start optional monitored SEO"
+          heading="Start optional website monitoring"
         />
       }
     />

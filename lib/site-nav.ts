@@ -7,8 +7,6 @@ export const SITE_NAV = [
   { href: "/packages", label: "Packages" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
-  { href: "/blog", label: "Blog" },
-  { href: "/free-website-audit", label: "Free Audit" },
 ] as const;
 
 /** Factory hub pages that must be linked from nav, footer, and the homepage. */

@@ -17,7 +17,6 @@ export const AUDIT_EBOOK_URL =
 
 const NAME_FALLBACK = "Website owner";
 const SEVERITY_ORDER = { high: 0, medium: 1, low: 2 } as const;
-const MAX_FINDINGS_IN_EMAIL = 6;
 
 function esc(value: string): string {
   return value
@@ -32,6 +31,24 @@ function greetingName(name: string): string {
   return trimmed && trimmed !== NAME_FALLBACK ? trimmed : "";
 }
 
+/**
+ * Where a finding shows up: the affected-page count with up to 3 example pages, or the single
+ * page for a one-page finding. Site-level findings ("site") name no page.
+ */
+function pagesNote(f: DeepFinding): string {
+  if (f.pages > 1) {
+    const examples = f.examples.length ? ` — e.g. ${f.examples.join(", ")}` : "";
+    return ` (shows up on ${f.pages} pages${examples})`;
+  }
+  if (f.examples.length) return ` (on ${f.examples[0]})`;
+  return "";
+}
+
+/**
+ * The report shape the walk-through call needs: the big problems first, every one with its
+ * business consequence, then the rest grouped by severity. Every distinct finding is named —
+ * the full list is the selling material, so nothing is truncated away.
+ */
 function findingsText(findings: DeepFinding[]): string {
   if (findings.length === 0) {
     return "The audit didn't flag anything in the checks we run — that's a clean result.";
@@ -39,16 +56,16 @@ function findingsText(findings: DeepFinding[]): string {
   const sorted = [...findings].sort(
     (a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]
   );
-  const shown = sorted.slice(0, MAX_FINDINGS_IN_EMAIL);
-  const lines = shown.map((f) => {
-    const pages =
-      f.pages > 1 ? ` (shows up on ${f.pages} pages)` : "";
-    return `- [${f.severity.toUpperCase()}] ${f.issue}\n  ${f.fix}${pages}`;
-  });
-  if (sorted.length > shown.length) {
-    lines.push(`- …and ${sorted.length - shown.length} more in the full check list.`);
-  }
-  return lines.join("\n");
+  const line = (f: DeepFinding) =>
+    `- [${f.severity.toUpperCase()}] ${f.issue}${pagesNote(f)}\n  Fix: ${f.fix}\n  What it means for your business: ${f.consequence}`;
+  const sections: string[] = [];
+  const highs = sorted.filter((f) => f.severity === "high");
+  const mediums = sorted.filter((f) => f.severity === "medium");
+  const lows = sorted.filter((f) => f.severity === "low");
+  if (highs.length) sections.push(`THE BIG PROBLEMS FIRST\n\n${highs.map(line).join("\n")}`);
+  if (mediums.length) sections.push(`ALSO FOUND — MEDIUM PRIORITY\n\n${mediums.map(line).join("\n")}`);
+  if (lows.length) sections.push(`ALSO FOUND — LOW PRIORITY\n\n${lows.map(line).join("\n")}`);
+  return sections.join("\n\n");
 }
 
 function findingsHtml(findings: DeepFinding[]): string {
@@ -58,18 +75,19 @@ function findingsHtml(findings: DeepFinding[]): string {
   const sorted = [...findings].sort(
     (a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]
   );
-  const shown = sorted.slice(0, MAX_FINDINGS_IN_EMAIL);
-  const items = shown
-    .map((f) => {
-      const pages = f.pages > 1 ? ` (shows up on ${f.pages} pages)` : "";
-      return `<li><strong>[${esc(f.severity.toUpperCase())}] ${esc(f.issue)}</strong><br/>${esc(f.fix)}${esc(pages)}</li>`;
-    })
-    .join("");
-  const more =
-    sorted.length > shown.length
-      ? `<li>…and ${sorted.length - shown.length} more in the full check list.</li>`
-      : "";
-  return `<ul>${items}${more}</ul>`;
+  const item = (f: DeepFinding) =>
+    `<li><strong>[${esc(f.severity.toUpperCase())}] ${esc(f.issue)}</strong>${esc(pagesNote(f))}<br/>Fix: ${esc(f.fix)}<br/><em>What it means for your business:</em> ${esc(f.consequence)}</li>`;
+  const sections: string[] = [];
+  const highs = sorted.filter((f) => f.severity === "high");
+  const mediums = sorted.filter((f) => f.severity === "medium");
+  const lows = sorted.filter((f) => f.severity === "low");
+  if (highs.length)
+    sections.push(`<p><strong>THE BIG PROBLEMS FIRST</strong></p><ul>${highs.map(item).join("")}</ul>`);
+  if (mediums.length)
+    sections.push(`<p><strong>ALSO FOUND — MEDIUM PRIORITY</strong></p><ul>${mediums.map(item).join("")}</ul>`);
+  if (lows.length)
+    sections.push(`<p><strong>ALSO FOUND — LOW PRIORITY</strong></p><ul>${lows.map(item).join("")}</ul>`);
+  return sections.join("");
 }
 
 const SIGN_OFF = `Tony, SitesInc

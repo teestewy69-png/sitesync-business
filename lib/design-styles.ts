@@ -97,7 +97,7 @@ export type MiniSiteContent = {
 };
 
 export const SITESINC_SITE: MiniSiteContent = {
-  business: "Sitesinc",
+  business: "SitesInc",
   tagline:
     "Ultra-modern websites that finally make your small business look big. Live now at sitesinc.co.",
   cta: "Request My Build",
@@ -120,7 +120,7 @@ export const SITESINC_SITE: MiniSiteContent = {
       blurb: "On-page SEO basics and a lead form that reaches you, from day one.",
     },
     {
-      name: "Monitored SEO",
+      name: "Website Monitoring",
       price: "1st mo free",
       blurb: "Not included in the build: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days. Cancel anytime.",
     },
@@ -134,7 +134,7 @@ export const SITESINC_SITE: MiniSiteContent = {
     {
       name: "Payment",
       quote:
-        "Website builds are $1,995. Pay 50% to start, 50% at launch. Monitored SEO (optional): 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days. You own the code.",
+        "Website builds are $1,995. Pay 50% to start, 50% at launch. Website Monitoring (optional): 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days. You own the code.",
     },
     {
       name: "Turnaround",

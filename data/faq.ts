@@ -17,7 +17,7 @@ export const faqItems: FaqItem[] = [
   {
     question: "Can I edit the site content myself later?",
     answer:
-      "Yes, if you or your developer are comfortable editing basic code files. Your content lives in a simple configuration file (like content.json). You can adjust text, services, and basic info directly in that file, then redeploy. We also provide a short walkthrough video showing exactly where to change things. If you don\u2019t want to touch code at all, you can use our monitored SEO service (1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days) and we\u2019ll handle updates for you.",
+      "Yes, if you or your developer are comfortable editing basic code files. Your content lives in a simple configuration file (like content.json). You can adjust text, services, and basic info directly in that file, then redeploy. We also provide a short walkthrough video showing exactly where to change things. If you don\u2019t want to touch code at all, you can use our website monitoring service (1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days) and we\u2019ll handle updates for you.",
   },
   {
     question: "Is hosting included?",
@@ -37,17 +37,17 @@ export const faqItems: FaqItem[] = [
   {
     question: "How much does it cost? Are there any subscriptions?",
     answer:
-      "Website builds are $1,995 — a flat fee. No negotiation. You pay 50% ($997.50) to start and 50% at launch. There is no required subscription or builder lock-in. Monitored SEO is not included in the build. It is optional, if you want us to handle monitoring, tech updates and small content changes. Monitoring terms: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days. You can cancel it. There is no long-term contract.",
+      "Website builds are $1,995 — a flat fee. No negotiation. You pay 50% ($997.50) to start and 50% at launch. There is no required subscription or builder lock-in. Website Monitoring is not included in the build. It is optional, if you want us to handle monitoring, tech updates and small content changes. Monitoring terms: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days. You can cancel it. There is no long-term contract.",
   },
   {
     question: "How does the 50% to start / 50% at launch payment work?",
     answer:
-      "The website build is $1,995. Pay $997.50 to start and $997.50 at launch, or pay $1,995 in one payment, using the buttons on the Packages page (sitesinc.co/packages). The homepage form is a request, not a purchase, if you want to talk first. Monitored SEO is not included: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days, cancel anytime. It is never required to keep the site.",
+      "The website build is $1,995. Pay $997.50 to start and $997.50 at launch, or pay $1,995 in one payment, using the buttons on the Packages page (sitesinc.co/packages). The homepage form is a request, not a purchase, if you want to talk first. Website Monitoring is not included: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days, cancel anytime. It is never required to keep the site.",
   },
   {
     question: "What\u2019s included in the $1,995 website build?",
     answer:
-      "The $1,995 build (paid 50% to start and 50% at launch) includes: a custom site built on one of 8 ultra-modern dark designs, full Next.js + Tailwind development, on-page SEO basics, lead capture (contact form and email signup), Netlify hosting setup, domain connection, and one round of revisions. Monitored SEO is not included in the $1,995 build: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days.",
+      "The $1,995 build (paid 50% to start and 50% at launch) includes: a custom site built on one of 8 ultra-modern dark designs, full Next.js + Tailwind development, on-page SEO basics, lead capture (contact form and email signup), Netlify hosting setup, domain connection, and one round of revisions. Website Monitoring is not included in the $1,995 build: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days.",
   },
   {
     question: "What do you need from me to start?",

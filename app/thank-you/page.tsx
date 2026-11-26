@@ -10,9 +10,9 @@ import { findOrderById, type Order } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "Thank you | Sitesinc",
+  title: "Thank you | SitesInc",
   description:
-    "This page confirms your Sitesinc payment or website request. We will follow up by email. It is not listed in search results.",
+    "This page confirms your SitesInc payment or website request. We will follow up by email. It is not listed in search results.",
   alternates: { canonical: "/thank-you" },
   robots: { index: false, follow: false },
 };
@@ -22,11 +22,11 @@ type RequestKey = "paid" | "launch" | "full" | "maintenance";
 const REQUEST_COPY: Record<RequestKey, { title: string; body: string }> = {
   paid: {
     title: "Thanks — we received your payment",
-    body: "If you paid the $997.50 start deposit, the $997.50 launch balance, the $1,995 flat website build, or optional monitored SEO, we received it and will email next steps.",
+    body: "If you paid the $997.50 start deposit, the $997.50 launch balance, the $1,995 flat website build, or optional website monitoring, we received it and will email next steps.",
   },
   launch: {
     title: "Thanks — we received your request",
-    body: "Submitting a Sitesinc form is a request, not a purchase. If you already paid, we received it. If you sent a request, we will follow up from this inbox.",
+    body: "Submitting a SitesInc form is a request, not a purchase. If you already paid, we received it. If you sent a request, we will follow up from this inbox.",
   },
   full: {
     title: "Thanks — we received your request",
@@ -253,7 +253,7 @@ export default async function ThankYouPage({
           href="/"
           className="inline-flex items-center justify-center rounded-full bg-gradient-to-b from-brand-300 to-brand-600 px-6 py-2.5 text-sm font-semibold text-zinc-950 shadow-glow transition hover:from-brand-200 hover:to-brand-500"
         >
-          Back to Sitesinc
+          Back to SitesInc
         </Link>
       </div>
     </main>

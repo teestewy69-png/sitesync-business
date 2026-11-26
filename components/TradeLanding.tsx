@@ -26,7 +26,7 @@ function TradeJsonLd({ trade }: { trade: Trade }) {
         "@id": `${url}#service`,
         name: `Website design for ${trade.name.toLowerCase()}`,
         serviceType: "Website design and development",
-        provider: { "@id": `${origin}/#organization`, "@type": "Organization", name: "Sitesinc", telephone: "+1-909-323-1575", email: SITESINC_EMAIL, url: origin },
+        provider: { "@id": `${origin}/#organization`, "@type": "Organization", name: "SitesInc", legalName: "SiteSync LLC", telephone: "+1-909-323-1575", email: SITESINC_EMAIL, url: origin },
         areaServed: SERVICE_AREA_LIST.map((name) => ({ "@type": "AdministrativeArea", name: `${name}, CA` })),
         offers: { "@type": "Offer", price: "1995", priceCurrency: "USD", description: "$1,995 flat. 50% ($997.50) to start, 50% at launch." },
         url,
@@ -35,6 +35,17 @@ function TradeJsonLd({ trade }: { trade: Trade }) {
         "@type": "FAQPage",
         "@id": `${url}#faq`,
         mainEntity: faqs.map((f) => ({ "@type": "Question", name: f.question, acceptedAnswer: { "@type": "Answer", text: f.answer } })),
+      },
+      {
+        // Breadcrumb (2026-11-25 gate): trade landings carried no
+        // BreadcrumbList; the locations cluster already sets this pattern.
+        "@type": "BreadcrumbList",
+        "@id": `${url}#breadcrumb`,
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "SitesInc", item: origin },
+          { "@type": "ListItem", position: 2, name: "Trades", item: `${origin}/trades` },
+          { "@type": "ListItem", position: 3, name: trade.name, item: url },
+        ],
       },
     ],
   };

@@ -3,7 +3,7 @@ import { findLeadById, storeInfo, updateLead } from "@/lib/store";
 
 const CHECKLIST_TEXT = `Hey!
 
-Thanks for requesting a Sitesinc website. This is a request, not a purchase. If we accept the project, we send a $997.50 start invoice by email. The remaining $997.50 is due at launch. Optional monitoring is $129/month and can be added later.
+Thanks for requesting a SitesInc website. This is a request, not a purchase. If we accept the project, we send a $997.50 start invoice by email. The remaining $997.50 is due at launch. Optional monitoring is $129/month and can be added later.
 
 Here is the same checklist we run through on every build:
 
@@ -65,7 +65,7 @@ export async function sendSubscribeEmails(leadId: string): Promise<void> {
   try {
     mailed = await sendMail({
       to: lead.email,
-      subject: "Your Sitesinc website request",
+      subject: "Your SitesInc website request",
       text: CHECKLIST_TEXT,
     });
     await sendMail({

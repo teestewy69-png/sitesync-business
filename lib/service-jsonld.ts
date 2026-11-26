@@ -34,7 +34,7 @@ export function buildServiceJsonLd({
         price: "1995",
         priceCurrency: "USD",
         availability: "https://schema.org/InStock",
-        description: `Website builds are ${PATH_A_OFFER.buildFrom}. Pay 50% to start, 50% at launch. Monitored SEO is not included in the $1,995 build: ${PATH_A_OFFER.monitoring}.`,
+        description: `Website builds are ${PATH_A_OFFER.buildFrom}. Pay 50% to start, 50% at launch. Website Monitoring is not included in the $1,995 build: ${PATH_A_OFFER.monitoring}.`,
       },
     },
   ];

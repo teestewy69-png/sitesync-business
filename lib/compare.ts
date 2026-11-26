@@ -37,11 +37,11 @@ export const COMPARE: CompareEntry[] = [
     slug: "hibu-alternative",
     name: "Hibu",
     heading: "A Hibu alternative for small businesses",
-    title: "Hibu Alternative: Flat-Fee Website | Sitesinc",
+    title: "Hibu Alternative: Flat-Fee Website | SitesInc",
     description:
-      "Comparing Hibu with Sitesinc using published terms and sources. Hibu plans are custom with typical 6 to 12 month terms. Sitesinc builds your website for $1,995 flat, one time.",
+      "Comparing Hibu with SitesInc using published terms and sources. Hibu plans are custom with typical 6 to 12 month terms. SitesInc builds your website for $1,995 flat, one time.",
     intro:
-      "Hibu is a local marketing company that sells websites and ads. This page lists what Hibu publishes about pricing and cancellation, each with its source and the date we read it, next to how Sitesinc works.",
+      "Hibu is a local marketing company that sells websites and ads. This page lists what Hibu publishes about pricing and cancellation, each with its source and the date we read it, next to how SitesInc works.",
     facts: [
       {
         label: "Published pricing",
@@ -78,11 +78,11 @@ export const COMPARE: CompareEntry[] = [
     slug: "thryv-alternative",
     name: "Thryv",
     heading: "A Thryv alternative for small businesses",
-    title: "Thryv Alternative: Flat-Fee Website | Sitesinc",
+    title: "Thryv Alternative: Flat-Fee Website | SitesInc",
     description:
-      "Comparing Thryv with Sitesinc using published pricing. Thryv's pricing page lists plans at $99 and $399 per month. Sitesinc builds your website for $1,995 flat, one time.",
+      "Comparing Thryv with SitesInc using published pricing. Thryv's pricing page lists plans at $99 and $399 per month. SitesInc builds your website for $1,995 flat, one time.",
     intro:
-      "Thryv is a business software and marketing platform. This page lists what Thryv publishes on its pricing page, with the source and the date we read it, next to how Sitesinc works. Thryv sells software plus done-for-you marketing; Sitesinc does one thing, builds your website.",
+      "Thryv is a business software and marketing platform. This page lists what Thryv publishes on its pricing page, with the source and the date we read it, next to how SitesInc works. Thryv sells software plus done-for-you marketing; SitesInc does one thing, builds your website.",
     facts: [
       {
         label: "Starter plan",
@@ -119,9 +119,9 @@ export const COMPARE: CompareEntry[] = [
     slug: "web-com-alternative",
     name: "Web.com",
     heading: "A Web.com alternative for small businesses",
-    title: "Web.com Alternative: Flat-Fee Website | Sitesinc",
+    title: "Web.com Alternative: Flat-Fee Website | SitesInc",
     description:
-      "Comparing Web.com website plans with Sitesinc. Web.com advertises first-year offer pricing that renews at a higher monthly rate. Sitesinc builds your website for $1,995 flat, one time.",
+      "Comparing Web.com website plans with SitesInc. Web.com advertises first-year offer pricing that renews at a higher monthly rate. SitesInc builds your website for $1,995 flat, one time.",
     intro:
       "Web.com (also branded Network Solutions) sells website-builder plans you set up yourself, plus design help. This page sticks to what we could confirm. Web.com's site blocked our automated reads, so we are explicit below about what is unverified.",
     facts: [

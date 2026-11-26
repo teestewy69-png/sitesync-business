@@ -5,9 +5,9 @@ import { readPublicCaseStudy } from "@/lib/factory/workspace";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Sitesinc Growth Case Study — in progress",
+  title: "SitesInc Growth Case Study — in progress",
   description:
-    "Living 90-day case study of Sitesinc running through its own website factory. In progress. No ranking, indexing, backlink, or conversion claims.",
+    "Living 90-day case study of SitesInc running through its own website factory. In progress. No ranking, indexing, backlink, or conversion claims.",
   robots: { index: false, follow: false, nocache: true },
   alternates: { canonical: "/case-study" },
 };
@@ -19,14 +19,14 @@ export default async function PublicCaseStudy() {
     return (
       <main className="min-h-screen bg-black text-white">
         <div className="mx-auto max-w-3xl px-6 py-16">
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Sitesinc builds Sitesinc</h1>
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">SitesInc builds SitesInc</h1>
           <p className="mt-4 text-base text-slate-300">
             The living case study is temporarily unavailable. Please check back soon. Nothing here
             is a ranking, indexing, backlink, or conversion claim.
           </p>
           <p className="mt-6 text-sm text-slate-400">
             <Link href="/" className="text-brand-300">
-              Back to Sitesinc
+              Back to SitesInc
             </Link>
           </p>
         </div>
@@ -42,7 +42,7 @@ export default async function PublicCaseStudy() {
           In progress · noindex · no ranking or revenue claims
         </p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-          Sitesinc builds Sitesinc
+          SitesInc builds SitesInc
         </h1>
         <p className="mt-4 text-base text-slate-300">
           This is a 90-day living case study, not a one-day before/after. The public homepage on
@@ -104,7 +104,7 @@ export default async function PublicCaseStudy() {
         </p>
         <p className="mt-2 text-sm text-slate-400">
           <Link href="/" className="text-brand-300">
-            Back to Sitesinc
+            Back to SitesInc
           </Link>
         </p>
       </div>

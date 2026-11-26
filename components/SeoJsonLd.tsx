@@ -10,6 +10,7 @@ export default function SeoJsonLd() {
         "@type": ["Organization", "LocalBusiness", "ProfessionalService"],
         "@id": `${origin}/#organization`,
         name: content.site.name,
+        legalName: "SiteSync LLC",
         url: origin,
         email: content.footer.email,
         telephone: "+1-909-323-1575",
@@ -44,7 +45,7 @@ export default function SeoJsonLd() {
           price: "1995",
           priceCurrency: "USD",
           description:
-            "Website builds are $1,995. Pay 50% to start, 50% at launch. Monitored SEO is not included in the $1,995 build: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days.",
+            "Website builds are $1,995. Pay 50% to start, 50% at launch. Website Monitoring is not included in the $1,995 build: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days.",
         },
       },
       {

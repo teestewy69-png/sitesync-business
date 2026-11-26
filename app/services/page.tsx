@@ -9,12 +9,12 @@ import ServiceJsonLd from "@/components/ServiceJsonLd";
 import HubLinks from "@/components/HubLinks";
 
 export const metadata: Metadata = {
-  title: "Affordable Website Design Services | Sitesinc",
-  description: "Everything in the $1,995 Sitesinc website build: custom Next.js design, SEO for small business, lead capture, hosting setup and domain connection. 50% to start.",
+  title: "Affordable Website Design Services | SitesInc",
+  description: "Everything in the $1,995 SitesInc website build: custom Next.js design, SEO for small business, lead capture, hosting setup and domain connection. 50% to start.",
   alternates: { canonical: "/services" },
   openGraph: {
-    title: "Affordable Website Design Services | Sitesinc",
-    description: "Everything in the $1,995 Sitesinc website build: custom Next.js design, SEO for small business, lead capture, hosting setup and domain connection. 50% to start.",
+    title: "Affordable Website Design Services | SitesInc",
+    description: "Everything in the $1,995 SitesInc website build: custom Next.js design, SEO for small business, lead capture, hosting setup and domain connection. 50% to start.",
     url: "/services", images: [OG_IMAGE],
   },
 };

@@ -15,7 +15,7 @@ export default function ArticleJsonLd({ slug }: { slug: string }) {
     image: content.seo.image,
     mainEntityOfPage: `${origin}/blog/${post.slug}`,
     author: { "@type": "Organization", name: content.site.name, url: origin },
-    publisher: { "@id": `${origin}/#organization`, "@type": "Organization", name: content.site.name, logo: { "@type": "ImageObject", url: `${origin}/logo.png` } },
+    publisher: { "@id": `${origin}/#organization`, "@type": "Organization", name: content.site.name, legalName: "SiteSync LLC", logo: { "@type": "ImageObject", url: `${origin}/logo.png` } },
   };
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
 }

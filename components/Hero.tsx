@@ -1,6 +1,5 @@
-import Link from "next/link";
+import Image from "next/image";
 import content from "@/content.json";
-import { SITESINC_SITE } from "@/lib/design-styles";
 import SiteHeader from "@/components/SiteHeader";
 
 export default function Hero() {
@@ -8,141 +7,63 @@ export default function Hero() {
   const startHref = pricing.build.cta.href;
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-black via-canvas to-black text-white">
-      <div className="pointer-events-none absolute -top-40 -right-40 h-80 w-80 rounded-full bg-brand-500/20 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-brand-800/25 blur-3xl" />
-
+    <section className="relative bg-black text-white">
       <SiteHeader variant="hero" />
 
-      <div className="relative mx-auto flex max-w-6xl flex-col gap-12 px-6 py-16 md:flex-row md:items-center md:py-24">
-        <div className="max-w-xl space-y-6">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium uppercase tracking-wider text-slate-200 backdrop-blur">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+      <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 py-20 sm:py-24 lg:grid-cols-2 lg:gap-16">
+        <div>
+          <p className="text-sm font-medium uppercase tracking-wider text-brand-300">
             {hero.overline}
-          </div>
+          </p>
 
-          <h1 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
+          <h1 className="mt-5 text-balance text-4xl font-semibold tracking-tight sm:text-5xl">
             {hero.headline}
           </h1>
-          <h2 className="text-balance text-lg font-medium tracking-tight text-brand-200 sm:text-xl">
-            Small business website design — $1,995 flat, you own it.
-          </h2>
 
-          <p className="text-balance text-base text-slate-300">
+          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-slate-300">
             {hero.subheadline}
           </p>
 
-          <div className="inline-flex items-center gap-3 rounded-xl border border-brand-400/30 bg-brand-500/10 px-4 py-2 text-base">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-400/20 text-xs font-semibold text-brand-300">
-              50/50
-            </div>
-            <div>
-              <p className="font-medium text-brand-200">{hero.offer.title}</p>
-              <p className="text-base text-brand-100/80">
-                {hero.offer.subtitle}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:gap-4">
+          <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
             <a
               href={startHref}
               data-analytics-cta="start_build"
               data-analytics-location="hero"
-              className="group inline-flex items-center justify-center rounded-full bg-gradient-to-b from-brand-300 to-brand-600 px-6 py-3 text-sm font-semibold text-zinc-950 shadow-lg shadow-brand-500/30 transition hover:from-brand-200 hover:to-brand-500"
+              className="inline-flex items-center justify-center rounded-full bg-gradient-to-b from-brand-300 to-brand-600 px-7 py-3.5 text-sm font-semibold text-zinc-950 shadow-lg shadow-brand-500/20 transition hover:from-brand-200 hover:to-brand-500"
             >
               {hero.primaryCta.label}
-              <span className="ml-2 text-base transition group-hover:translate-x-0.5">
-                →
-              </span>
             </a>
             <a
               href="tel:+19093231575"
               data-analytics-cta="call"
               data-analytics-location="hero"
-              className="inline-flex items-center justify-center rounded-full border border-brand-400/50 bg-brand-500/10 px-6 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-500/20"
+              className="text-sm font-medium text-slate-200 underline decoration-brand-400/60 underline-offset-4 transition hover:text-brand-300"
             >
               Call (909) 323-1575
             </a>
-            <Link
-              href="/styles"
-              data-analytics-cta="see_designs"
-              data-analytics-location="hero"
-              className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/5 px-6 py-3 text-sm font-medium text-slate-100 transition hover:border-brand-400/60 hover:bg-brand-400/5"
-            >
-              {hero.secondaryCta.label}
-            </Link>
           </div>
 
-          <div className="space-y-1 text-base text-slate-300">
-            <p>{hero.pricingLine}</p>
-            <p className="text-slate-400">{hero.stackLine}</p>
-            <p className="text-base text-emerald-300/90">
-              No long-term contract. Monitored SEO is not included: 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days.
-            </p>
-          </div>
-
-          <p className="pt-1 text-base text-slate-400">
-            {hero.trustLine}{" "}
-            <a href="#trades" className="text-brand-300 hover:underline">
-              Find your trade
-            </a>
+          <p className="mt-10 text-sm text-slate-400">{hero.pricingLine}</p>
+          <p className="mt-2 text-sm text-slate-500">
+            Timeline confirmed in writing before work starts.
           </p>
         </div>
 
-        <div className="flex-1">
-          <div className="relative mx-auto max-w-md rounded-3xl border border-white/10 bg-gradient-to-br from-surface-elevated/80 via-surface/90 to-black/90 p-5 shadow-elevated backdrop-blur">
-            <div className="mb-4 flex items-center justify-between text-xs text-slate-300">
-              <span className="inline-flex items-center gap-1">
-                <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                Live · sitesinc.co
-              </span>
-              <span className="rounded-full bg-white/5 px-3 py-1 text-xs uppercase tracking-wider">
-                Sitesinc
-              </span>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <p className="text-lg font-semibold tracking-tight text-white">
-                  {SITESINC_SITE.business}
-                </p>
-                <p className="mt-2 text-base leading-relaxed text-slate-300">
-                  {SITESINC_SITE.tagline}
-                </p>
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                {SITESINC_SITE.services.slice(0, 3).map((service) => (
-                  <div
-                    key={service.name}
-                    className="rounded-2xl border border-white/5 bg-surface/80 p-3"
-                  >
-                    <p className="text-sm font-medium leading-tight text-slate-100">
-                      {service.name}
-                    </p>
-                    <p className="mt-1 text-sm font-semibold text-brand-300">
-                      {service.price}
-                    </p>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-5 flex items-center justify-between gap-3">
-                <div className="space-y-1 text-base text-slate-300">
-                  <p className="font-medium text-slate-100">8 design styles</p>
-                  <p className="text-slate-400">
-                    Same live offer, eight different layouts.
-                  </p>
-                </div>
-                <Link
-                  href="/styles"
-                  className="shrink-0 rounded-full bg-white/10 px-4 py-2 text-xs font-medium text-slate-50 transition hover:bg-brand-500 hover:text-zinc-950"
-                >
-                  See 8 designs
-                </Link>
-              </div>
-            </div>
-            <div className="pointer-events-none absolute inset-0 rounded-3xl border border-white/5" />
-          </div>
-        </div>
+        <figure className="relative">
+          <div
+            aria-hidden
+            className="absolute -inset-6 rounded-[36px] bg-brand-500/10 blur-2xl"
+          />
+          <Image
+            src="/images/hero-owner.jpg"
+            alt="A barber in his own shop, smiling as he answers a call from a customer"
+            width={1920}
+            height={1280}
+            priority
+            className="relative aspect-[3/2] w-full rounded-[30px] object-cover shadow-elevated ring-1 ring-white/15"
+            sizes="(max-width: 1024px) 100vw, 560px"
+          />
+        </figure>
       </div>
     </section>
   );

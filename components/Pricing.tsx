@@ -1,7 +1,10 @@
-import { Check, ClipboardList } from "lucide-react";
+import { Camera, Check, ClipboardList, Palette, Tag, Target } from "lucide-react";
 import Link from "next/link";
 import content from "@/content.json";
 import { paymentLinks } from "@/lib/payment-links";
+
+/** One meaningful icon per onboarding item, in content.json order. */
+const ONBOARDING_ICONS = [Tag, ClipboardList, Palette, Camera, Target];
 
 export default function Pricing() {
   const { pricing, onboarding } = content;
@@ -37,6 +40,28 @@ export default function Pricing() {
             <p className="mt-3 text-base text-slate-300">
               {pricing.build.startDue} to start · {pricing.build.launchDue} at launch
             </p>
+            <div
+              className="mt-5 flex overflow-hidden rounded-2xl text-left ring-1 ring-white/10"
+              role="img"
+              aria-label={`Payment split: ${pricing.build.startDue} to start, ${pricing.build.launchDue} at launch`}
+            >
+              <div className="flex-1 bg-brand-500/15 px-5 py-4">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-brand-300">
+                  To start · 50%
+                </p>
+                <p className="mt-1 text-2xl font-bold tracking-tight text-white">
+                  {pricing.build.startDue}
+                </p>
+              </div>
+              <div className="flex-1 bg-white/5 px-5 py-4">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                  At launch · 50%
+                </p>
+                <p className="mt-1 text-2xl font-bold tracking-tight text-white">
+                  {pricing.build.launchDue}
+                </p>
+              </div>
+            </div>
             <p className="mt-4 text-base leading-relaxed text-slate-400">
               {pricing.build.detail}
             </p>
@@ -128,12 +153,17 @@ export default function Pricing() {
             </h3>
           </div>
           <ul className="mt-6 grid gap-x-8 gap-y-3 sm:grid-cols-2">
-            {onboarding.items.map((item) => (
-              <li key={item} className="flex items-start gap-3">
-                <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand-400" />
-                <span className="text-base text-slate-300">{item}</span>
-              </li>
-            ))}
+            {onboarding.items.map((item, index) => {
+              const Icon = ONBOARDING_ICONS[index] ?? Check;
+              return (
+                <li key={item} className="flex items-start gap-3">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-500/10 text-brand-400 ring-1 ring-brand-500/25">
+                    <Icon className="h-4 w-4" />
+                  </span>
+                  <span className="pt-1 text-base text-slate-300">{item}</span>
+                </li>
+              );
+            })}
           </ul>
           <p className="mt-6 text-base text-slate-400">{onboarding.note}</p>
         </div>

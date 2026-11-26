@@ -102,7 +102,7 @@ export const catalog: CatalogEntry[] = [
       filename: "sitesinc-keep-it-earning-kit.zip",
     },
     description:
-      "Offer-page templates, an update cadence, and SEO refresh prompts from Sitesinc client builds.",
+      "Offer-page templates, an update cadence, and SEO refresh prompts from SitesInc client builds.",
     image: "/logo.png",
   },
   {
@@ -125,7 +125,7 @@ export const catalog: CatalogEntry[] = [
       { key: "siteUrl", label: "Website to monitor", placeholder: "https://example.com", required: true, kind: "url", maxLength: 200 },
     ],
     description:
-      "Optional monitored SEO: 1st month free, then $129/mo. Uptime checks, basic technical updates, and two to three small text or image changes a month. Cancel anytime.",
+      "Optional Website Monitoring: 1st month free, then $129/mo. Uptime checks, basic technical updates, and two to three small text or image changes a month. Cancel anytime.",
     image: "/logo.png",
   },
   {
@@ -174,7 +174,7 @@ export const catalog: CatalogEntry[] = [
       fileKey: "kits/website-template-pack.zip",
       filename: "sitesinc-website-template-pack.zip",
     },
-    description: "Small-business website page templates from the Sitesinc factory.",
+    description: "Small-business website page templates from the SitesInc factory.",
     image: "/logo.png",
   },
   // --- Test Lane guides (produced 2026-11-10): priced, parked unlisted until Tony lists them -----

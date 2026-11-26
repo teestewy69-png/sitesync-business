@@ -1,20 +1,29 @@
 import dynamic from "next/dynamic";
+import type { Metadata } from "next";
+import content from "@/content.json";
 import Hero from "@/components/Hero";
 import Pricing from "@/components/Pricing";
 import Outcomes from "@/components/Outcomes";
 import Process from "@/components/Process";
+import VisualBreak from "@/components/VisualBreak";
 import About from "@/components/About";
-import ContentEngine from "@/components/ContentEngine";
 import Proof from "@/components/Proof";
 import FAQ from "@/components/FAQ";
 import HubLinks from "@/components/HubLinks";
 import FreeResources from "@/components/FreeResources";
-import EmailCapture from "@/components/EmailCapture";
 import Footer from "@/components/Footer";
 import SeoJsonLd from "@/components/SeoJsonLd";
 import TradePicker from "@/components/TradePicker";
 import FreeAuditBanner from "@/components/PilotOffer";
-import TwoAudiencePitch from "@/components/TwoAudiencePitch";
+
+export const metadata: Metadata = {
+  title: { absolute: content.seo.title },
+  description: content.seo.description,
+  // Explicit self-referencing canonical for the homepage (audit fix,
+  // 2026-11-25: the homepage shipped with no canonical of its own).
+  // Host convention sitewide is the apex in content.seo.url / sitemap.
+  alternates: { canonical: "/" },
+};
 
 const DesignShowcase = dynamic(() => import("@/components/DesignShowcase"), {
   loading: () => (
@@ -32,37 +41,39 @@ const DesignShowcase = dynamic(() => import("@/components/DesignShowcase"), {
   ),
 });
 
-const PickYourDesign = dynamic(() => import("@/components/PickYourDesign"), {
-  loading: () => (
-    <section className="border-t border-white/5 bg-black py-16" aria-busy="true">
-      <div className="mx-auto max-w-6xl px-6">
-        <div className="h-10 w-64 animate-pulse rounded bg-white/10" />
-        <div className="mt-8 h-64 animate-pulse rounded-3xl bg-white/5" />
-      </div>
-    </section>
-  ),
-});
-
+/**
+ * Homepage composition — declutter pass (2026-11-25).
+ * One message per section, in reading order: offer → trades → designs →
+ * pricing → free audit → outcomes → process → visual break → about →
+ * proof → FAQ → free resources → hub directory → footer.
+ * Redesign v2 (visual layer, same day): hero photograph, a photo on every
+ * trade card, real rendered thumbnails for the 8 designs, an illustrated
+ * onboarding checklist + 50/50 split visual in Pricing, and the mid-page
+ * VisualBreak photograph — imagery added, no copy facts changed.
+ * Removed as duplicates (components still exist and are used elsewhere
+ * or available to restore): TwoAudiencePitch (its two-audience message is
+ * carried by the hero + the audit strip), PickYourDesign (duplicated
+ * DesignShowcase), ContentEngine (its SEO-foundation point is made by
+ * Outcomes and /seo-ready-websites), EmailCapture (its checklist offer
+ * is carried by FreeResources, which links to the same form pages).
+ */
 export default function Home() {
   return (
     <>
       <SeoJsonLd />
       <Hero />
-      <TwoAudiencePitch location="home" />
       <TradePicker />
-      <FreeAuditBanner />
       <DesignShowcase />
-      <PickYourDesign />
       <Pricing />
-      <HubLinks />
+      <FreeAuditBanner />
       <Outcomes />
       <Process />
+      <VisualBreak />
       <About />
-      <ContentEngine />
       <Proof />
       <FAQ />
       <FreeResources />
-      <EmailCapture />
+      <HubLinks />
       <Footer />
     </>
   );

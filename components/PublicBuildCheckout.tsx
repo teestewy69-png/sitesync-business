@@ -7,7 +7,7 @@ export default function PublicBuildCheckout() {
       <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">Checkout</h1>
       <p className="mt-3 text-base text-slate-300">
         Pay the advertised $1,995 website build: $997.50 to start and $997.50 at launch, or $1,995
-        in one payment. Optional monitored SEO is $129/mo.
+        in one payment. Optional website monitoring is $129/mo.
       </p>
       <PaymentOptions location="checkout" showHeading={false} />
     </section>

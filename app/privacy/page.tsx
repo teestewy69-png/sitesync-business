@@ -4,10 +4,10 @@ import SitePage from "@/components/SitePage";
 import OrgJsonLd from "@/components/OrgJsonLd";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | Sitesinc Small Business Websites",
-  description: "How Sitesinc collects, uses, stores and protects the information you share through our website, request forms and emails, and how to contact us about it.",
+  title: "Privacy Policy | SitesInc Small Business Websites",
+  description: "How SitesInc collects, uses, stores and protects the information you share through our website, request forms and emails, and how to contact us about it.",
   alternates: { canonical: "/privacy" },
-  openGraph: { title: "Privacy Policy | Sitesinc Small Business Websites", description: "How Sitesinc collects, uses, stores and protects the information you share through our website, request forms and emails, and how to contact us about it.", url: "/privacy", images: [OG_IMAGE] },
+  openGraph: { title: "Privacy Policy | SitesInc Small Business Websites", description: "How SitesInc collects, uses, stores and protects the information you share through our website, request forms and emails, and how to contact us about it.", url: "/privacy", images: [OG_IMAGE] },
 };
 
 export default function PrivacyPage() {
@@ -25,7 +25,7 @@ export default function PrivacyPage() {
         <div className="mt-8 space-y-8 text-base leading-7 text-slate-300">
           <section>
             <p>
-              Sitesinc (“we,” “us,” or “our”) operates the website at{" "}
+              SiteSync LLC, operating as SitesInc (“we,” “us,” or “our”), operates the website at{" "}
               <span className="text-slate-100">sitesinc.co</span>. This Privacy
               Policy explains how we collect, use, and protect your information
               when you visit our website, contact us, purchase services, or sign
@@ -59,7 +59,7 @@ export default function PrivacyPage() {
                 <span className="font-medium text-slate-100">
                   Payment-related information
                 </span>{" "}
-                when you pay a Sitesinc invoice. Payments are processed by
+                when you pay a SitesInc invoice. Payments are processed by
                 third-party payment providers. We do
                 not store your full payment card details on our servers.
               </li>
@@ -235,7 +235,7 @@ export default function PrivacyPage() {
             </p>
             <p className="mt-3">
               <span className="font-medium text-slate-100">
-                Sitesinc
+                SitesInc
               </span>
               <br />
               1968 South Coast Hwy #3632

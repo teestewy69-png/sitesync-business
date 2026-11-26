@@ -208,14 +208,14 @@ test("business address is 1968 South Coast Hwy #3632 everywhere it is stated", (
 
 test("keywords appear in titles and copy without changing the $1,995 hook", async () => {
   const content = JSON.parse(readFileSync(path.join(ROOT, "content.json"), "utf8"));
-  assert.equal(content.seo.title, "Small Business Website Design, $1,995 Flat | Sitesinc");
-  assert.notEqual(content.seo.title, "Affordable Website Design, $1,995 Flat | Sitesinc");
+  assert.equal(content.seo.title, "Small Business Website Design, $1,995 Flat | SitesInc");
+  assert.notEqual(content.seo.title, "Affordable Website Design, $1,995 Flat | SitesInc");
   assert.equal(content.hero.headline, "Your website should make the phone ring. If it just sits there, it’s a business card.");
   assert.match(content.hero.subheadline, /contractors, plumbers, barbers/);
   assert.match(content.hero.subheadline, /SEO for small business/);
   assert.match(content.hero.offer.title, /\$1,995/);
   const { PAGE_DRAFTS } = await import("../lib/factory/drafts.ts");
-  assert.equal(PAGE_DRAFTS["website-design"].title, "Affordable Website Design for Small Business | Sitesinc");
+  assert.equal(PAGE_DRAFTS["website-design"].title, "Affordable Website Design for Small Business | SitesInc");
   assert.notEqual(PAGE_DRAFTS["website-design"].title, content.seo.title);
   assert.notEqual(PAGE_DRAFTS["website-design"].metaDescription, content.seo.description);
   assert.match(PAGE_DRAFTS["seo-ready-websites"].title, /SEO for Small Business/);
