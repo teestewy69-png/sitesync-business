@@ -33,7 +33,8 @@ import {
 } from "./domainiq";
 export { recordIntakeProject } from "./record-intake";
 import { runConversionChecks } from "./conversions";
-import { draftFromBrief, wordCount } from "./drafts";
+import { wordCount } from "./drafts";
+import { writeFromBrief } from "./writer";
 import { checkContentLength, MAX_ARTICLE_WORDS } from "./content-length";
 import { DISCLAIMERS, SEED_BRIEFS, STAGE_DEFS } from "./pipeline";
 import { slugsForSurfaces } from "./surfaces";
@@ -147,12 +148,20 @@ export async function applyFactoryAction(
 
   if (op === "draft-page") {
     const slug = String(body.slug || "");
-    const draft = draftFromBrief(slug);
-    if (!draft) return { ok: false, error: "No draft template for that slug." };
     const current = await (await import("./workspace")).readWorkspace();
     const brief = current.briefs.find((item) => item.slug === slug);
-    if (brief && brief.status !== "approved") {
+    if (!brief) return { ok: false, error: "No content brief for that slug." };
+    if (brief.status !== "approved") {
       return { ok: false, error: "Approve the content brief before drafting." };
+    }
+    // The button writes for real now: the LLM writer works from the approved brief plus live
+    // competitor research. Any failure (no key, bad key, empty or leaking copy) returns an error
+    // and leaves the page's existing text untouched — never a silent template substitution.
+    let written;
+    try {
+      written = await writeFromBrief(brief);
+    } catch (err) {
+      return { ok: false, error: `Writing failed: ${(err as Error).message}` };
     }
     const workspace = await updateWorkspace((next) => {
       const row = next;
@@ -160,9 +169,10 @@ export async function applyFactoryAction(
         page.slug === slug
           ? {
               ...page,
-              ...draft,
-              wordCount: wordCount(draft.body),
-              lengthCheck: checkContentLength(draft.body, { min: 1, max: MAX_ARTICLE_WORDS }),
+              body: written.body,
+              headings: written.headings,
+              wordCount: wordCount(written.body),
+              lengthCheck: checkContentLength(written.body, { min: 1, max: MAX_ARTICLE_WORDS }),
               status: "ready_for_review",
               noindex: true,
             }
