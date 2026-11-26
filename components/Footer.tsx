@@ -10,20 +10,17 @@ const colItem = "py-1";
  * columns instead of one wrapping link cloud. (Declutter pass, 2026-11-25.)
  */
 export default function Footer() {
-  const { site, footer } = content;
+  const { footer } = content;
 
   return (
     <footer className="border-t border-white/5 bg-black py-14 text-white">
       <div className="mx-auto max-w-6xl px-6">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div>
-            {/* The logo lockup already contains the SitesInc wordmark */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/logo.png"
-              alt={site.name}
-              className="h-10 w-auto rounded-md ring-1 ring-white/10"
-            />
+            {/* Wordmark: the domain as the logo (Tony, 2026-11-26) */}
+            <span className="inline-block bg-gradient-to-b from-brand-300 to-brand-600 bg-clip-text text-3xl font-extrabold tracking-tight text-transparent">
+              sitesinc.co
+            </span>
             <p className="mt-5 max-w-xs text-sm leading-relaxed text-slate-400">
               {footer.trustTitle} {footer.trustLine}
             </p>
