@@ -1,29 +1,39 @@
-const TICKER_COPY =
-  "Website builds are $1,995 · $997.50 to start · $997.50 at launch · Monitored SEO (optional) · 1st month free • Card required at signup • $129/mo starting day 31 unless canceled before 30 days · Request, not a purchase";
-
+/**
+ * Stationary giveaway ticker (Tony's order, 2026-11-27).
+ *
+ * This slot used to carry a scrolling pricing marquee. That ticker was
+ * removed, and its copy also carried the retired day-31 auto-charge
+ * monitoring line, which contradicts the approved opt-in policy — it
+ * does not come back. Tony's replacement is a STATIONARY bar (no
+ * scrolling, no animation) announcing the website giveaway: the name is
+ * GIVEAWAY_NAME in lib/giveaway.ts ("The SitesInc Website Giveaway"),
+ * entry is free, and the giveaway runs every week. The name is written
+ * out here rather than imported because this component renders from a
+ * client boundary (see SitesincTicker) and lib/giveaway pulls in
+ * server-only store/mail code.
+ *
+ * The `announcement-ticker` class is kept on the wrapper so the
+ * globals.css rule that hides the bar on client-site pages still
+ * applies; the animated `announcement-ticker__track` class is gone.
+ */
 export default function AnnouncementTicker() {
-  // Duplicate segments for a seamless CSS loop (translate -50%).
-  const segments = Array.from({ length: 6 }, (_, i) => (
-    <span key={i} className="inline-flex shrink-0 items-center gap-10 px-5">
-      <span>{TICKER_COPY}</span>
-      <span aria-hidden className="text-black">
-        •
-      </span>
-    </span>
-  ));
-
   return (
     <div
-      className="announcement-ticker sticky top-0 z-[100] flex h-11 items-center overflow-hidden border-b border-brand-600 bg-brand-400 sm:h-12"
+      className="announcement-ticker sticky top-0 z-[100] flex items-center justify-center border-b border-brand-600 bg-brand-400 px-4 py-2.5"
       role="region"
-      aria-label="Current pricing"
+      aria-label="Website giveaway"
     >
-      <div className="announcement-ticker__track flex w-max whitespace-nowrap text-sm font-bold uppercase tracking-wide text-black sm:text-base">
-        <div className="flex shrink-0 items-center">{segments}</div>
-        <div className="flex shrink-0 items-center" aria-hidden>
-          {segments}
-        </div>
-      </div>
+      <p className="text-center text-sm font-bold tracking-wide text-black sm:text-base">
+        The SitesInc Website Giveaway — enter free, a new winner every week.
+        <a
+          href="/giveaway"
+          data-analytics-cta="giveaway"
+          data-analytics-location="ticker"
+          className="ml-3 whitespace-nowrap underline decoration-2 underline-offset-2 transition hover:opacity-75"
+        >
+          Enter now
+        </a>
+      </p>
     </div>
   );
 }

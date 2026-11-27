@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import content from "@/content.json";
 import Analytics from "@/components/Analytics";
 import StagingBanner from "@/components/StagingBanner";
+import SitesincTicker from "@/components/SitesincTicker";
 import {
   isStagingEnv,
   publicAnalyticsHosts,
@@ -66,6 +67,9 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-canvas text-slate-200">
+        {/* Stationary giveaway ticker — site-wide on SitesInc's own pages,
+            hidden on client sites by HideOnClientSite (Tony, 2026-11-27). */}
+        <SitesincTicker />
         {children}
         <StagingBanner />
         <Analytics measurementId={GA_MEASUREMENT_ID} allowedHosts={GA_HOSTS} />
