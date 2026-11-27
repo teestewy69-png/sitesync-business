@@ -19,10 +19,22 @@ export default function SiteHeader({ variant = "page" }: { variant?: "page" | "h
 
   return (
     <header className={wrapClass}>
-      <nav className="relative mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
+      <nav
+        className={`relative mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4 ${
+          variant === "hero" ? "flex-wrap" : ""
+        }`}
+      >
         <Link href="/" className="flex items-center" aria-label="sitesinc.co home">
-          {/* Wordmark: the domain as the logo (Tony, 2026-11-26) */}
-          <span className="bg-gradient-to-b from-brand-300 to-brand-600 bg-clip-text text-3xl font-extrabold tracking-tight text-transparent">
+          {/* Wordmark: the domain as the logo (Tony, 2026-11-26). It is
+              text, so it stays sharp at any size — sharper than the only
+              image logo in the repo (public/logo.png, a 356x213 JPEG of
+              the old gold SITESYNC badge). Enlarged on the homepage
+              (hero variant) per Tony's 2026-11-27 rerun order. */}
+          <span
+            className={`bg-gradient-to-b from-brand-300 to-brand-600 bg-clip-text font-extrabold tracking-tight text-transparent ${
+              variant === "hero" ? "text-4xl sm:text-5xl" : "text-3xl"
+            }`}
+          >
             sitesinc.co
           </span>
         </Link>

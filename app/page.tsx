@@ -57,23 +57,50 @@ const DesignShowcase = dynamic(() => import("@/components/DesignShowcase"), {
  * Outcomes and /seo-ready-websites), EmailCapture (its checklist offer
  * is carried by FreeResources, which links to the same form pages).
  */
+/**
+ * Homepage composition — declutter pass (2026-11-25).
+ * One message per section, in reading order: offer → trades → designs →
+ * pricing → free audit → outcomes → process → visual break → about →
+ * proof → FAQ → free resources → hub directory → footer.
+ * Redesign v2 (visual layer, same day): hero photograph, a photo on every
+ * trade card, real rendered thumbnails for the 8 designs, an illustrated
+ * onboarding checklist + 50/50 split visual in Pricing, and the mid-page
+ * VisualBreak photograph — imagery added, no copy facts changed.
+ * Removed as duplicates (components still exist and are used elsewhere
+ * or available to restore): TwoAudiencePitch (its two-audience message is
+ * carried by the hero + the audit strip), PickYourDesign (duplicated
+ * DesignShowcase), ContentEngine (its SEO-foundation point is made by
+ * Outcomes and /seo-ready-websites), EmailCapture (its checklist offer
+ * is carried by FreeResources, which links to the same form pages).
+ *
+ * 2026-11-27 giveaway-rerun pass (founder order): the free-audit offer
+ * now runs as FOUR enlarged bands at strategic points — under the hero,
+ * after Pricing (the original strip's spot, enlarged), after Proof, and
+ * as the final CTA before the footer. Reading order: offer → free audit
+ * → trades → designs → pricing → free audit → outcomes → process →
+ * visual break → about → proof → free audit → FAQ → free resources →
+ * hub directory → free audit → footer.
+ */
 export default function Home() {
   return (
     <>
       <SeoJsonLd />
       <Hero />
+      <FreeAuditBanner size="band" location="home_hero" />
       <TradePicker />
       <DesignShowcase />
       <Pricing />
-      <FreeAuditBanner />
+      <FreeAuditBanner size="band" />
       <Outcomes />
       <Process />
       <VisualBreak />
       <About />
       <Proof />
+      <FreeAuditBanner size="band" location="home_proof" />
       <FAQ />
       <FreeResources />
       <HubLinks />
+      <FreeAuditBanner size="band" location="home_final" />
       <Footer />
     </>
   );
